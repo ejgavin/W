@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Embed URL Converter</title>
+</head>
+<body>
+    <h2>YouTube Embed URL Converter</h2>
+    <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
+    <button onclick="convertAndDisplay()">Convert</button>
+    <div id="embedContainer"></div>
+
+    <script>
+        function convertAndDisplay() {
+            const urlInput = document.getElementById("youtubeUrl").value;
+            const videoIdMatch = urlInput.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
+
+            if (videoIdMatch && videoIdMatch[1]) {
+                const embedUrl = `https://www.youtube.com/embed/${videoIdMatch[1]}`;
+                
+                // Display the embed URL in an iframe
+                const embedContainer = document.getElementById("embedContainer");
+                embedContainer.innerHTML = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            } else {
+                alert("Invalid YouTube URL");
+            }
+        }
+    </script>
+</body>
+</html>
