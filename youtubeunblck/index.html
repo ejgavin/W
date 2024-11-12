@@ -29,11 +29,26 @@
         .hidden {
             display: none;
         }
-        button {
+        .c-button {
             margin: 5px;
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
+            font-family: 'Comic Sans MS', sans-serif;
+            appearance: none;
+            border: 0;
+            border-radius: 5px;
+            background: orange;
+            color: #fff;
+            min-width: 100px;
+            text-align: center;
+        }
+        .c-button:hover {
+            background: #ff9933;
+        }
+        .c-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px #cbd6ee;
         }
     </style>
 </head>
@@ -41,8 +56,8 @@
     <h2>YouTube Block Bypass</h2>
     <div id="container">
         <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
-        <button onclick="convertAndDisplay()">Bypass</button>
-        <button onclick="openFullscreen()">Fullscreen</button>
+        <button class="c-button" onclick="convertAndDisplay()">Bypass</button>
+        <button class="c-button" onclick="openFullscreen()">Fullscreen</button>
     </div>
     <div id="embedContainer" class="hidden"></div>
 
