@@ -42,19 +42,26 @@
     <script>
         function convertAndDisplay() {
             const urlInput = document.getElementById("youtubeUrl").value;
-            const videoIdMatch = urlInput.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
+            let embedUrl = "";
 
+            // Check for standard YouTube URL format
+            const videoIdMatch = urlInput.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
             if (videoIdMatch && videoIdMatch[1]) {
-                const embedUrl = `https://www.youtube.com/embed/${videoIdMatch[1]}`;
-                
-                // Hide input and show the iframe
-                document.getElementById("container").classList.add("hidden");
-                const embedContainer = document.getElementById("embedContainer");
-                embedContainer.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-                embedContainer.classList.remove("hidden");
+                embedUrl = `https://www.youtube.com/embed/${videoIdMatch[1]}`;
+            }
+            // Check for YouTube Shorts format and replace 'shorts' with 'embed'
+            else if (urlInput.includes("youtube.com/shorts/")) {
+                embedUrl = urlInput.replace("/shorts/", "/embed/");
             } else {
                 alert("Invalid YouTube URL");
+                return;
             }
+            
+            // Hide input and show the iframe
+            document.getElementById("container").classList.add("hidden");
+            const embedContainer = document.getElementById("embedContainer");
+            embedContainer.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            embedContainer.classList.remove("hidden");
         }
     </script>
 </body>
