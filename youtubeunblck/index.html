@@ -3,27 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Block Bypass</title>
+    <title>YouTube Embed URL Converter</title>
 </head>
 <body>
-    <h2>YouTube Block Bypass</h2>
-    <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
-    <button onclick="convertAndDisplay()">Convert</button>
+    <h2>YouTube Embed URL Converter</h2>
+    <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL" onkeypress="handleEnter(event)">
+    <button id="bypassButton" onclick="convertAndDisplay()">Bypass</button>
     <div id="embedContainer"></div>
+    <button id="fullscreenButton" onclick="goFullscreen()" style="display: none;">Fullscreen</button>
 
     <script>
+        function handleEnter(event) {
+            if (event.key === "Enter") {
+                convertAndDisplay();
+            }
+        }
+
         function convertAndDisplay() {
             const urlInput = document.getElementById("youtubeUrl").value;
             const videoIdMatch = urlInput.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
 
             if (videoIdMatch && videoIdMatch[1]) {
-                const embedUrl = `https://www.youtube.com/embed/${videoIdMatch[1]}`;
+                // Trim video ID to 11 characters if it's too long
+                const videoId = videoIdMatch[1].substring(0, 11);
+                const embedUrl = `https://www.youtube.com/embed/${videoId}`;
                 
                 // Display the embed URL in an iframe
                 const embedContainer = document.getElementById("embedContainer");
-                embedContainer.innerHTML = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                embedContainer.innerHTML = `<iframe id="videoFrame" width="560" height="315" src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                
+                // Show the fullscreen button
+                document.getElementById("fullscreenButton").style.display = "inline";
             } else {
                 alert("Invalid YouTube URL");
+            }
+        }
+
+        function goFullscreen() {
+            const iframe = document.getElementById("videoFrame");
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.mozRequestFullScreen) { // Firefox
+                iframe.mozRequestFullScreen();
+            } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) { // IE/Edge
+                iframe.msRequestFullscreen();
             }
         }
     </script>
