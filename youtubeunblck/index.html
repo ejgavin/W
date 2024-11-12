@@ -29,6 +29,12 @@
         .hidden {
             display: none;
         }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -36,10 +42,13 @@
     <div id="container">
         <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
         <button onclick="convertAndDisplay()">Bypass</button>
+        <button onclick="openFullscreen()">Fullscreen</button>
     </div>
     <div id="embedContainer" class="hidden"></div>
 
     <script>
+        let currentEmbedUrl = "";
+
         function convertAndDisplay() {
             const urlInput = document.getElementById("youtubeUrl").value;
             let embedUrl = "";
@@ -56,12 +65,33 @@
                 alert("Invalid YouTube URL");
                 return;
             }
-            
+
+            currentEmbedUrl = embedUrl;
+
             // Hide input and show the iframe
             document.getElementById("container").classList.add("hidden");
             const embedContainer = document.getElementById("embedContainer");
             embedContainer.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
             embedContainer.classList.remove("hidden");
+        }
+
+        function openFullscreen() {
+            if (currentEmbedUrl) {
+                const fullscreenWindow = window.open('about:blank');
+                fullscreenWindow.document.body.style.margin = '0';
+                fullscreenWindow.document.body.style.height = '100vh';
+                fullscreenWindow.document.body.style.overflow = 'hidden';
+
+                const iframe = fullscreenWindow.document.createElement('iframe');
+                iframe.src = currentEmbedUrl;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+
+                fullscreenWindow.document.body.appendChild(iframe);
+            } else {
+                alert("Please bypass a video first.");
+            }
         }
     </script>
 </body>
