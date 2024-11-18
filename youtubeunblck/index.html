@@ -29,6 +29,10 @@
         .hidden {
             display: none;
         }
+        #errorMessage {
+            color: red;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -37,6 +41,7 @@
         <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
         <button onclick="convertAndDisplay()">Bypass</button>
         <button onclick="openFullscreen()">Fullscreen</button>
+        <div id="errorMessage"></div>
     </div>
     <div id="embedContainer" class="hidden"></div>
 
@@ -46,6 +51,10 @@
         function convertAndDisplay() {
             const urlInput = document.getElementById("youtubeUrl").value;
             let embedUrl = "";
+            const errorMessage = document.getElementById("errorMessage");
+
+            // Clear previous error messages
+            errorMessage.textContent = "";
 
             // Check for standard YouTube URL format
             const videoIdMatch = urlInput.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
@@ -56,7 +65,7 @@
             else if (urlInput.includes("youtube.com/shorts/")) {
                 embedUrl = urlInput.replace("/shorts/", "/embed/");
             } else {
-                alert("Invalid YouTube URL");
+                errorMessage.textContent = "Invalid YouTube URL. Please enter a valid URL.";
                 return;
             }
 
@@ -70,6 +79,11 @@
         }
 
         function openFullscreen() {
+            const errorMessage = document.getElementById("errorMessage");
+
+            // Clear previous error messages
+            errorMessage.textContent = "";
+
             if (currentEmbedUrl) {
                 const fullscreenWindow = window.open('about:blank');
                 fullscreenWindow.document.body.style.margin = '0';
@@ -84,7 +98,7 @@
 
                 fullscreenWindow.document.body.appendChild(iframe);
             } else {
-                alert("Please bypass a video first.");
+                errorMessage.textContent = "Please bypass a video first.";
             }
         }
     </script>
