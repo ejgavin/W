@@ -1,58 +1,104 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Papas Scooperia</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Launcher</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-    margin: 0px;
-    padding: 0px;
-    overflow: hidden;
-  }
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .button {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: orange;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s;
+    }
+
+    .button:hover {
+      background-color: #ff9933;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
-  <meta name="description" content="Papas Scooperia, Papas Scooperia Unblocked">
-  <meta property="og:image" content="ruffle_512x512.png" />
 </head>
-
 <body>
-  <div class="webgl-content">
-    <div id="gameContainer" style="width: 100vw; height: 100vh">
-      <script src="patch/ruffle/ruffle.js"></script>
-      <script>
-        window.RufflePlayer = window.RufflePlayer || {};
-        window.RufflePlayer.config = {
-            warnOnUnsupportedContent: false,
-            autoplay: "on",
-            unmuteOverlay: "hidden",
-            maxExecutionDuration: 30,
-            base: null,
-            forceScale: false,
-            quality: 'high'
-        };
-      </script>
-      <div id="gamefilearea" class="prestitial-running" style="height:100%;">
+  <button id="playNow" class="button">Play Now</button>
+  <button id="playFullscreen" class="button">Play in Fullscreen</button>
 
-      <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0" width="900" height="600" id="gamefile" align="middle">
-      <param name="allowScriptAccess" value="always" />
-      <param name="movie" value="Wd6AuFoiKHe4Hx.swf" />
-      <param name="quality" value="high" />
-      <param name="wmode" value="window" />
-      <param name="allowfullscreen" value="false" />
-      <param name="allowfullscreeninteractive" value="false" />
-      <param name="fullScreenAspectRatio" value="" />
-      <param name="quality" value="high" />
-      <param name="play" value="true" />
-      <param name="loop" value="true" />
-      <param name="menu" value="" />
-      <param name="flashvars" value="gameID=13824" />
-      <param name="hasPriority" value="true" />
+  <iframe id="gameFrame" class="hidden"></iframe>
 
-      <embed src="Wd6AuFoiKHe4Hx.swf" width="100%" height="100%" id="gamefileEmbed" name="gamefile" align="middle" wmode="window" allowfullscreen="false" allowfullscreeninteractive="false" fullScreenAspectRatio="" quality="high" play="true" loop="true" menu="" allowScriptAccess="always" flashvars="gameID=13824" hasPriority="true" type="application/x-shockwave-flash" pluginspage="http://www.adobe.com/go/getflashplayer"></embed>
-      </object>
-    </div>
-  </div>
-    <script src="js/analytics_ubg_v1_4.js"></script>
-    <script src="js/ubg235_client_v1_2.js"></script>
+  <script>
+    const playNowButton = document.getElementById('playNow');
+    const playFullscreenButton = document.getElementById('playFullscreen');
+    const gameFrame = document.getElementById('gameFrame');
+
+    // Play Now button logic
+    playNowButton.addEventListener('click', () => {
+      gameFrame.src = "https://ejgavin.github.io/W/motox3m";
+      gameFrame.classList.remove('hidden');
+    });
+
+    // Play in Fullscreen button logic
+    playFullscreenButton.addEventListener('click', () => {
+      const url = "https://ejgavin.github.io/W/motox3m";
+      const win = window.open('about:blank');
+      win.document.body.style.margin = '0';
+      win.document.body.style.height = '100vh';
+      win.document.body.style.overflow = 'hidden';
+
+      const iframe = win.document.createElement('iframe');
+      iframe.style.border = 'none';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.src = url;
+
+      win.document.body.appendChild(iframe);
+    });
+
+    // Enable pressing Enter for Play Now
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        playNowButton.click();
+      }
+    });
+
+    // Update iframe dimensions on resize
+    window.addEventListener('resize', () => {
+      if (!gameFrame.classList.contains('hidden')) {
+        gameFrame.style.width = '100%';
+        gameFrame.style.height = '100%';
+      }
+    });
+  </script>
 </body>
 </html>
