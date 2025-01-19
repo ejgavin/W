@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>12minibattles</title>
+  <title>Game Launcher</title>
   <style>
     body {
       margin: 0;
@@ -53,6 +53,7 @@
   <button id="play-fullscreen" class="button play-fullscreen">Play in Fullscreen</button>
 
   <script>
+    // URL of the game
     const playNowUrl = "https://ejgavin.github.io/W/papaswingeria";
 
     // Function to load the iframe
@@ -73,13 +74,20 @@
       const win = window.open("about:blank");
       win.document.body.style.margin = "0";
       win.document.body.style.height = "100vh";
+
+      // Create an iframe for the fullscreen game
       const iframe = win.document.createElement("iframe");
       iframe.style.border = "none";
       iframe.style.width = "100%";
       iframe.style.height = "100%";
-      iframe.src = playNowUrl;
+      iframe.src = playNowUrl; // Game URL
       win.document.body.appendChild(iframe);
     };
+
+    // Automatically choose Play Now if no button is pressed within 5 seconds
+    setTimeout(() => {
+      document.getElementById("play-now").click();
+    }, 5000);
 
     // Trigger Play Now on Enter key press
     document.addEventListener("keydown", function (event) {
@@ -87,11 +95,6 @@
         document.getElementById("play-now").click();
       }
     });
-
-    // Automatically choose Play Now if no button is pressed within 5 seconds
-    setTimeout(() => {
-      document.getElementById("play-now").click();
-    }, 5000);
   </script>
 </body>
 </html>

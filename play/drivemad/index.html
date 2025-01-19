@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Launcher</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+    .button {
+      width: 100%;
+      height: 50%;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
+    .play-now {
+      background-color: #28a745; /* Green */
+      color: white;
+    }
+    .play-now:hover {
+      background-color: #218838; /* Darker Green */
+    }
+    .play-fullscreen {
+      background-color: #dc3545; /* Red */
+      color: white;
+    }
+    .play-fullscreen:hover {
+      background-color: #c82333; /* Darker Red */
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <button id="play-now" class="button play-now">Play Now</button>
+  <button id="play-fullscreen" class="button play-fullscreen">Play in Fullscreen</button>
+
+  <script>
+    // URL of the game
+    const playNowUrl = "https://ejgavin.github.io/M/drive-mad";
+
+    // Function to load the iframe
+    function loadIframe(url) {
+      document.body.innerHTML = ""; // Clear the screen
+      const iframe = document.createElement("iframe");
+      iframe.src = url;
+      document.body.appendChild(iframe);
+    }
+
+    // Play Now button functionality
+    document.getElementById("play-now").onclick = function () {
+      loadIframe(playNowUrl);
+    };
+
+    // Play in Fullscreen button functionality
+    document.getElementById("play-fullscreen").onclick = function () {
+      const win = window.open("about:blank");
+      win.document.body.style.margin = "0";
+      win.document.body.style.height = "100vh";
+
+      // Create an iframe for the fullscreen game
+      const iframe = win.document.createElement("iframe");
+      iframe.style.border = "none";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.src = playNowUrl; // Game URL
+      win.document.body.appendChild(iframe);
+    };
+
+    // Automatically choose Play Now if no button is pressed within 5 seconds
+    setTimeout(() => {
+      document.getElementById("play-now").click();
+    }, 5000);
+
+    // Trigger Play Now on Enter key press
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        document.getElementById("play-now").click();
+      }
+    });
+  </script>
+</body>
+</html>
