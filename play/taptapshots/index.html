@@ -54,13 +54,34 @@
 
   <script>
     // URL of the game
-    const playNowUrl = "https://ejgavin.github.io/W/taptapshots";
+    const playNowUrl = "https://ejgavin.github.io/W/amazingstrangeropepolice";
+
+    // Store game state in local storage
+    const saveGameState = (state) => {
+      localStorage.setItem("gameState", JSON.stringify(state));
+    };
+
+    const loadGameState = () => {
+      const state = localStorage.getItem("gameState");
+      return state ? JSON.parse(state) : null;
+    };
 
     // Function to load the iframe
     function loadIframe(url) {
       document.body.innerHTML = ""; // Clear the screen
       const iframe = document.createElement("iframe");
       iframe.src = url;
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
+
+      // Listen for game state updates
+      window.addEventListener("message", (event) => {
+        if (event.origin === new URL(playNowUrl).origin && event.data.type === "SAVE_STATE") {
+          saveGameState(event.data.payload);
+        }
+      });
+
       document.body.appendChild(iframe);
     }
 
@@ -71,17 +92,17 @@
 
     // Play in Fullscreen button functionality
     document.getElementById("play-fullscreen").onclick = function () {
-      const win = window.open("about:blank");
-      win.document.body.style.margin = "0";
-      win.document.body.style.height = "100vh";
+      const win = window.open(playNowUrl, "_blank", "noopener,noreferrer");
+      const gameState = loadGameState();
 
-      // Create an iframe for the fullscreen game
-      const iframe = win.document.createElement("iframe");
-      iframe.style.border = "none";
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      iframe.src = playNowUrl; // Game URL
-      win.document.body.appendChild(iframe);
+      // Send game state to new tab
+      if (win) {
+        win.onload = () => {
+          win.postMessage({ type: "LOAD_STATE", payload: gameState }, playNowUrl);
+        };
+      } else {
+        alert("Popup blocked. Please allow popups for this site.");
+      }
     };
 
     // Automatically choose Play Now if no button is pressed within 5 seconds
