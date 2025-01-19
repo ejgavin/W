@@ -61,6 +61,9 @@
       document.body.innerHTML = ""; // Clear the screen
       const iframe = document.createElement("iframe");
       iframe.src = url;
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
       document.body.appendChild(iframe);
     }
 
@@ -71,17 +74,10 @@
 
     // Play in Fullscreen button functionality
     document.getElementById("play-fullscreen").onclick = function () {
-      const win = window.open("about:blank");
-      win.document.body.style.margin = "0";
-      win.document.body.style.height = "100vh";
-
-      // Create an iframe for the fullscreen game
-      const iframe = win.document.createElement("iframe");
-      iframe.style.border = "none";
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      iframe.src = playNowUrl; // Game URL
-      win.document.body.appendChild(iframe);
+      const win = window.open(playNowUrl, "_blank", "noopener,noreferrer");
+      if (!win) {
+        alert("Popup blocked. Please allow popups for this site.");
+      }
     };
 
     // Automatically choose Play Now if no button is pressed within 5 seconds
