@@ -28,18 +28,18 @@
       transition: background-color 0.3s ease;
     }
     .play-now {
-      background-color: #28a745; /* Green */
+      background-color: #28a745;
       color: white;
     }
     .play-now:hover {
-      background-color: #218838; /* Darker Green */
+      background-color: #218838;
     }
     .play-fullscreen {
-      background-color: #dc3545; /* Red */
+      background-color: #dc3545;
       color: white;
     }
     .play-fullscreen:hover {
-      background-color: #c82333; /* Darker Red */
+      background-color: #c82333;
     }
     iframe {
       width: 100%;
@@ -53,48 +53,28 @@
   <button id="play-fullscreen" class="button play-fullscreen">Play in Fullscreen</button>
 
   <script>
-    // URL of the game
-    const playNowUrl = "https://ejgavin.github.io/M/motox3m-winter";
+    const playNowUrl = "https://ejgavin.github.io/M/motox3mwinter";
 
-    // Function to load the iframe
     function loadIframe(url) {
-      document.body.innerHTML = ""; // Clear the screen
+      document.body.innerHTML = "";
       const iframe = document.createElement("iframe");
       iframe.src = url;
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
       document.body.appendChild(iframe);
     }
 
-    // Play Now button functionality
     document.getElementById("play-now").onclick = function () {
       loadIframe(playNowUrl);
     };
 
-    // Play in Fullscreen button functionality
     document.getElementById("play-fullscreen").onclick = function () {
-      const win = window.open("about:blank");
-      win.document.body.style.margin = "0";
-      win.document.body.style.height = "100vh";
-
-      // Create an iframe for the fullscreen game
-      const iframe = win.document.createElement("iframe");
-      iframe.style.border = "none";
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      iframe.src = playNowUrl; // Game URL
-      win.document.body.appendChild(iframe);
-    };
-
-    // Automatically choose Play Now if no button is pressed within 5 seconds
-    setTimeout(() => {
-      document.getElementById("play-now").click();
-    }, 5000);
-
-    // Trigger Play Now on Enter key press
-    document.addEventListener("keydown", function (event) {
-      if (event.key === "Enter") {
-        document.getElementById("play-now").click();
+      const win = window.open(playNowUrl, "_blank", "noopener,noreferrer");
+      if (!win) {
+        alert("Popup blocked. Please allow popups for this site.");
       }
-    });
+    };
   </script>
 </body>
 </html>

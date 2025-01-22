@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Launcher</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+    .button {
+      width: 100%;
+      height: 50%;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
+    .play-now {
+      background-color: #28a745;
+      color: white;
+    }
+    .play-now:hover {
+      background-color: #218838;
+    }
+    .play-fullscreen {
+      background-color: #dc3545;
+      color: white;
+    }
+    .play-fullscreen:hover {
+      background-color: #c82333;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <button id="play-now" class="button play-now">Play Now</button>
+  <button id="play-fullscreen" class="button play-fullscreen">Play in Fullscreen</button>
+
+  <script>
+    const playNowUrl = "https://ejgavin.github.io/M/coreball";
+
+    function loadIframe(url) {
+      document.body.innerHTML = "";
+      const iframe = document.createElement("iframe");
+      iframe.src = url;
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
+      document.body.appendChild(iframe);
+    }
+
+    document.getElementById("play-now").onclick = function () {
+      loadIframe(playNowUrl);
+    };
+
+    document.getElementById("play-fullscreen").onclick = function () {
+      const win = window.open(playNowUrl, "_blank", "noopener,noreferrer");
+      if (!win) {
+        alert("Popup blocked. Please allow popups for this site.");
+      }
+    };
+  </script>
+</body>
+</html>
