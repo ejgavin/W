@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPTV Player</title>
+    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
+    <script src="https://unpkg.com/video.js/dist/video.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+        }
+
+        #iptv-player {
+            width: 100%;
+            max-width: 100vw;
+            height: 80vh;
+            max-height: 80vh;
+        }
+    </style>
+</head>
+<body>
+    <video id="iptv-player" class="video-js vjs-default-skin" controls autoplay data-setup='{}'>
+        <source src="https://proxy.vidsrc.wtf/m3u8-proxy.m3u8?url=https%3A%2F%2Fsunrays81.xyz%2Ffile1%2Fho7eRMDTlDXE0k%2BbSRvWy1OlagOUdo~BWzqgOt3bkM2PsmJxIfokLuzjsqR01G3767oTzWXv5g8dvs9l%2BkEye4M9nnHfsL0tKLPYzf%2Bg5bvAz~RHq5bADWF%2BNN0cCWnSyhaMCfab5N0ExXOovwylDXrCpkFgEzqUNnpWrU2zXNk%3D%2FcGxheWxpc3QubTN1OA%3D%3D.m3u8" type="application/x-mpegURL">
+    </video>
+
+    <script>
+        var player = videojs('iptv-player', {
+            controls: true,
+            autoplay: true,
+            fluid: true,
+            preload: 'auto',
+            responsive: true
+        });
+    </script>
+</body>
+</html>
