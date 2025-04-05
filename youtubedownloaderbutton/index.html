@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Open Update Log</title>
+  <title>Open YouTube Player</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,33 +16,52 @@
       color: #333;
     }
     .c-button {
-      min-width: 100%;
       font-family: 'Georgia', sans-serif;
-      appearance: none;
       border: 0;
       border-radius: 5px;
-      background: orange;
+      background: #ff4500;
       color: #fff;
-      padding: 10px;
-      font-size: 20px;
+      padding: 20px;
+      font-size: 25px;
       cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .c-button:hover {
-      background: #ff9933;
+      background: #ff6347;
+      transform: scale(1.05);
     }
     .c-button:focus {
       outline: none;
       box-shadow: 0 0 0 4px #cbd6ee;
     }
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
   </style>
 </head>
 <body>
-  <button class="c-button">SHOW UPDATE LOG</button>
+  <button class="c-button pulse-animation">Open YouTube Player</button>
 
   <script>
     document.querySelector('button').onclick = function() {
-      var url = "https://ejgavin.github.io/W/updatelog";
-      var win = window.open('about:blank');
+      var url = "https://ytplayer-vids.vercel.app";
+      var win = window.open('about:blank', '_blank', 'width=100%, height=100%, fullscreen=yes');
       
       if (!win) {
         alert("Popup blocked! Please allow popups for this site.");
@@ -62,16 +81,17 @@
       iframe.src = url;
 
       iframe.onload = function() {
-        // Optionally, handle events when the iframe loads
+        // You can add additional styles or interactions once the iframe has loaded
+        console.log('YouTube player loaded successfully');
       };
 
       iframe.onerror = function() {
-        // Optionally, handle errors if the iframe cannot load
-        win.document.body.innerHTML = "Failed to load update log.";
+        // Handle any errors if the iframe cannot load
+        win.document.body.innerHTML = "Failed to load the YouTube player.";
       };
 
       win.document.body.appendChild(iframe);
-
+      
       var interval = setInterval(function() {
         if (win.closed) {
           clearInterval(interval);
