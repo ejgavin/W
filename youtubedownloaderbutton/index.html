@@ -61,9 +61,7 @@
   <script>
     document.querySelector('button').onclick = function() {
       var url = "https://ytplayer-vids.vercel.app/";
-      
-      // Open a new tab without size and fullscreen options
-      var win = window.open('about:blank', '_blank');
+      var win = window.open('about:blank', '_blank', 'width=100%, height=100%, fullscreen=yes');
       
       if (!win) {
         alert("Popup blocked! Please allow popups for this site.");
