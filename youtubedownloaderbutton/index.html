@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Update Log</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .c-button {
+      min-width: 100%;
+      font-family: 'Georgia', sans-serif;
+      appearance: none;
+      border: 0;
+      border-radius: 5px;
+      background: orange;
+      color: #fff;
+      padding: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .c-button:hover {
+      background: #ff9933;
+    }
+    .c-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px #cbd6ee;
+    }
+  </style>
+</head>
+<body>
+  <button class="c-button">SHOW UPDATE LOG</button>
+
+  <script>
+    document.querySelector('button').onclick = function() {
+      var url = "https://ejgavin.github.io/W/updatelog";
+      var win = window.open('about:blank');
+      
+      if (!win) {
+        alert("Popup blocked! Please allow popups for this site.");
+        return;
+      }
+
+      win.document.body.style.margin = '0';
+      win.document.body.style.height = '100vh';
+      win.document.body.style.overflow = 'hidden';
+
+      var iframe = win.document.createElement('iframe');
+      iframe.style.border = 'none';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.margin = '0';
+      iframe.style.overflow = 'hidden';
+      iframe.src = url;
+
+      iframe.onload = function() {
+        // Optionally, handle events when the iframe loads
+      };
+
+      iframe.onerror = function() {
+        // Optionally, handle errors if the iframe cannot load
+        win.document.body.innerHTML = "Failed to load update log.";
+      };
+
+      win.document.body.appendChild(iframe);
+
+      var interval = setInterval(function() {
+        if (win.closed) {
+          clearInterval(interval);
+          win = undefined;
+        }
+      }, 500);
+    };
+  </script>
+</body>
+</html>
