@@ -63,35 +63,6 @@
       height: 100% !important;
     }
 
-    /* Disable clicking on links */
-    a {
-      pointer-events: none;
-    }
-
-    /* Disable ability to open links in new windows */
-    a:active, a:focus {
-      outline: none;
-    }
-
-    /* Prevent redirections via JavaScript */
-    window.location.replace = function() {};
-    window.location.assign = function() {};
-
-    /* Block right-click menu */
-    body {
-      user-select: none; /* Disable text selection */
-    }
-
-    /* Prevent interaction with embedded video thumbnails in the "More Videos" section */
-    .ytp-thumbnail, .ytp-related, .ytp-upnext {
-      pointer-events: none !important;
-    }
-
-    /* Allow interactions with the video controls */
-    .plyr__controls, .plyr__video-wrapper {
-      pointer-events: auto !important;
-    }
-
     /* Button styling */
     .play-button {
       font-family: 'Georgia', sans-serif;
@@ -161,10 +132,17 @@
 
       window.player = player;
 
-      // Unmute the video after loading
+      // Unmute the video after it's loaded and autoplay starts
       player.on('ready', () => {
         player.muted = false; // Unmute the video
         console.log("Video unmuted.");
+      });
+
+      // Ensures autoplay with sound is allowed once user interacts with the domain
+      player.play().then(() => {
+        console.log("Video started playing with sound.");
+      }).catch((error) => {
+        console.log("Autoplay with sound failed: ", error);
       });
     }
 
