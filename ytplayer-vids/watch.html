@@ -113,21 +113,27 @@
 
       const player = new Plyr('#player', {
         autoplay: true,
-        muted: true,
+        muted: false, // We WANT unmuted
         fullscreen: { enabled: true },
       });
 
       window.player = player;
 
       player.on('ready', () => {
+        // Attempt to ensure autoplay works unmuted by updating iframe's allow attribute
+        const iframe = player.elements.iframe;
+        if (iframe) {
+          iframe.setAttribute('allow', 'autoplay; fullscreen');
+        }
+
+        // Wait 1 second and try to play
         setTimeout(() => {
-          player.muted = false;
-          player.play().catch(e => console.warn('Play failed:', e));
-        }, 1000); // Delay unmute and play by 1 second
+          player.play().catch(err => console.warn('Autoplay failed:', err));
+        }, 1000);
       });
     }
 
-    // Overlay + Enjoy animation
+    // Overlay and enjoy animation sequence
     setTimeout(() => {
       document.getElementById('overlay').style.display = 'none';
       const enjoy = document.getElementById('enjoyMessage');
