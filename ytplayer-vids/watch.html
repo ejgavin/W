@@ -52,23 +52,15 @@
       transform: translate(-50%, -50%) scale(1);
     }
 
-    /* Ensure the player is fully responsive and maintains 16:9 aspect ratio */
-    .youtube-container {
-      position: relative;
-      width: 100%;
-      height: 0;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
-      background: black;
-      overflow: hidden;
+    #player {
+      width: 100vw;
+      height: 100vh;
+      display: none; /* Hide player initially */
     }
 
-    .youtube-container iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
+    .plyr__video-wrapper iframe {
+      width: 100% !important;
+      height: 100% !important;
     }
 
     /* Disable clicking on links */
@@ -100,6 +92,29 @@
       pointer-events: auto !important;
     }
 
+    /* Button styling */
+    .play-button {
+      font-family: 'Georgia', sans-serif;
+      border: 0;
+      border-radius: 5px;
+      background: #ff4500;
+      color: #fff;
+      padding: 20px;
+      font-size: 25px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .play-button:hover {
+      background: #ff6347;
+      transform: scale(1.05);
+    }
+    .play-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px #cbd6ee;
+    }
+
     @keyframes fadeOut {
       0% { opacity: 1; }
       100% { opacity: 0; display: none; }
@@ -111,15 +126,18 @@
   <div class="overlay" id="overlay">Loading Your Video...</div>
   <div class="enjoy-message" id="enjoyMessage">Enjoy!</div>
 
-  <!-- Responsive YouTube Embed -->
-  <div class="youtube-container">
-    <iframe id="player" src="" frameborder="0" allowfullscreen></iframe>
-  </div>
+  <!-- Play Video Button -->
+  <button id="playButton" class="play-button">Play Video</button>
+
+  <div id="player" data-plyr-provider="youtube" data-plyr-embed-id=""></div>
 
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get("v");
+
+    // Display the play button before the video starts loading
+    document.getElementById('playButton').style.display = 'block';
 
     function startPlayer() {
       if (!videoId) {
@@ -127,18 +145,27 @@
         return;
       }
 
-      // Set the iframe source to the YouTube video
-      const iframe = document.getElementById("player");
-      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&muted=1&controls=1&rel=0`;
+      // Hide the play button after it is clicked
+      document.getElementById('playButton').style.display = 'none';
 
-      // Initialize Plyr
+      // Show the video player
+      const playerEl = document.getElementById("player");
+      playerEl.setAttribute("data-plyr-embed-id", videoId);
+      playerEl.style.display = 'block';
+
       const player = new Plyr('#player', {
         autoplay: true,
-        muted: true,  // Keep the video muted
+        muted: false,  // Keep the video unmuted
         fullscreen: { enabled: true },
       });
 
       window.player = player;
+
+      // Unmute the video after loading
+      player.on('ready', () => {
+        player.muted = false; // Unmute the video
+        console.log("Video unmuted.");
+      });
     }
 
     // Animate Enjoy!
@@ -151,6 +178,9 @@
         startPlayer();
       }, 1800);
     }, 1600);
+
+    // Play video when the button is clicked
+    document.getElementById('playButton').onclick = startPlayer;
   </script>
 </body>
 </html>
