@@ -126,36 +126,33 @@
 
       const player = new Plyr('#player', {
         autoplay: true,
-        muted: false,  // Keep the video unmuted
+        muted: true,  // Start the video muted
         fullscreen: { enabled: true },
       });
 
       window.player = player;
 
-      // Unmute the video after it's loaded and autoplay starts
-      player.on('ready', () => {
-        player.muted = false; // Unmute the video
-        console.log("Video unmuted.");
-      });
-
-      // Ensures autoplay with sound is allowed once user interacts with the domain
-      player.play().then(() => {
-        console.log("Video started playing with sound.");
-      }).catch((error) => {
-        console.log("Autoplay with sound failed: ", error);
-      });
-    }
-
-    // Animate Enjoy!
-    setTimeout(() => {
-      document.getElementById('overlay').style.display = 'none';
-      const enjoy = document.getElementById('enjoyMessage');
-      enjoy.classList.add('show');
+      // Simulate clicking the play button after 2 tenths of a second
       setTimeout(() => {
-        enjoy.classList.remove('show');
-        startPlayer();
-      }, 1800);
-    }, 1600);
+        player.play().then(() => {
+          console.log("Video started playing.");
+          player.muted = false; // Unmute after the video starts
+          console.log("Video unmuted.");
+        }).catch((error) => {
+          console.log("Autoplay failed: ", error);
+        });
+      }, 200); // 200ms delay before unmuting
+
+      // Animate Enjoy!
+      setTimeout(() => {
+        document.getElementById('overlay').style.display = 'none';
+        const enjoy = document.getElementById('enjoyMessage');
+        enjoy.classList.add('show');
+        setTimeout(() => {
+          enjoy.classList.remove('show');
+        }, 1800);
+      }, 1600);
+    }
 
     // Play video when the button is clicked
     document.getElementById('playButton').onclick = startPlayer;
