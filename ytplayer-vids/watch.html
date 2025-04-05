@@ -55,7 +55,7 @@
     #player {
       width: 100vw;
       height: 100vh;
-      display: none; /* Hide player initially */
+      display: none;
     }
 
     .plyr__video-wrapper iframe {
@@ -63,27 +63,24 @@
       height: 100% !important;
     }
 
-    /* Button styling */
-    .play-button {
-      font-family: 'Georgia', sans-serif;
-      border: 0;
-      border-radius: 5px;
-      background: #ff4500;
-      color: #fff;
-      padding: 20px;
-      font-size: 25px;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    a {
+      pointer-events: none;
     }
-    .play-button:hover {
-      background: #ff6347;
-      transform: scale(1.05);
-    }
-    .play-button:focus {
+
+    a:active, a:focus {
       outline: none;
-      box-shadow: 0 0 0 4px #cbd6ee;
+    }
+
+    body {
+      user-select: none;
+    }
+
+    .ytp-thumbnail, .ytp-related, .ytp-upnext {
+      pointer-events: none !important;
+    }
+
+    .plyr__controls, .plyr__video-wrapper {
+      pointer-events: auto !important;
     }
 
     @keyframes fadeOut {
@@ -97,9 +94,6 @@
   <div class="overlay" id="overlay">Loading Your Video...</div>
   <div class="enjoy-message" id="enjoyMessage">Enjoy!</div>
 
-  <!-- Play Video Button -->
-  <button id="playButton" class="play-button">Play Video</button>
-
   <div id="player" data-plyr-provider="youtube" data-plyr-embed-id=""></div>
 
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
@@ -107,55 +101,42 @@
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get("v");
 
-    // Display the play button before the video starts loading
-    document.getElementById('playButton').style.display = 'block';
-
     function startPlayer() {
       if (!videoId) {
         alert("No video ID provided.");
         return;
       }
 
-      // Hide the play button after it is clicked
-      document.getElementById('playButton').style.display = 'none';
-
-      // Show the video player
       const playerEl = document.getElementById("player");
       playerEl.setAttribute("data-plyr-embed-id", videoId);
       playerEl.style.display = 'block';
 
       const player = new Plyr('#player', {
         autoplay: true,
-        muted: true,  // Start the video muted
+        muted: true,
         fullscreen: { enabled: true },
       });
 
       window.player = player;
 
-      // Simulate clicking the play button after 2 tenths of a second
-      setTimeout(() => {
-        player.play().then(() => {
-          console.log("Video started playing.");
-          player.muted = false; // Unmute after the video starts
-          console.log("Video unmuted.");
-        }).catch((error) => {
-          console.log("Autoplay failed: ", error);
-        });
-      }, 200); // 200ms delay before unmuting
-
-      // Animate Enjoy!
-      setTimeout(() => {
-        document.getElementById('overlay').style.display = 'none';
-        const enjoy = document.getElementById('enjoyMessage');
-        enjoy.classList.add('show');
+      player.on('ready', () => {
         setTimeout(() => {
-          enjoy.classList.remove('show');
-        }, 1800);
-      }, 1600);
+          player.muted = false;
+          player.play().catch(e => console.warn('Play failed:', e));
+        }, 1000); // Delay unmute and play by 1 second
+      });
     }
 
-    // Play video when the button is clicked
-    document.getElementById('playButton').onclick = startPlayer;
+    // Overlay + Enjoy animation
+    setTimeout(() => {
+      document.getElementById('overlay').style.display = 'none';
+      const enjoy = document.getElementById('enjoyMessage');
+      enjoy.classList.add('show');
+      setTimeout(() => {
+        enjoy.classList.remove('show');
+        startPlayer();
+      }, 1800);
+    }, 1600);
   </script>
 </body>
 </html>
