@@ -66,6 +66,16 @@
       text-shadow: 0 0 10px rgba(0,255,255,0.6);
       animation: fadeInFooter 1.2s ease-in-out 0.8s forwards;
       opacity: 0;
+      text-align: center;
+    }
+
+    .fullscreen-note {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #00eaff;
+      text-shadow: 0 0 6px rgba(0, 255, 255, 0.4);
+      animation: fadeInFooter 1.2s ease-in-out 1.2s forwards;
+      opacity: 0;
     }
 
     #iframe-container {
@@ -112,7 +122,13 @@
     <input type="text" id="videoUrl" placeholder="Paste YouTube link..." />
     <button onclick="loadVideo()">Load Video</button>
   </div>
-  <div class="footer">Made by Eli Gavin</div>
+
+  <div class="footer">
+    Made by Eli Gavin
+    <div class="fullscreen-note">
+      Please go into full screen mode on your Chromebook for this to work properly
+    </div>
+  </div>
 
   <div id="iframe-container">
     <iframe id="videoIframe" src="" frameborder="0"></iframe>
