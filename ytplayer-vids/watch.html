@@ -9,33 +9,32 @@
       margin: 0;
       padding: 0;
       background-color: black;
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
-    }
-
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       height: 100vh;
-      border: none;
     }
   </style>
 </head>
 <body>
-  <iframe id="videoFrame" allowfullscreen></iframe>
+  <div id="message">Loading...</div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get("v");
 
-    if (videoId) {
-      const iframe = document.getElementById("videoFrame");
-      iframe.src = `https://melodious-basbousa-4731f2.netlify.app/?destination=https://inv.nadeko.net/embed/${videoId}&redirectstop=true`;
+    const path = window.location.pathname;
+
+    if (!videoId) {
+      document.getElementById("message").textContent = "No video ID provided.";
+    } else if (!path.endsWith("/watch.html")) {
+      // Redirect to /watch.html with the video ID if not already there
+      window.location.href = `/watch.html?v=${videoId}`;
     } else {
-      document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:20%'>No video ID provided</h1>";
+      // If already on /watch.html?v=... — redirect to the cloaked player
+      window.location.href = `https://melodious-basbousa-4731f2.netlify.app/?destination=https://inv.nadeko.net/embed/${videoId}&redirectstop=true`;
     }
   </script>
 </body>
