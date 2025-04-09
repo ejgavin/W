@@ -2,42 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Redirecting...</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Watch Video</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
+      background-color: black;
+      overflow: hidden;
       height: 100%;
-      background: black;
-      color: #00f0ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Orbitron', sans-serif;
-      text-align: center;
+      width: 100%;
     }
 
-    .message {
-      font-size: 2rem;
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
     }
   </style>
 </head>
 <body>
-  <div class="message">
-    Redirecting to video player...
-  </div>
+  <iframe id="videoFrame" allowfullscreen></iframe>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get("v");
 
     if (videoId) {
-      const redirectUrl = `https://melodious-basbousa-4731f2.netlify.app/?destination=https://inv.nadeko.net/embed/${videoId}&redirectstop=true`;
-      window.location.href = redirectUrl;
+      const iframe = document.getElementById("videoFrame");
+      iframe.src = `https://melodious-basbousa-4731f2.netlify.app/?destination=https://inv.nadeko.net/embed/${videoId}&redirectstop=true`;
     } else {
-      document.querySelector('.message').textContent = "No video ID provided.";
+      document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:20%'>No video ID provided</h1>";
     }
   </script>
 </body>
