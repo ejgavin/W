@@ -28,12 +28,9 @@
   <iframe id="videoFrame" allowfullscreen></iframe>
 
   <script>
-    function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
-    }
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get("v");
 
-    const videoId = getQueryParam("id");
     if (videoId) {
       const iframe = document.getElementById("videoFrame");
       iframe.src = `https://melodious-basbousa-4731f2.netlify.app/?destination=https://inv.nadeko.net/embed/${videoId}&redirectstop=true`;
