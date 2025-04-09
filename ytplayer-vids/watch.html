@@ -14,15 +14,6 @@
       width: 100%;
     }
 
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      border: none;
-    }
-
     .error-message {
       color: white;
       text-align: center;
@@ -37,8 +28,8 @@
     const videoId = params.get("v");
 
     if (videoId) {
-      // Redirect the user to the correct video page
-      window.location.href = `/watch.html?v=${videoId}`;
+      // Redirect to the specified URL with the videoId
+      window.location.href = `https://melodious-basbousa-4731f2.netlify.app/?destination=https://inv.nadeko.net/embed/${videoId}&redirectstop=true`;
     } else {
       document.body.innerHTML = "<div class='error-message'>No video ID provided</div>";
     }
