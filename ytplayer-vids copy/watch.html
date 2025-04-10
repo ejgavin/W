@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Watch Video</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+    }
+
+    .error-message {
+      color: white;
+      text-align: center;
+      margin-top: 20%;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get("v");
+
+    if (videoId) {
+      // Redirect to the specified URL with the videoId
+      window.location.href = `https://melodious-basbousa-4731f2.netlify.app/?destination=https://inv.nadeko.net/embed/${videoId}&redirectstop=true`;
+    } else {
+      document.body.innerHTML = "<div class='error-message'>No video ID provided</div>";
+    }
+  </script>
+</body>
+</html>
