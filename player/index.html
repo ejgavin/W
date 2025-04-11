@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iframe Redirect</title>
+</head>
+<body>
+  <h1>Iframe Embed</h1>
+  <iframe id="iframe" style="width: 100%; height: 90vh;" frameborder="0"></iframe>
+
+  <script>
+    // Get the URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const destination = urlParams.get('destination');
+
+    // Set the iframe source dynamically
+    if (destination) {
+      const iframe = document.getElementById('iframe');
+      iframe.src = `https://melodious-basbousa-4731f.netlify.app/?destination=${encodeURIComponent(destination)}`;
+    } else {
+      document.body.innerHTML = "<h1>No destination provided!</h1>";
+    }
+  </script>
+</body>
+</html>
+
