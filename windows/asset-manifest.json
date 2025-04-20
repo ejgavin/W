@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.js": "/apps/win11stuff/static/js/main.d116581e.js",
-    "index.html": "/apps/win11stuff/index.html",
-    "main.d116581e.js.map": "/apps/win11stuff/static/js/main.d116581e.js.map"
+    "main.js": "/W/windows/static/js/main.d116581e.js",
+    "index.html": "/W/windows/index.html",
+    "main.d116581e.js.map": "/W/windows/static/js/main.d116581e.js.map"
   },
   "entrypoints": [
     "static/js/main.d116581e.js"
