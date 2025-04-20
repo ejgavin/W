@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/apps/win11stuff/static/js/main.d116581e.js",
+    "index.html": "/apps/win11stuff/index.html",
+    "main.d116581e.js.map": "/apps/win11stuff/static/js/main.d116581e.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.d116581e.js"
+  ]
+}
