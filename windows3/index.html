@@ -1,0 +1,6 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Proy</title><script defer="defer" src="proy.bundle.js"></script></head><body><h1>Welcome to Proy</h1><input id="url-input" placeholder="Enter URL to proy"> <button onclick="loadProy()">Proy</button><script src="proy.bundle.js"></script><script>function loadProy() {
+            const url = document.getElementById('url-input').value;
+            if (url) {
+                window.location.href = `/?destination=${encodeURIComponent(url)}`;
+            }
+        }</script></body></html>
