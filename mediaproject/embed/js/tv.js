@@ -62,7 +62,7 @@ async function loadEpisodes(ID, seasonNumber, currentEpisode = 1) {
     season.episodes.forEach(episode => {
       const option = document.createElement("option");
       option.value = episode.episode_number;
-      option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
+      option.textContent = `Episode ${episode.episode_number} - ${episode.name}`;
       episodeSelector.appendChild(option);
     });
 
@@ -88,13 +88,16 @@ function updateTitleAndIframe(ID, season, episode) {
   let src = "";
   switch (source) {
     case "1":
-      src = `https://vidfast.pro/tv/${ID}/${season}/${episode}?autoPlay=true`;
-      break;
-    case "2":
       src = `https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
       break;
+    case "2":
+      src = `https://vidsrc.su/embed/tv/${ID}/${season}/${episode}`;
+      break;
     case "3":
-      src = `https://111movies.com/tv/${ID}/${season}/${episode}?autoPlay=true`;
+      src = `https://vidjoy.pro/embed/tv/${ID}/${season}/${episode}?adFree=true`;
+      break;
+    case "4":
+      src = `https://vidfast.pro/tv/${ID}/${season}/${episode}?autoPlay=true`;
       break;
   }
 

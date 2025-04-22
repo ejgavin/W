@@ -1,41 +1,43 @@
-async function getMovieData() {
+async function loadMovie() {
   const params = new URLSearchParams(window.location.search);
-  const ID = params.get("id");
+  const movieID = params.get("id");
 
-  if (!ID) {
+  if (!movieID) {
     window.location.href = "/";
     return;
   }
 
-  const url = `https://api.themoviedb.org/3/movie/${ID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`;
+  const url = `https://api.themoviedb.org/3/movie/${movieID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`;
 
   try {
     const response = await fetch(url);
     const movie = await response.json();
 
     window.currentMovie = movie.title;
-    updateTitleAndIframe(ID);
-
+    updateMovie(movieID);
   } catch (error) {
-    console.error("Error fetching movie data:", error);
-    document.getElementById("titletext").innerText = "Error loading movie.";
+    console.error("Error loading movie:", error);
+    document.getElementById("title").innerText = "Error loading movie.";
   }
 }
 
-function updateTitleAndIframe(ID) {
+function updateMovie(movieID) {
   const source = document.getElementById("sourceSelector").value;
-  document.getElementById("titletext").innerText = window.currentMovie;
+  document.getElementById("title").innerText = window.currentMovie;
 
   let src = "";
   switch (source) {
     case "1":
-      src = `https://vidfast.pro/movie/${ID}?autoPlay=true`;
+      src = `https://player.videasy.net/movie/${movieID}?autoPlay=true&episodeSelector=false`;
       break;
     case "2":
-      src = `https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
+      src = `https://vidsrc.su/embed/movie/${movieID}`;
       break;
     case "3":
-      src = `https://111movies.com/movie/${ID}?autoPlay=true`;
+      src = `https://vidjoy.pro/embed/movie/${movieID}?adFree=true`;
+      break;
+    case "4":
+      src = `https://vidfast.pro/movie/${movieID}?autoPlay=true`;
       break;
   }
 
@@ -44,9 +46,9 @@ function updateTitleAndIframe(ID) {
 
 document.getElementById("sourceSelector").addEventListener("change", () => {
   const params = new URLSearchParams(window.location.search);
-  const ID = params.get("id");
-  updateTitleAndIframe(ID);
+  const movieID = params.get("id");
+  updateMovie(movieID);
 });
 
-document.addEventListener("DOMContentLoaded", getMovieData);
+document.addEventListener("DOMContentLoaded", loadMovie);
 
