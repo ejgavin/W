@@ -61,11 +61,11 @@ function updateIframe() {
   let src = "";
 
   switch (source) {
-    case "1":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${encodeURIComponent(showName)}&season=${season}&episode=${episode}`;
-      break;
-    case "2":
+    case "1": // Videasy (now Source 1)
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${tvID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
+      break;
+    case "2": // FlixHQ (now Source 2)
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${encodeURIComponent(showName)}&season=${season}&episode=${episode}`;
       break;
   }
 
