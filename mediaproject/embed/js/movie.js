@@ -15,7 +15,7 @@ async function getMovieData() {
 
     window.currentMovie = movie.title;
 
-    updateMovieIframe(ID); // Pass ID, use global title
+    updateMovieIframe(ID);
     document.getElementById("title").innerText = movie.title;
   } catch (error) {
     console.error("Error loading movie:", error);
@@ -32,10 +32,11 @@ function updateMovieIframe(ID) {
     case "1": // Videasy
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
       break;
-
-    case "2": // FlixHQ - title only
-      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${title}`;
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
+    case "2": // FlixHQ
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${title}`;
+      break;
+    case "3": // Vidfast
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
       break;
   }
 
