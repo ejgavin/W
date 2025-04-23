@@ -88,11 +88,13 @@ function updateTitleAndIframe(ID, season, episode) {
 
   let src = "";
   switch (source) {
-    case "1": // Videasy
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
+    case "1": // FlixHQ
+      src =
+          `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${showName}/${season}/${episode}`;
       break;
-    case "2": // FlixHQ
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${showName}/${season}/${episode}`;
+    case "2": // Videasy
+      src =
+          `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
       break;
     case "3": // Vidfast
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/tv/${ID}/${season}/${episode}?autoPlay=true`;
