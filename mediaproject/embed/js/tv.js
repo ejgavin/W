@@ -62,7 +62,7 @@ async function loadEpisodes(ID, seasonNumber, currentEpisode = 1) {
     season.episodes.forEach(episode => {
       const option = document.createElement("option");
       option.value = episode.episode_number;
-      option.textContent = `Episode ${episode.episode_number} - ${episode.name}`;
+      option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
       episodeSelector.appendChild(option);
     });
 
@@ -85,19 +85,15 @@ function updateTitleAndIframe(ID, season, episode) {
   const source = document.getElementById("sourceSelector").value;
   document.getElementById("title").innerText = `${window.currentShow} - S${season}E${episode}`;
 
+  const showNameEncoded = encodeURIComponent(window.currentShow);
   let src = "";
+
   switch (source) {
     case "1":
-      src = `https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${showNameEncoded}&season=${season}&episode=${episode}`;
       break;
     case "2":
-      src = `https://vidsrc.su/embed/tv/${ID}/${season}/${episode}`;
-      break;
-    case "3":
-      src = `https://vidjoy.pro/embed/tv/${ID}/${season}/${episode}?adFree=true`;
-      break;
-    case "4":
-      src = `https://vidfast.pro/tv/${ID}/${season}/${episode}?autoPlay=true`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
       break;
   }
 
@@ -113,5 +109,4 @@ document.getElementById("sourceSelector").addEventListener("change", () => {
 });
 
 document.addEventListener("DOMContentLoaded", getTVShowData);
-
 

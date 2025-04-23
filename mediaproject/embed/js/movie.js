@@ -1,4 +1,4 @@
-async function loadMovie() {
+async function getMovieData() {
   const params = new URLSearchParams(window.location.search);
   const movieID = params.get("id");
 
@@ -14,30 +14,26 @@ async function loadMovie() {
     const movie = await response.json();
 
     window.currentMovie = movie.title;
-    updateMovie(movieID);
+    updateTitleAndIframe(movieID);
   } catch (error) {
-    console.error("Error loading movie:", error);
+    console.error("Error fetching movie data:", error);
     document.getElementById("title").innerText = "Error loading movie.";
   }
 }
 
-function updateMovie(movieID) {
+function updateTitleAndIframe(movieID) {
   const source = document.getElementById("sourceSelector").value;
   document.getElementById("title").innerText = window.currentMovie;
 
+  const movieNameEncoded = encodeURIComponent(window.currentMovie);
   let src = "";
+
   switch (source) {
     case "1":
-      src = `https://player.videasy.net/movie/${movieID}?autoPlay=true&episodeSelector=false`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${movieNameEncoded}`;
       break;
     case "2":
-      src = `https://vidsrc.su/embed/movie/${movieID}`;
-      break;
-    case "3":
-      src = `https://vidjoy.pro/embed/movie/${movieID}?adFree=true`;
-      break;
-    case "4":
-      src = `https://vidfast.pro/movie/${movieID}?autoPlay=true`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${movieID}?autoPlay=true&episodeSelector=false`;
       break;
   }
 
@@ -47,8 +43,8 @@ function updateMovie(movieID) {
 document.getElementById("sourceSelector").addEventListener("change", () => {
   const params = new URLSearchParams(window.location.search);
   const movieID = params.get("id");
-  updateMovie(movieID);
+  updateTitleAndIframe(movieID);
 });
 
-document.addEventListener("DOMContentLoaded", loadMovie);
+document.addEventListener("DOMContentLoaded", getMovieData);
 
