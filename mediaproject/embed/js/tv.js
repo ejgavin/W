@@ -16,8 +16,9 @@ async function getTVShowData() {
     const show = await response.json();
 
     window.currentShow = show.name;
+
     populateDropdowns(show.seasons, season, episode, ID);
-    updateTitleAndIframe(ID, season, episode);
+    updateTitleAndIframe(ID, season, episode); // After currentShow is set
   } catch (error) {
     console.error("Error fetching TV show data:", error);
     document.getElementById("title").innerText = "Error loading show.";
@@ -91,8 +92,8 @@ function updateTitleAndIframe(ID, season, episode) {
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
       break;
 
-    case "2": // FlixHQ - no encoding
-      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${showName}&season=${season}&episode=${episode}`;
+    case "2": // FlixHQ - using path style for season/episode
+      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${showName}/${season}/${episode}`;
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
       break;
   }
