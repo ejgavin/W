@@ -38,7 +38,7 @@ function updateMovieIframe(ID) {
           `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
       break;
     case "3": // Vidfast
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
       break;
   }
 

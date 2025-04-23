@@ -97,7 +97,7 @@ function updateTitleAndIframe(ID, season, episode) {
           `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
       break;
     case "3": // Vidfast
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/tv/${ID}/${season}/${episode}?autoPlay=true`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://vidfast.pro/tv/${ID}/${season}/${episode}?autoPlay=true`;
       break;
   }
 
