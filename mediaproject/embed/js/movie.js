@@ -1,34 +1,51 @@
-const urlParams = new URLSearchParams(window.location.search);
-const movieID = urlParams.get("id");
-const movieName = urlParams.get("name");
+async function getMovieData() {
+  const params = new URLSearchParams(window.location.search);
+  const ID = params.get("id");
 
-const sourceSelector = document.getElementById("sourceSelector");
-const iframe = document.getElementById("iframe");
-const title = document.getElementById("title");
+  if (!ID) {
+    window.location.href = "/";
+    return;
+  }
 
-async function fetchMovieDetails() {
-  const response = await fetch(`https://api.themoviedb.org/3/movie/${movieID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`);
-  const data = await response.json();
-  title.textContent = data.title;
+  const url = `https://api.themoviedb.org/3/movie/${ID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`;
+
+  try {
+    const response = await fetch(url);
+    const movie = await response.json();
+
+    window.currentMovie = movie.title;
+
+    updateMovieIframe(ID); // Pass ID, use global title
+    document.getElementById("title").innerText = movie.title;
+  } catch (error) {
+    console.error("Error loading movie:", error);
+    document.getElementById("title").innerText = "Error loading movie.";
+  }
 }
 
-function updateIframe() {
-  const source = sourceSelector.value;
+function updateMovieIframe(ID) {
+  const source = document.getElementById("sourceSelector").value;
+  const title = window.currentMovie;
   let src = "";
 
   switch (source) {
     case "1": // Videasy
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${movieID}?autoPlay=true&episodeSelector=false`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
       break;
-    case "2": // FlixHQ
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${encodeURIComponent(movieName)}`;
+
+    case "2": // FlixHQ - title only
+      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${title}`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
       break;
   }
 
-  iframe.src = src;
+  document.getElementById("iframe").src = src;
 }
 
-sourceSelector.addEventListener("change", updateIframe);
+document.getElementById("sourceSelector").addEventListener("change", () => {
+  const ID = new URLSearchParams(window.location.search).get("id");
+  updateMovieIframe(ID);
+});
 
-fetchMovieDetails().then(updateIframe);
+document.addEventListener("DOMContentLoaded", getMovieData);
 
