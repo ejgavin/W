@@ -14,7 +14,6 @@ async function getMovieData() {
     const movie = await response.json();
 
     window.currentMovie = movie.title;
-
     updateMovieIframe(ID);
     document.getElementById("title").innerText = movie.title;
   } catch (error) {
@@ -29,16 +28,17 @@ function updateMovieIframe(ID) {
   let src = "";
 
   switch (source) {
-    case "1": // FlixHQ
-      src =
-          `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${title}`;
+    case "1": // FlixHQ with /movie in URL
+      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${title}/movie`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
       break;
+
     case "2": // Videasy
-      src =
-          `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
       break;
+
     case "3": // Vidfast
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
       break;
   }
 
