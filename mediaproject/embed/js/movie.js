@@ -28,17 +28,17 @@ function updateMovieIframe(ID) {
   let src = "";
 
   switch (source) {
-    case "1": // FlixHQ with /movie in URL
-      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${title}/movie`;
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
+    case "1": // Vidfast
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
       break;
 
     case "2": // Videasy
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
       break;
 
-    case "3": // Vidfast
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
+    case "3": // FlixHQ (Doesn't work in school)
+      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${title}/movie`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
       break;
   }
 
