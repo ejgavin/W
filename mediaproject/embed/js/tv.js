@@ -4,100 +4,78 @@ async function getTVShowData() {
   let season = params.get("s") || 1;
   let episode = params.get("e") || 1;
 
-  if (!ID) {
-    window.location.href = "/";
-    return;
-  }
-
-  const url = `https://api.themoviedb.org/3/tv/${ID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`;
+  if (!ID) return (window.location.href = "/");
 
   try {
-    const response = await fetch(url);
-    const show = await response.json();
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${ID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`);
+    const show = await res.json();
 
     window.currentShow = show.name;
     populateDropdowns(show.seasons, season, episode, ID);
     updateTitleAndIframe(ID, season, episode);
-  } catch (error) {
-    console.error("Error fetching TV show data:", error);
-    document.getElementById("title").innerText = "Error loading show.";
+  } catch (err) {
+    console.error("Error loading show:", err);
+    document.getElementById("title").textContent = "Error loading show.";
   }
 }
 
 function populateDropdowns(seasons, currentSeason, currentEpisode, ID) {
   const seasonSelector = document.getElementById("seasonSelector");
-  const episodeSelector = document.getElementById("episodeSelector");
-
   seasonSelector.innerHTML = "";
-  seasons.forEach(season => {
-    if (season.name !== "Specials") {
-      const option = document.createElement("option");
-      option.value = season.season_number;
-      option.textContent = season.name;
-      seasonSelector.appendChild(option);
+
+  seasons.forEach(s => {
+    if (s.name !== "Specials") {
+      const opt = new Option(s.name, s.season_number);
+      seasonSelector.appendChild(opt);
     }
   });
 
   seasonSelector.value = currentSeason;
-  seasonSelector.addEventListener("change", () => {
-    episodeSelector.innerHTML = "";
-    document.getElementById("title").innerText = "Loading episodes...";
+  seasonSelector.onchange = () => {
+    document.getElementById("episodeSelector").innerHTML = "";
     loadEpisodes(ID, seasonSelector.value);
-  });
+  };
 
   loadEpisodes(ID, currentSeason, currentEpisode);
 }
 
 async function loadEpisodes(ID, seasonNumber, currentEpisode = 1) {
-  const episodeSelector = document.getElementById("episodeSelector");
-  episodeSelector.innerHTML = "";
-
   const url = `https://api.themoviedb.org/3/tv/${ID}/season/${seasonNumber}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`;
-
   try {
-    const response = await fetch(url);
-    const season = await response.json();
+    const res = await fetch(url);
+    const season = await res.json();
 
-    season.episodes.forEach(episode => {
-      const option = document.createElement("option");
-      option.value = episode.episode_number;
-      option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
-      episodeSelector.appendChild(option);
+    const episodeSelector = document.getElementById("episodeSelector");
+    episodeSelector.innerHTML = "";
+
+    season.episodes.forEach(ep => {
+      const opt = new Option(`Episode ${ep.episode_number}: ${ep.name}`, ep.episode_number);
+      episodeSelector.appendChild(opt);
     });
 
     episodeSelector.value = currentEpisode;
-    episodeSelector.addEventListener("change", () =>
-      changeEpisode(ID, seasonNumber, episodeSelector.value)
-    );
-
-    changeEpisode(ID, seasonNumber, currentEpisode);
-  } catch (error) {
-    console.error("Error fetching episodes:", error);
+    episodeSelector.onchange = () => updateTitleAndIframe(ID, seasonNumber, episodeSelector.value);
+    updateTitleAndIframe(ID, seasonNumber, currentEpisode);
+  } catch (err) {
+    console.error("Error loading episodes:", err);
   }
-}
-
-function changeEpisode(ID, season, episode) {
-  updateTitleAndIframe(ID, season, episode);
 }
 
 function updateTitleAndIframe(ID, season, episode) {
   const source = document.getElementById("sourceSelector").value;
-  const showName = window.currentShow;
-  document.getElementById("title").innerText = `${showName} - S${season}E${episode}`;
+  const name = window.currentShow;
+  document.getElementById("title").textContent = `${name} - S${season}E${episode}`;
 
   let src = "";
   switch (source) {
-    case "1": // Vidfast
+    case "1":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://vidfast.pro/tv/${ID}/${season}/${episode}?autoPlay=true`;
       break;
-
-    case "2": // Videasy
+    case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
       break;
-
-    case "3": // FlixHQ (Doesn't work in school)
-      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${showName}/tv/${season}/${episode}`;
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
+    case "3":
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${name}/tv/${season}/${episode}`;
       break;
   }
 
@@ -105,8 +83,7 @@ function updateTitleAndIframe(ID, season, episode) {
 }
 
 document.getElementById("sourceSelector").addEventListener("change", () => {
-  const params = new URLSearchParams(window.location.search);
-  const ID = params.get("id");
+  const ID = new URLSearchParams(window.location.search).get("id");
   const season = document.getElementById("seasonSelector").value;
   const episode = document.getElementById("episodeSelector").value;
   updateTitleAndIframe(ID, season, episode);

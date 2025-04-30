@@ -1,24 +1,17 @@
 async function getMovieData() {
-  const params = new URLSearchParams(window.location.search);
-  const ID = params.get("id");
-
-  if (!ID) {
-    window.location.href = "/";
-    return;
-  }
-
-  const url = `https://api.themoviedb.org/3/movie/${ID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`;
+  const ID = new URLSearchParams(window.location.search).get("id");
+  if (!ID) return (window.location.href = "/");
 
   try {
-    const response = await fetch(url);
-    const movie = await response.json();
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${ID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`);
+    const movie = await res.json();
 
     window.currentMovie = movie.title;
+    document.getElementById("title").textContent = movie.title;
     updateMovieIframe(ID);
-    document.getElementById("title").innerText = movie.title;
-  } catch (error) {
-    console.error("Error loading movie:", error);
-    document.getElementById("title").innerText = "Error loading movie.";
+  } catch (err) {
+    console.error("Error loading movie:", err);
+    document.getElementById("title").textContent = "Error loading movie.";
   }
 }
 
@@ -28,17 +21,14 @@ function updateMovieIframe(ID) {
   let src = "";
 
   switch (source) {
-    case "1": // Vidfast
+    case "1":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
       break;
-
-    case "2": // Videasy
+    case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
       break;
-
-    case "3": // FlixHQ (Doesn't work in school)
-      const flixUrl = `https://flixhq-gilt.vercel.app/play?name=${title}/movie`;
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=${flixUrl}`;
+    case "3":
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${title}/movie`;
       break;
   }
 
