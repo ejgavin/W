@@ -69,7 +69,7 @@ function updateTitleAndIframe(ID, season, episode) {
   let src = "";
   switch (source) {
     case "1":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${name}&season=${season}&episode=${episode}`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${encodeURIComponent(name)}&season=${season}&episode=${episode}`;
       break;
     case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;
@@ -82,6 +82,53 @@ function updateTitleAndIframe(ID, season, episode) {
   document.getElementById("iframe").src = src;
 }
 
+function openFullscreen() {
+  const iframe = document.getElementById("iframe");
+  const url = iframe.src;
+  const newTab = window.open('about:blank', '_blank');
+  const doc = newTab.document;
+
+  doc.write(`
+    <html>
+    <head>
+      <title>Fullscreen</title>
+      <style>
+        body, html {
+          margin: 0;
+          padding: 0;
+          background-color: black;
+          height: 100%;
+          overflow: hidden;
+        }
+        #credit {
+          background: black;
+          color: white;
+          padding: 5px;
+          font-size: 14px;
+          text-align: center;
+          position: absolute;
+          top: 0;
+          width: 100%;
+          z-index: 1000;
+        }
+        iframe {
+          position: absolute;
+          top: 25px;
+          left: 0;
+          width: 100%;
+          height: calc(100% - 25px);
+          border: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="credit">Credit to Stuff Google Site</div>
+      <iframe src="${url}" allowfullscreen></iframe>
+    </body>
+    </html>
+  `);
+}
+
 document.getElementById("sourceSelector").addEventListener("change", () => {
   const ID = new URLSearchParams(window.location.search).get("id");
   const season = document.getElementById("seasonSelector").value;
@@ -90,4 +137,3 @@ document.getElementById("sourceSelector").addEventListener("change", () => {
 });
 
 document.addEventListener("DOMContentLoaded", getTVShowData);
-
