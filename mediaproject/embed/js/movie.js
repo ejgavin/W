@@ -5,7 +5,6 @@ async function getMovieData() {
   try {
     const res = await fetch(`https://api.themoviedb.org/3/movie/${ID}?api_key=9a2954cb0084e80efa20b3729db69067&language=en-US`);
     const movie = await res.json();
-
     window.currentMovie = movie.title;
     document.getElementById("title").textContent = movie.title;
     updateMovieIframe(ID);
@@ -38,44 +37,40 @@ function updateMovieIframe(ID) {
 function openFullscreen() {
   const iframe = document.getElementById("iframe");
   const url = iframe.src;
-  const newTab = window.open('about:blank', '_blank');
-  const doc = newTab.document;
-
-  doc.write(`
+  const win = window.open("about:blank");
+  win.document.write(`
     <html>
     <head>
       <title>Fullscreen</title>
       <style>
         body, html {
-          margin: 0;
-          padding: 0;
-          background-color: black;
-          height: 100%;
+          margin: 0; padding: 0;
+          height: 100%; width: 100%;
+          background: black;
           overflow: hidden;
         }
-        #credit {
-          background: black;
-          color: white;
-          padding: 5px;
-          font-size: 14px;
-          text-align: center;
-          position: absolute;
+        #banner {
+          position: fixed;
           top: 0;
           width: 100%;
+          background: #000;
+          color: #fff;
+          text-align: center;
+          padding: 8px;
+          font-size: 14px;
           z-index: 1000;
         }
         iframe {
           position: absolute;
-          top: 25px;
-          left: 0;
+          top: 30px;
           width: 100%;
-          height: calc(100% - 25px);
+          height: calc(100% - 30px);
           border: none;
         }
       </style>
     </head>
     <body>
-      <div id="credit">Credit to Stuff Google Site</div>
+      <div id="banner">Credit to Stuff Google Site</div>
       <iframe src="${url}" allowfullscreen></iframe>
     </body>
     </html>
