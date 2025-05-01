@@ -22,13 +22,13 @@ function updateMovieIframe(ID) {
 
   switch (source) {
     case "1":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${title}`;
       break;
     case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
       break;
     case "3":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${title}/movie`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/window/?destination=https://vidfast.pro/movie/${ID}?autoPlay=true`;
       break;
   }
 
