@@ -18,20 +18,27 @@
     }
   </style>
   <script>
+    // Define the allowed origin for access
     const allowedOrigin = "https://launcherapi.vercel.app/";
 
+    // Get the referrer and origin values
     const referrer = document.referrer;
     const origin = window.location.origin;
 
-    // Check if the referrer or origin matches the allowed URL
-    if (referrer !== allowedOrigin && origin !== allowedOrigin) {
+    // Function to check if the referrer or origin matches the allowed one
+    const isAllowedOrigin = (input) => {
+      return input && input.startsWith(allowedOrigin);
+    };
+
+    // Check if the origin or referer matches the allowed origin
+    if (!isAllowedOrigin(referrer) && !isAllowedOrigin(origin)) {
       document.body.innerHTML = "<h1>Access Denied - 404</h1>";
       throw new Error("Unauthorized access: blocked by origin check.");
     }
   </script>
 </head>
 <body>
-  <!-- The iframe content will only load if the referer or origin is allowed -->
+  <!-- Only load the iframe if the origin or referer is allowed -->
   <iframe src="frame.html"></iframe>
 </body>
 </html>
