@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Embedder</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: white;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #ff4b2b;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+
+    iframe {
+      margin-top: 20px;
+      border: none;
+      width: 560px;
+      height: 315px;
+      border-radius: 10px;
+    }
+
+    #blocker {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      font-size: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div id="blocker" style="display:none;">
+  <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
+  <p>Also, if you're a teacher, please don't report this lol.</p>
+</div>
+
+<div class="container" id="app" style="display:none;">
+  <h2>YouTube Embedder</h2>
+  <input type="text" id="yt-link" placeholder="Enter YouTube link" />
+  <br />
+  <button onclick="loadVideo()">Load Video</button>
+  <div id="video-container"></div>
+</div>
+
+<script>
+  const allowedAgents = [
+    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+  ];
+
+  const userAgent = navigator.userAgent;
+
+  if (allowedAgents.includes(userAgent)) {
+    document.getElementById('app').style.display = 'block';
+  } else {
+    document.getElementById('blocker').style.display = 'flex';
+  }
+
+  function extractVideoID(url) {
+    const regex = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  }
+
+  function loadVideo() {
+    const input = document.getElementById('yt-link').value;
+    const videoID = extractVideoID(input);
+    const container = document.getElementById('video-container');
+
+    if (videoID) {
+      container.innerHTML = `<iframe src="https://inv.nadeko.net/embed/${videoID}" sandbox="allow-scripts" allowfullscreen></iframe>`;
+    } else {
+      alert("Invalid YouTube link.");
+    }
+  }
+</script>
+
+</body>
+</html>
