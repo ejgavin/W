@@ -16,12 +16,11 @@ async function getMovieData() {
 
 function updateMovieIframe(ID) {
   const source = document.getElementById("sourceSelector").value;
-  const title = window.currentMovie;
   let src = "";
 
   switch (source) {
     case "1":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flixhq-gilt.vercel.app/play?name=${encodeURIComponent(title)}`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flix.1ani.me/embed/tmdb-movie-${ID}`;
       break;
     case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
