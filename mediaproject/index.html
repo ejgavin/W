@@ -70,6 +70,111 @@
       height: 100%;
       border: none;
     }
+
+    /* Disclaimer Modal */
+    #disclaimerModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(18, 18, 18, 0.95);
+      backdrop-filter: blur(6px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .disclaimer-box {
+      background: #1f1f1f;
+      padding: 30px;
+      max-width: 500px;
+      text-align: center;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #00000088;
+      animation: scaleUp 0.6s ease;
+    }
+
+    .disclaimer-box h2 {
+      margin-bottom: 15px;
+      color: #ff5e5e;
+    }
+
+    .disclaimer-box p {
+      margin-bottom: 25px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .disclaimer-buttons button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #agreeBtn {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    #agreeBtn:hover {
+      background-color: #45a049;
+    }
+
+    #disagreeBtn {
+      background-color: #f44336;
+      color: white;
+    }
+
+    #disagreeBtn:hover {
+      background-color: #d32f2f;
+    }
+
+    #bruhScreen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10001;
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+      justify-content: center;
+      align-items: center;
+      animation: flashIn 0.5s ease-out;
+    }
+
+    #bruhScreen h1 {
+      font-size: 80px;
+      color: red;
+      animation: pulse 1s infinite;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    @keyframes scaleUp {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes flashIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); color: red; }
+      50% { transform: scale(1.2); color: #ff2222; }
+      100% { transform: scale(1); color: red; }
+    }
   </style>
 </head>
 <body>
@@ -83,6 +188,48 @@
   <div id="iframeContainer">
     <iframe id="fullscreenIframe" allowfullscreen></iframe>
   </div>
+
+  <!-- Disclaimer Modal -->
+  <div id="disclaimerModal">
+    <div class="disclaimer-box">
+      <h2>DISCLAIMER</h2>
+      <p>
+        Anything that you do on the TV & Movie Watcher is not my responsibility.
+        I do not host any content (I use third-party sources) so all DMCA requests
+        should not go to me.
+      </p>
+      <div class="disclaimer-buttons">
+        <button id="agreeBtn">I Agree</button>
+        <button id="disagreeBtn">I Do Not Agree</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRUH Screen -->
+  <div id="bruhScreen">
+    <h1>BRUH</h1>
+  </div>
+
+  <!-- Modal Script -->
+  <script>
+    window.addEventListener("load", () => {
+      const agreeBtn = document.getElementById("agreeBtn");
+      const disagreeBtn = document.getElementById("disagreeBtn");
+      const modal = document.getElementById("disclaimerModal");
+      const bruhScreen = document.getElementById("bruhScreen");
+
+      agreeBtn.onclick = () => {
+        modal.style.display = "none";
+      };
+
+      disagreeBtn.onclick = () => {
+        modal.style.display = "none";
+        document.body.innerHTML = '';
+        document.body.appendChild(bruhScreen);
+        bruhScreen.style.display = "flex";
+      };
+    });
+  </script>
 </body>
 </html>
 
