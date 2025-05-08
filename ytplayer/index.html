@@ -2,56 +2,100 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>YouTube Embedder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
-    body, html {
+    body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: white;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      color: white;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    .container {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    h1 {
+      font-size: 3rem;
+      animation: fadeInDown 1s ease-out;
       text-align: center;
     }
 
-    input[type="text"] {
+    .input-container {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      animation: fadeInUp 1.2s ease-out;
+      z-index: 2;
+    }
+
+    input {
+      padding: 10px 20px;
+      font-size: 1rem;
       width: 300px;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
       border: none;
+      border-radius: 6px;
       outline: none;
     }
 
     button {
-      margin-top: 15px;
       padding: 10px 20px;
-      font-size: 16px;
-      background-color: #ff4b2b;
+      font-size: 1rem;
       border: none;
-      border-radius: 8px;
-      color: white;
+      border-radius: 6px;
       cursor: pointer;
+      background: #00c6ff;
+      color: white;
+      box-shadow: 0 0 10px #00c6ff, 0 0 20px #00c6ff, 0 0 30px #00c6ff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00c6ff, 0 0 25px #00c6ff, 0 0 40px #00c6ff;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 18px;
+      color: #00f0ff;
+      text-shadow: 0 0 10px rgba(0,255,255,0.6);
+      animation: fadeInFooter 1.2s ease-in-out 0.8s forwards;
+      opacity: 0;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .fullscreen-note {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #00eaff;
+      text-shadow: 0 0 6px rgba(0, 255, 255, 0.4);
+      animation: fadeInFooter 1.2s ease-in-out 1.2s forwards;
+      opacity: 0;
+    }
+
+    #iframe-container {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: #000;
+      z-index: 1;
     }
 
     iframe {
-      margin-top: 20px;
+      width: 100%;
+      height: 100%;
       border: none;
-      width: 560px;
-      height: 315px;
-      border-radius: 10px;
     }
 
     #blocker {
@@ -68,55 +112,114 @@
       padding: 30px;
       text-align: center;
     }
+
+    #adminBtn {
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 8px 16px;
+      background: #333;
+      color: white;
+      border: 1px solid white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #adminBtn:hover {
+      background: #555;
+    }
+
+    @keyframes fadeInDown {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeInFooter {
+      to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 10px #00c6ff, 0 0 20px #00c6ff; }
+      50% { box-shadow: 0 0 20px #00c6ff, 0 0 30px #00c6ff; }
+    }
   </style>
 </head>
 <body>
 
-<div id="blocker" style="display:none;">
-  <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
-  <p>Also, if you're a teacher, please don't report this lol.</p>
-</div>
+  <div id="blocker" style="display:none;">
+    <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
+    <p>Also, if you're a teacher, please don't report this lol.</p>
+    <button id="adminBtn" onclick="adminLogin()">Admin Login</button>
+  </div>
 
-<div class="container" id="app" style="display:none;">
-  <h2>YouTube Embedder</h2>
-  <input type="text" id="yt-link" placeholder="Enter YouTube link" />
-  <br />
-  <button onclick="loadVideo()">Load Video</button>
-  <div id="video-container"></div>
-</div>
+  <div id="main-ui" style="display:none;">
+    <h1>YouTube Embedder</h1>
+    <div class="input-container">
+      <input type="text" id="videoUrl" placeholder="Paste YouTube link..." />
+      <button onclick="loadVideo()">Load Video</button>
+    </div>
 
-<script>
-  const allowedAgents = [
-    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-  ];
+    <div class="footer">
+      Made by Eli Gavin
+      <div class="fullscreen-note">
+        Please go into full screen mode on your Chromebook for this to work properly
+      </div>
+    </div>
+  </div>
 
-  const userAgent = navigator.userAgent;
+  <div id="iframe-container">
+    <iframe id="videoIframe" src=""></iframe>
+  </div>
 
-  if (allowedAgents.includes(userAgent)) {
-    document.getElementById('app').style.display = 'block';
-  } else {
-    document.getElementById('blocker').style.display = 'flex';
-  }
+  <script>
+    const allowedAgents = [
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    ];
 
-  function extractVideoID(url) {
-    const regex = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
-  }
+    const userAgent = navigator.userAgent;
+    let bypassed = false;
 
-  function loadVideo() {
-    const input = document.getElementById('yt-link').value;
-    const videoID = extractVideoID(input);
-    const container = document.getElementById('video-container');
-
-    if (videoID) {
-      container.innerHTML = `<iframe src="https://inv.nadeko.net/embed/${videoID}" sandbox="allow-scripts" allowfullscreen></iframe>`;
+    if (allowedAgents.includes(userAgent)) {
+      document.getElementById('main-ui').style.display = 'flex';
     } else {
-      alert("Invalid YouTube link.");
+      document.getElementById('blocker').style.display = 'flex';
     }
-  }
-</script>
+
+    function adminLogin() {
+      const username = prompt("Enter username:");
+      const password = prompt("Enter password:");
+      if (username === "eli" && password === "eliadmin") {
+        document.getElementById('blocker').style.display = 'none';
+        document.getElementById('main-ui').style.display = 'flex';
+        bypassed = true;
+      } else {
+        alert("Incorrect credentials.");
+      }
+    }
+
+    function extractVideoID(url) {
+      const regex = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+      const match = url.match(regex);
+      return match ? match[1] : null;
+    }
+
+    function loadVideo() {
+      const url = document.getElementById("videoUrl").value;
+      const videoId = extractVideoID(url);
+      if (videoId) {
+        const iframe = document.getElementById('videoIframe');
+        iframe.src = `https://inv.nadeko.net/embed/${videoId}`;
+        document.getElementById('iframe-container').style.display = 'block';
+      } else {
+        alert("Please enter a valid YouTube link.");
+      }
+    }
+  </script>
 
 </body>
 </html>
