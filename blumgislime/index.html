@@ -1,44 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Blumgi Slime Unblocked - ubg235 Poki</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Checker</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
 
-<meta name="generator" content="Scirra Construct">
-	<meta name="author" content="Blumgi ">
-	<meta name="description" content="Slime journey">
-	<link rel="manifest" href="appmanifest.json">
-	<link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png">
-	<link rel="apple-touch-icon" sizes="256x256" href="icons/icon-256.png">
-	<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
-	<link rel="icon" type="image/png" href="icons/icon-512.png">
+    iframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
 
-<link rel="stylesheet" href="style.css">
-	<link rel="stylesheet" href="file.css">
+    #blocker {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      font-size: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+    }
 
+    #blocker p {
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
 
+<div id="blocker" style="display: none;">
+  <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
+  <p>Also, if you're a teacher, please don't report this lol.</p>
+</div>
+
 <script>
-if (location.protocol.substr(0, 4) === "file")
-{
-	alert("Web exports won't work until you upload them. (When running on the file: protocol, browsers block many features from working for security reasons.)");
-}
+  const allowedAgents = [
+    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+  ];
+
+  const userAgent = navigator.userAgent;
+
+  if (allowedAgents.includes(userAgent)) {
+    const iframe = document.createElement("iframe");
+    iframe.src = "frame.html";
+    document.body.appendChild(iframe);
+  } else {
+    document.getElementById("blocker").style.display = "flex";
+  }
 </script>
-	<script src="box2d.wasm.js"></script>
-	<noscript>
-		<div id="notSupportedWrap">
-			<h2 id="notSupportedTitle">This content requires JavaScript</h2>
-			<p class="notSupportedMessage">JavaScript appears to be disabled. Please enable it to view this content.</p>
-		</div>
-	</noscript>
-	<script src="scripts/supportcheck.js"></script>
-	<script src="scripts/offlineclient.js" type="module"></script>
-	<script src="scripts/main.js" type="module"></script>
-	<!-- <script src="scripts/register-sw.js" type="module"></script> -->
-  <script src="js/analytics_ubg_v1_4.js"></script>
-  <script src="js/ubg235_client_v1_1.js"></script>
 
 </body>
 </html>
