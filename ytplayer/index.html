@@ -20,7 +20,7 @@
       color: white;
     }
 
-    #app, #blocker, #loader-container, #admin-login {
+    #app, #blocker {
       position: absolute;
       top: 0;
       left: 0;
@@ -34,7 +34,7 @@
       backdrop-filter: blur(8px);
     }
 
-    #app.active, #blocker.active, #loader-container.active {
+    #app.active, #blocker.active {
       display: flex;
       animation: fadeIn 0.5s ease;
     }
@@ -85,7 +85,6 @@
       z-index: 1;
     }
 
-    /* Restricted Access Page */
     #blocker {
       display: flex;
       flex-direction: column;
@@ -104,50 +103,6 @@
       font-size: 24px;
     }
 
-    /* Admin Login Section */
-    .login-box {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 30px;
-      border-radius: 16px;
-      text-align: center;
-      box-shadow: 0 0 25px rgba(0,0,0,0.5);
-      width: 90%;
-      max-width: 500px;
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    .login-box input {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      font-size: 16px;
-    }
-
-    .error {
-      color: #ff8080;
-      font-size: 14px;
-    }
-
-    /* Adjust login button position */
-    #login-btn {
-      margin-top: 20px;
-    }
-
-    /* Loader Animation */
-    #loader-container {
-      background-color: rgba(0, 0, 0, 0.8);
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      animation: fadeIn 0.5s ease;
-      z-index: 9999;
-    }
-
     .loader {
       border: 6px solid transparent;
       border-top: 6px solid red;
@@ -162,7 +117,6 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Transparent back button */
     #back-btn {
       position: absolute;
       top: 20px;
@@ -183,7 +137,6 @@
       opacity: 1;
     }
 
-    /* Loading Overlay */
     #loader-overlay {
       position: absolute;
       top: 0;
@@ -191,11 +144,10 @@
       width: 100%;
       height: 100%;
       background: transparent;
-      display: flex;
+      display: none;
       justify-content: center;
       align-items: center;
       z-index: 999;
-      display: none;
     }
 
     @keyframes fadeIn {
@@ -212,10 +164,8 @@
 </head>
 <body>
 
-<!-- Back to Homepage Button -->
 <button id="back-btn" onclick="window.location.href='index.html'">Back to Homepage</button>
 
-<!-- Main App -->
 <div id="app">
   <div id="input-section">
     <input type="text" id="yt-link" placeholder="Paste a YouTube link..." onkeydown="if(event.key === 'Enter') loadVideo()" />
@@ -224,29 +174,13 @@
   <div id="video-container"></div>
 </div>
 
-<!-- Blocker with Admin Login -->
-<div id="blocker" class="hidden">
+<div id="blocker">
   <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
   <p>Also, if you're a teacher, please don't report this lol.</p>
-
-  <button id="login-btn" onclick="showAdminLogin()">Login as Admin</button>
 </div>
 
-<!-- Admin Login Form -->
-<div id="admin-login" class="hidden login-box">
-  <h2>Admin Login</h2>
-  <form onsubmit="return login(event)">
-    <input type="text" id="admin-username" placeholder="Username" required />
-    <input type="password" id="admin-password" placeholder="Password" required />
-    <button type="submit">Login</button>
-  </form>
-  <p class="error" id="error-message"></p>
-</div>
-
-<!-- Loader Overlay -->
 <div id="loader-overlay">
   <div class="loader"></div>
-  <p>Loading...</p>
 </div>
 
 <script>
@@ -255,28 +189,14 @@
     "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
   ];
 
-  const BASE64_ADMIN_USERNAME = "YWRtaW4="; // admin
-  const BASE64_ADMIN_PASSWORD = "ZWxpYWRtaW4xMjM="; // eliadmin123
-
   const userAgent = navigator.userAgent;
-  const isAllowed = allowedAgents.includes(userAgent);
-
   const app = document.getElementById("app");
   const blocker = document.getElementById("blocker");
-  const adminLogin = document.getElementById("admin-login");
-  const loginBtn = document.getElementById("login-btn");
-  const errorMessage = document.getElementById("error-message");
-  const loaderContainer = document.getElementById("loader-container");
-  const videoContainer = document.getElementById("video-container");
   const loaderOverlay = document.getElementById("loader-overlay");
+  const videoContainer = document.getElementById("video-container");
 
-  // Ensure the admin login form is hidden initially
-  adminLogin.style.display = "none";
-
-  // User agent check logic
-  if (isAllowed) {
+  if (allowedAgents.includes(userAgent)) {
     app.classList.add("active");
-    blocker.style.display = "none"; // Hide the restricted access page immediately
   } else {
     blocker.classList.add("active");
   }
@@ -290,49 +210,16 @@
   function loadVideo() {
     const input = document.getElementById('yt-link').value;
     const videoID = extractVideoID(input);
-    const container = document.getElementById('video-container');
 
     if (videoID) {
-      // Hide input section and button
       document.getElementById('input-section').style.display = 'none';
-      
-      // Show the loader
       loaderOverlay.style.display = 'flex';
-      
-      // Wait for 1 second before showing iframe
       setTimeout(() => {
-        container.innerHTML = `<iframe src="https://inv.nadeko.net/embed/${videoID}" sandbox="allow-scripts" allowfullscreen></iframe>`;
-        loaderOverlay.style.display = 'none'; // Hide loader
+        videoContainer.innerHTML = `<iframe src="https://inv.nadeko.net/embed/${videoID}" sandbox="allow-scripts" allowfullscreen></iframe>`;
+        loaderOverlay.style.display = 'none';
       }, 1000);
     } else {
       alert("Invalid YouTube link.");
-    }
-  }
-
-  function showAdminLogin() {
-    // Hide the blocker and show the admin login form
-    blocker.style.display = "none";
-    adminLogin.classList.add("active");
-  }
-
-  function login(event) {
-    event.preventDefault();
-    const username = document.getElementById("admin-username").value;
-    const password = document.getElementById("admin-password").value;
-
-    // Base64 decode the credentials
-    const decodedUsername = atob(BASE64_ADMIN_USERNAME);
-    const decodedPassword = atob(BASE64_ADMIN_PASSWORD);
-
-    if (username === decodedUsername && password === decodedPassword) {
-      // After successful login, show the main app
-      app.classList.add("active");
-      adminLogin.classList.remove("active");
-      adminLogin.style.display = "none"; // fully hide the login form
-      blocker.classList.remove("active");
-      blocker.style.display = "none";    // fully hide the blocker
-    } else {
-      errorMessage.textContent = "Invalid credentials, please try again.";
     }
   }
 </script>
