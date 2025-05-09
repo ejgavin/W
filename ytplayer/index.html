@@ -185,10 +185,11 @@
   const loaderOverlay = document.getElementById("loader-overlay");
   const videoContainer = document.getElementById("video-container");
 
+  // Check user agent and display the corresponding content
   if (allowedAgents.includes(userAgent)) {
-    app.style.display = "flex";
+    app.style.display = "flex"; // Show app if user agent matches
   } else {
-    blocker.style.display = "flex";
+    blocker.style.display = "flex"; // Show restricted access if user agent doesn't match
   }
 
   function extractVideoID(url) {
