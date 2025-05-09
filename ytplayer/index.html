@@ -20,7 +20,7 @@
       color: white;
     }
 
-    #app, #blocker, #loader-container {
+    #app, #blocker, #loader-container, #admin-login {
       position: absolute;
       top: 0;
       left: 0;
@@ -270,12 +270,15 @@
   const videoContainer = document.getElementById("video-container");
   const loaderOverlay = document.getElementById("loader-overlay");
 
-  // Corrected user agent check logic
+  // Ensure the admin login form is hidden initially
+  adminLogin.style.display = "none";
+
+  // User agent check logic
   if (isAllowed) {
-    app.classList.add("active");  // Show the app
-    blocker.style.display = "none";  // Hide the blocker
+    app.classList.add("active");
+    blocker.style.display = "none"; // Hide the restricted access page immediately
   } else {
-    blocker.classList.add("active");  // Show the restricted access page
+    blocker.classList.add("active");
   }
 
   function extractVideoID(url) {
