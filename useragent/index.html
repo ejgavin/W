@@ -4,23 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>User Agent JSON</title>
-  <style>
-    body {
-      font-family: monospace;
-      padding: 2rem;
-      display: none; /* Hide initially */
-    }
-  </style>
   <script>
-    window.onload = function () {
+    document.addEventListener("DOMContentLoaded", () => {
       const userAgent = navigator.userAgent;
-      const result = { userAgent: userAgent };
+      const result = { userAgent };
 
-      document.body.innerText = JSON.stringify(result, null, 2);
-      document.body.style.display = 'block'; // Show after setting text
-    };
+      const pre = document.createElement("pre");
+      pre.textContent = JSON.stringify(result, null, 2);
+
+      document.body.appendChild(pre);
+    });
   </script>
 </head>
-<body>
+<body style="margin:0;">
 </body>
 </html>
