@@ -1,21 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Agent JSON</title>
-    <script>
-        window.onload = function() {
-            const userAgent = navigator.userAgent;
-            const result = { userAgent: userAgent };
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Agent JSON</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 2rem;
+      display: none; /* Hide initially */
+    }
+  </style>
+  <script>
+    window.onload = function () {
+      const userAgent = navigator.userAgent;
+      const result = { userAgent: userAgent };
 
-            // Return JSON with the user agent
-            document.body.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
-        };
-    </script>
+      document.body.innerText = JSON.stringify(result, null, 2);
+      document.body.style.display = 'block'; // Show after setting text
+    };
+  </script>
 </head>
 <body>
-    <h1>User Agent Information</h1>
-    <p>Fetching your User Agent...</p>
 </body>
 </html>
