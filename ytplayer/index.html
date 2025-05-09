@@ -107,6 +107,27 @@
       margin-bottom: 20px;
     }
 
+    #back-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+      z-index: 2;
+      display: none;
+    }
+
+    #back-btn:hover {
+      opacity: 1;
+    }
+
     @media (max-width: 600px) {
       #yt-link {
         width: 100%;
@@ -127,13 +148,15 @@
     <button onclick="loadVideo()">Load Video</button>
   </div>
   <div id="video-container"></div>
+  <button id="back-btn" onclick="window.location.href='index.html'">Back</button>
 </div>
 
 <script>
   const allowedAgents = [
     "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
     "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
   ];
 
   const userAgent = navigator.userAgent;
@@ -154,9 +177,12 @@
     const input = document.getElementById('yt-link').value;
     const videoID = extractVideoID(input);
     const container = document.getElementById('video-container');
+    const inputSection = document.getElementById('input-section');
+    const backBtn = document.getElementById('back-btn');
 
     if (videoID) {
-      container.innerHTML = `<iframe src="https://inv.nadeko.net/embed/${videoID}" sandbox="allow-scripts allow-same-origin" allowfullscreen></iframe>`;
+      inputSection.style.display = 'none';
+      container.innerHTML = `<iframe src="https://inv.nadeko.net/embed/${videoID}" sandbox="allow-scripts" allowfullscreen onload="document.getElementById('back-btn').style.display = 'block'"></iframe>`;
     } else {
       alert("Invalid YouTube link.");
     }
