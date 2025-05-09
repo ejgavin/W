@@ -34,11 +34,6 @@
       backdrop-filter: blur(8px);
     }
 
-    #app.active, #blocker.active {
-      display: flex;
-      animation: fadeIn 0.5s ease;
-    }
-
     #input-section {
       position: absolute;
       top: 20px;
@@ -150,11 +145,6 @@
       z-index: 999;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
     @media (max-width: 600px) {
       #yt-link {
         width: 100%;
@@ -196,9 +186,9 @@
   const videoContainer = document.getElementById("video-container");
 
   if (allowedAgents.includes(userAgent)) {
-    app.classList.add("active");
+    app.style.display = "flex";
   } else {
-    blocker.classList.add("active");
+    blocker.style.display = "flex";
   }
 
   function extractVideoID(url) {
