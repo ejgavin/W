@@ -2,224 +2,334 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YouTube Embedder</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(to right, #1e3c72, #2a5298);
-      color: white;
+      height: 100%;
+      width: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      background: linear-gradient(120deg, #1f1c2c, #928dab);
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
-      overflow: hidden;
+      align-items: center;
+      color: white;
     }
 
-    h1 {
-      font-size: 3rem;
-      animation: fadeInDown 1s ease-out;
-      text-align: center;
+    #app, #blocker, #loader-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
     }
 
-    .input-container {
-      margin-top: 20px;
+    #app.active, #blocker.active, #loader-container.active {
       display: flex;
+      animation: fadeIn 0.5s ease;
+    }
+
+    #input-section {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
       gap: 10px;
-      animation: fadeInUp 1.2s ease-out;
+      padding: 0 20px;
       z-index: 2;
     }
 
-    input {
-      padding: 10px 20px;
-      font-size: 1rem;
-      width: 300px;
+    #yt-link {
+      padding: 12px 18px;
+      border-radius: 12px;
       border: none;
-      border-radius: 6px;
+      width: 60%;
+      max-width: 600px;
+      font-size: 16px;
       outline: none;
     }
 
     button {
-      padding: 10px 20px;
-      font-size: 1rem;
+      padding: 12px 20px;
       border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #00c6ff;
+      border-radius: 12px;
+      background: #ff4b2b;
       color: white;
-      box-shadow: 0 0 10px #00c6ff, 0 0 20px #00c6ff, 0 0 30px #00c6ff;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      animation: pulse 2s infinite;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
 
     button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #00c6ff, 0 0 25px #00c6ff, 0 0 40px #00c6ff;
-    }
-
-    .footer {
-      margin-top: 40px;
-      font-size: 18px;
-      color: #00f0ff;
-      text-shadow: 0 0 10px rgba(0,255,255,0.6);
-      animation: fadeInFooter 1.2s ease-in-out 0.8s forwards;
-      opacity: 0;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .fullscreen-note {
-      margin-top: 10px;
-      font-size: 16px;
-      color: #00eaff;
-      text-shadow: 0 0 6px rgba(0, 255, 255, 0.4);
-      animation: fadeInFooter 1.2s ease-in-out 1.2s forwards;
-      opacity: 0;
-    }
-
-    #iframe-container {
-      display: none;
-      width: 100vw;
-      height: 100vh;
-      position: absolute;
-      top: 0;
-      left: 0;
-      background: #000;
-      z-index: 1;
+      background: #e33e1d;
     }
 
     iframe {
-      width: 100%;
-      height: 100%;
       border: none;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
     }
 
+    /* Restricted Access Page */
     #blocker {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.95);
-      color: white;
-      font-size: 24px;
-      z-index: 9999;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 30px;
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      font-size: 32px;
+      z-index: 9999;
       text-align: center;
     }
 
-    #adminBtn {
+    #blocker p {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    /* Admin Login Section */
+    .login-box {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(0,0,0,0.5);
+      width: 90%;
+      max-width: 500px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .login-box input {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+
+    .error {
+      color: #ff8080;
+      font-size: 14px;
+    }
+
+    /* Adjust login button position */
+    #login-btn {
       margin-top: 20px;
-      font-size: 18px;
-      padding: 8px 16px;
-      background: #333;
+    }
+
+    /* Loader Animation */
+    #loader-container {
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.5s ease;
+      z-index: 9999;
+    }
+
+    .loader {
+      border: 6px solid transparent;
+      border-top: 6px solid red;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Transparent back button */
+    #back-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.5);
       color: white;
-      border: 1px solid white;
-      border-radius: 6px;
+      border-radius: 12px;
+      border: none;
       cursor: pointer;
+      font-size: 16px;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+      z-index: 10;
     }
 
-    #adminBtn:hover {
-      background: #555;
+    #back-btn:hover {
+      opacity: 1;
     }
 
-    @keyframes fadeInDown {
-      from { transform: translateY(-30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    /* Loading Overlay */
+    #loader-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      display: none;
     }
 
-    @keyframes fadeInUp {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    @keyframes fadeInFooter {
+    @keyframes fadeIn {
+      from { opacity: 0; }
       to { opacity: 1; }
     }
 
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 10px #00c6ff, 0 0 20px #00c6ff; }
-      50% { box-shadow: 0 0 20px #00c6ff, 0 0 30px #00c6ff; }
+    @media (max-width: 600px) {
+      #yt-link {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div id="blocker" style="display:none;">
-    <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
-    <p>Also, if you're a teacher, please don't report this lol.</p>
-    <button id="adminBtn" onclick="adminLogin()">Admin Login</button>
+<!-- Back to Homepage Button -->
+<button id="back-btn" onclick="window.location.href='index.html'">Back to Homepage</button>
+
+<!-- Main App -->
+<div id="app">
+  <div id="input-section">
+    <input type="text" id="yt-link" placeholder="Paste a YouTube link..." onkeydown="if(event.key === 'Enter') loadVideo()" />
+    <button onclick="loadVideo()">Bypass</button>
   </div>
+  <div id="video-container"></div>
+</div>
 
-  <div id="main-ui" style="display:none;">
-    <h1>YouTube Embedder</h1>
-    <div class="input-container">
-      <input type="text" id="videoUrl" placeholder="Paste YouTube link..." />
-      <button onclick="loadVideo()">Load Video</button>
-    </div>
+<!-- Blocker with Admin Login -->
+<div id="blocker" class="hidden">
+  <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
+  <p>Also, if you're a teacher, please don't report this lol.</p>
 
-    <div class="footer">
-      Made by Eli Gavin
-      <div class="fullscreen-note">
-        Please go into full screen mode on your Chromebook for this to work properly
-      </div>
-    </div>
-  </div>
+  <button id="login-btn" onclick="showAdminLogin()">Login as Admin</button>
+</div>
 
-  <div id="iframe-container">
-    <iframe id="videoIframe" src=""></iframe>
-  </div>
+<!-- Admin Login Form -->
+<div id="admin-login" class="hidden login-box">
+  <h2>Admin Login</h2>
+  <form onsubmit="return login(event)">
+    <input type="text" id="admin-username" placeholder="Username" required />
+    <input type="password" id="admin-password" placeholder="Password" required />
+    <button type="submit">Login</button>
+  </form>
+  <p class="error" id="error-message"></p>
+</div>
 
-  <script>
-    const allowedAgents = [
-      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-    ];
+<!-- Loader Overlay -->
+<div id="loader-overlay">
+  <div class="loader"></div>
+  <p>Loading...</p>
+</div>
 
-    const userAgent = navigator.userAgent;
-    let bypassed = false;
+<script>
+  const allowedAgents = [
+    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+  ];
 
-    if (allowedAgents.includes(userAgent)) {
-      document.getElementById('main-ui').style.display = 'flex';
+  const BASE64_ADMIN_USERNAME = "YWRtaW4="; // admin
+  const BASE64_ADMIN_PASSWORD = "ZWxpYWRtaW4xMjM="; // eliadmin123
+
+  const userAgent = navigator.userAgent;
+  const isAllowed = allowedAgents.includes(userAgent);
+
+  const app = document.getElementById("app");
+  const blocker = document.getElementById("blocker");
+  const adminLogin = document.getElementById("admin-login");
+  const loginBtn = document.getElementById("login-btn");
+  const errorMessage = document.getElementById("error-message");
+  const loaderContainer = document.getElementById("loader-container");
+  const videoContainer = document.getElementById("video-container");
+  const loaderOverlay = document.getElementById("loader-overlay");
+
+  if (isAllowed) {
+    app.classList.add("active");
+  } else {
+    blocker.classList.add("active");
+  }
+
+  function extractVideoID(url) {
+    const regex = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  }
+
+  function loadVideo() {
+    const input = document.getElementById('yt-link').value;
+    const videoID = extractVideoID(input);
+    const container = document.getElementById('video-container');
+
+    if (videoID) {
+      // Hide input section and button
+      document.getElementById('input-section').style.display = 'none';
+      
+      // Show the loader
+      loaderOverlay.style.display = 'flex';
+      
+      // Wait for 1 second before showing iframe
+      setTimeout(() => {
+        container.innerHTML = `<iframe src="https://inv.nadeko.net/embed/${videoID}" sandbox="allow-scripts" allowfullscreen></iframe>`;
+        loaderOverlay.style.display = 'none'; // Hide loader
+      }, 1000);
     } else {
-      document.getElementById('blocker').style.display = 'flex';
+      alert("Invalid YouTube link.");
     }
+  }
 
-    function adminLogin() {
-      const username = prompt("Enter username:");
-      const password = prompt("Enter password:");
-      if (username === "eli" && password === "eliadmin") {
-        document.getElementById('blocker').style.display = 'none';
-        document.getElementById('main-ui').style.display = 'flex';
-        bypassed = true;
-      } else {
-        alert("Incorrect credentials.");
-      }
+  function showAdminLogin() {
+    // Hide the blocker and show the admin login form
+    blocker.style.display = "none";
+    adminLogin.classList.add("active");
+  }
+
+  function login(event) {
+    event.preventDefault();
+    const username = document.getElementById("admin-username").value;
+    const password = document.getElementById("admin-password").value;
+
+    // Base64 decode the credentials
+    const decodedUsername = atob(BASE64_ADMIN_USERNAME);
+    const decodedPassword = atob(BASE64_ADMIN_PASSWORD);
+
+    if (username === decodedUsername && password === decodedPassword) {
+      // After successful login, show the main app
+      app.classList.add("active");
+      adminLogin.classList.remove("active");
+      adminLogin.style.display = "none"; // fully hide the login form
+      blocker.classList.remove("active");
+      blocker.style.display = "none";    // fully hide the blocker
+    } else {
+      errorMessage.textContent = "Invalid credentials, please try again.";
     }
-
-    function extractVideoID(url) {
-      const regex = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
-      const match = url.match(regex);
-      return match ? match[1] : null;
-    }
-
-    function loadVideo() {
-      const url = document.getElementById("videoUrl").value;
-      const videoId = extractVideoID(url);
-      if (videoId) {
-        const iframe = document.getElementById('videoIframe');
-        iframe.src = `https://inv.nadeko.net/embed/${videoId}`;
-        document.getElementById('iframe-container').style.display = 'block';
-      } else {
-        alert("Please enter a valid YouTube link.");
-      }
-    }
-  </script>
-
+  }
+</script>
 </body>
 </html>
