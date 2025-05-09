@@ -3,69 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Checker</title>
+  <title>Loader</title>
   <style>
-    html, body {
+    html, body, iframe {
       margin: 0;
       padding: 0;
       height: 100%;
       width: 100%;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: white;
-      overflow: hidden;
-    }
-
-    iframe {
       border: none;
-      width: 100%;
-      height: 100%;
-      display: block;
     }
-
     #blocker {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.95);
-      color: white;
-      font-size: 24px;
-      z-index: 9999;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 30px;
+      background: black;
+      color: white;
+      font-size: 24px;
       text-align: center;
-    }
-
-    #blocker p {
-      margin-bottom: 20px;
+      height: 100%;
+      width: 100%;
     }
   </style>
+  <script>
+    // Run user-agent check immediately
+    const allowedAgents = [
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    ];
+
+    const agent = navigator.userAgent;
+
+    // Defer DOM loading to inject only what’s needed
+    document.addEventListener("DOMContentLoaded", () => {
+      if (allowedAgents.includes(agent)) {
+        // Create and show iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = "frame.html";
+        document.body.appendChild(iframe);
+      } else {
+        // Show blocker
+        const div = document.createElement('div');
+        div.id = "blocker";
+        div.innerHTML = `
+          <div>
+            <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
+            <p>Also, if you're a teacher, please don't report this lol.</p>
+          </div>
+        `;
+        document.body.appendChild(div);
+      }
+    });
+  </script>
 </head>
 <body>
-
-<div id="blocker" style="display: none;">
-  <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
-  <p>Also, if you're a teacher, please don't report this lol.</p>
-</div>
-
-<script>
-  const allowedAgents = [
-    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-  ];
-
-  const userAgent = navigator.userAgent;
-
-  if (allowedAgents.includes(userAgent)) {
-    const iframe = document.createElement("iframe");
-    iframe.src = "frame.html";
-    document.body.appendChild(iframe);
-  } else {
-    document.getElementById("blocker").style.display = "flex";
-  }
-</script>
-
 </body>
 </html>
