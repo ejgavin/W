@@ -5,21 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Iframe Browser</title>
     <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #1f1c2c, #928dab);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        overflow: hidden;
-      }
-
       #blocker {
         position: fixed;
         inset: 0;
@@ -38,12 +23,6 @@
       #blocker p {
         margin-bottom: 20px;
       }
-
-      #app {
-        width: 100%;
-        height: 100%;
-        display: none;
-      }
     </style>
     <script type="module" crossorigin src="/W/windows2/assets/index-1e37c863.js"></script>
     <link rel="stylesheet" href="/W/windows2/assets/index-a1f3d880.css">
@@ -54,9 +33,8 @@
       <p>Also, if you're a teacher, please don't report this lol.</p>
     </div>
 
-    <div id="app">
-      <div id="root"></div>
-    </div>
+    <div id="root"></div>
+    
 
     <script>
       const allowedAgents = [
@@ -68,17 +46,11 @@
 
       window.onload = () => {
         if (allowedAgents.includes(ua)) {
-          document.getElementById("blocker").style.display = "none";  // Hide the blocker
-          document.getElementById("app").style.display = "block";    // Show the app
-          document.body.style.background = "transparent";            // Hide the background
+          document.getElementById("blocker").style.display = "none"; // Hide blocker
         } else {
-          document.getElementById("blocker").style.display = "flex"; // Show the blocker
-          document.getElementById("app").style.display = "none";    // Hide the app
-          document.body.style.background = "linear-gradient(135deg, #1f1c2c, #928dab)";  // Show the original background
+          document.getElementById("blocker").style.display = "flex"; // Show blocker
         }
       };
     </script>
-
-    
   </body>
 </html>
