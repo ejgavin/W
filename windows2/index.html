@@ -4,67 +4,61 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Iframe Browser</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1f1c2c, #928dab);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        overflow: hidden;
+      }
+
+      #blocker {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        color: white;
+        font-size: 24px;
+        z-index: 9999;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        text-align: center;
+      }
+
+      #blocker p {
+        margin-bottom: 20px;
+      }
+    </style>
     <script>
       const allowedAgents = [
         "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
         "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
       ];
 
-      const ua = navigator.userAgent;
-
-      if (!allowedAgents.includes(ua)) {
-        document.write(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blocked</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      overflow: hidden;
-    }
-    #blocker {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.95);
-      color: white;
-      font-size: 24px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px;
-      text-align: center;
-    }
-    #blocker p {
-      margin-bottom: 20px;
-    }
-  </style>
-  <script type="module" crossorigin src="/W/windows2/assets/index-1e37c863.js"></script>
-  <link rel="stylesheet" href="/W/windows2/assets/index-a1f3d880.css">
-</head>
-<body>
-  <div id="blocker">
-    <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
-    <p>Also, if you're a teacher, please don't report this lol.</p>
-  </div>
-</body>
-</html>`);
-      }
+      window.addEventListener('DOMContentLoaded', () => {
+        const ua = navigator.userAgent;
+        if (!allowedAgents.includes(ua)) {
+          document.getElementById('blocker').style.display = 'flex';
+        }
+      });
     </script>
+    <script type="module" crossorigin src="/W/windows2/assets/index-1e37c863.js"></script>
+    <link rel="stylesheet" href="/W/windows2/assets/index-a1f3d880.css">
   </head>
   <body>
+    <div id="blocker">
+      <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
+      <p>Also, if you're a teacher, please don't report this lol.</p>
+    </div>
     <div id="root"></div>
     
   </body>
