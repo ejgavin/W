@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Iframe Browser</title>
     <style>
-      html, body {
+      html,
+      body {
         margin: 0;
         padding: 0;
         height: 100%;
@@ -37,20 +38,13 @@
       #blocker p {
         margin-bottom: 20px;
       }
-    </style>
-    <script>
-      const allowedAgents = [
-        "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-      ];
 
-      window.addEventListener('DOMContentLoaded', () => {
-        const ua = navigator.userAgent;
-        if (!allowedAgents.includes(ua)) {
-          document.getElementById('blocker').style.display = 'flex';
-        }
-      });
-    </script>
+      #app {
+        width: 100%;
+        height: 100%;
+        display: none;
+      }
+    </style>
     <script type="module" crossorigin src="/W/windows2/assets/index-1e37c863.js"></script>
     <link rel="stylesheet" href="/W/windows2/assets/index-a1f3d880.css">
   </head>
@@ -59,7 +53,28 @@
       <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
       <p>Also, if you're a teacher, please don't report this lol.</p>
     </div>
-    <div id="root"></div>
+
+    <div id="app">
+      <div id="root"></div>
+    </div>
+
+    <script>
+      const allowedAgents = [
+        "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+      ];
+
+      const ua = navigator.userAgent;
+
+      window.onload = () => {
+        if (allowedAgents.includes(ua)) {
+          document.getElementById("app").style.display = "block";
+        } else {
+          document.getElementById("blocker").style.display = "flex";
+        }
+      };
+    </script>
+
     
   </body>
 </html>
