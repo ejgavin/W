@@ -68,9 +68,13 @@
 
       window.onload = () => {
         if (allowedAgents.includes(ua)) {
-          document.getElementById("app").style.display = "block";
+          document.getElementById("blocker").style.display = "none";  // Hide the blocker
+          document.getElementById("app").style.display = "block";    // Show the app
+          document.body.style.background = "transparent";            // Hide the background
         } else {
-          document.getElementById("blocker").style.display = "flex";
+          document.getElementById("blocker").style.display = "flex"; // Show the blocker
+          document.getElementById("app").style.display = "none";    // Hide the app
+          document.body.style.background = "linear-gradient(135deg, #1f1c2c, #928dab)";  // Show the original background
         }
       };
     </script>
