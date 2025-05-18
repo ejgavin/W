@@ -20,7 +20,7 @@ function updateMovieIframe(ID) {
 
   switch (source) {
     case "1":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://flix.1ani.me/embed/tmdb-movie-${ID}`;
+      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://customsource.vercel.app/movie/${ID}`;
       break;
     case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
