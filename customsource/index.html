@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading...</title>
+  <link href="https://unpkg.com/video.js@8/dist/video-js.min.css" rel="stylesheet" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 6px solid #444;
+      border-top: 6px solid #09f;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      z-index: 999;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #search-label {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px 12px;
+      border-radius: 8px;
+      z-index: 1000;
+    }
+
+    #video-container {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .video-js {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="search-label">Searching for "<strong id="search-term">Loading...</strong>"</div>
+  <div class="loader" id="loader"></div>
+  <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
+
+  <div id="video-container">
+    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
+    </video>
+  </div>
+
+  <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
+  <script>
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const searchParams = new URLSearchParams(window.location.search);
+
+    let id = searchParams.get('id');
+    let type = searchParams.get('type');
+    let season = searchParams.get('season');
+    let episode = searchParams.get('episode');
+
+    if (!id && pathSegments[0] === 'tv' && pathSegments.length >= 4) {
+      type = 'tv';
+      id = pathSegments[1];
+      season = pathSegments[2];
+      episode = pathSegments[3];
+    } else if (!id && pathSegments[0] === 'movie' && pathSegments.length >= 2) {
+      type = 'movie';
+      id = pathSegments[1];
+    }
+
+    if (!id || !type) {
+      document.getElementById('loader').innerText = '❌ Missing parameters';
+      throw new Error('Missing parameters');
+    }
+
+    const searchTermEl = document.getElementById("search-term");
+
+    const apiKey = '9a2954cb0084e80efa20b3729db69067';
+    let tmdbUrl =
+      type === 'tv'
+        ? `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=en-US`
+        : `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=en-US`;
+
+    fetch(tmdbUrl)
+      .then(res => res.json())
+      .then(data => {
+        const title = data.name || data.title || 'Unknown Title';
+        searchTermEl.innerText = title;
+        document.title = title;
+      })
+      .catch(() => {
+        searchTermEl.innerText = 'Unknown Title';
+      });
+
+      const apiFetchUrl = `https://customsource.vercel.app/api/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+      
+    fetch(apiFetchUrl)
+      .then(res => res.json())
+      .then(data => {
+        const videoUrl = data.url;
+        if (!videoUrl) {
+          throw new Error("No video URL returned");
+        }
+
+        const isMP4 = videoUrl.includes('.mp4');
+
+        const player = videojs('video-player');
+        if (isMP4) {
+          player.src({
+            src: videoUrl,
+            type: 'video/mp4'
+          });
+        } else {
+          player.src([{
+              src: videoUrl,
+              type: 'application/x-mpegURL',
+              withCredentials: true
+            }, {
+              src: data.audio,
+              type: 'application/x-mpegURL',
+              withCredentials: true
+          }]);
+        }
+
+        player.ready(() => {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('video-container').style.display = 'block';
+          document.getElementById('search-label').style.display = 'none';
+
+          if (data.subtitle) {
+            fetch(data.subtitle)
+              .then(res => res.text())
+              .then(srtData => {
+                const vttData = "WEBVTT\n\n" + srtData
+                  .replace(/\r+/g, '')
+                  .replace(/^\d+\n/gm, '')
+                  .replace(/,/g, '.');
+
+                const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                const vttUrl = URL.createObjectURL(vttBlob);
+
+                player.addRemoteTextTrack({
+                  kind: 'subtitles',
+                  src: vttUrl,
+                  srclang: 'en',
+                  label: 'English',
+                  default: true
+                });
+              });
+          }
+        });
+      })
+      .catch(() => {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('search-label').style.display = 'none';
+        document.getElementById('error-message').style.display = 'block';
+      });
+  </script>
+</body>
+</html>
+
