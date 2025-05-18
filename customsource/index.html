@@ -130,17 +130,20 @@
         if (isMP4) {
           player.src({
             src: videoUrl,
-            type: 'video/mp4'
+            type: 'video/mp4',
+            crossOrigin: 'anonymous'
           });
         } else {
+          const isAnimebox = videoUrl.includes('animebox.xyz');
           player.src([{
-              src: videoUrl,
-              type: 'application/x-mpegURL',
-              withCredentials: true
-            }, {
-              src: data.audio,
-              type: 'application/x-mpegURL',
-              withCredentials: true
+            src: videoUrl,
+            type: 'application/x-mpegURL',
+            crossOrigin: isAnimebox ? 'anonymous' : undefined,
+            withCredentials: !isAnimebox
+          }, {
+            src: data.audio,
+            type: 'application/x-mpegURL',
+            withCredentials: true
           }]);
         }
 
@@ -180,4 +183,3 @@
   </script>
 </body>
 </html>
-
