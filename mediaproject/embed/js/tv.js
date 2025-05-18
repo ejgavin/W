@@ -67,7 +67,7 @@ function updateTitleAndIframe(ID, season, episode) {
   let src = "";
   switch (source) {
     case "1":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://ejgavin.github.io/W/customsource/?id=${ID}&type=tv&season=${season}&episode=${episode}`;
+      src = `https://ejgavin.github.io/W/customsource/?id=${ID}&type=tv&season=${season}&episode=${episode}`;
       break;
     case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/tv/${ID}/${season}/${episode}?autoPlay=true&episodeSelector=false`;

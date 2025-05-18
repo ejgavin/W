@@ -20,7 +20,7 @@ function updateMovieIframe(ID) {
 
   switch (source) {
     case "1":
-      src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://ejgavin.github.io/W/customsource/?id=${ID}&type=movie`;
+      src = `https://ejgavin.github.io/W/customsource/?id=${ID}&type=movie`;
       break;
     case "2":
       src = `https://ejgavin.github.io/W/windows2/?destination=https://ejgavin.github.io/W/windows/?destination=https://player.videasy.net/movie/${ID}?autoPlay=true&episodeSelector=false`;
