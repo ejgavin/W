@@ -59,12 +59,15 @@
       height: 100%;
     }
   </style>
-  <script>
-    videojs.Hook('setup', function(player) {
-      player.controlBar.playbackRateMenuButton.show();
-      player.playbackRates([0.5, 1, 1.25, 1.5, 2]);
-    });
-  </script>
+  <style>
+    video::cue {
+      background: rgba(0, 0, 0, 0.7);
+      color: #00ffcc;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+      text-shadow: 1px 1px 2px black;
+    }
+  </style>
 </head>
 <body>
   <div id="search-label">Searching for "<strong id="search-term">Loading...</strong>"</div>
@@ -72,7 +75,7 @@
   <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
 
   <div id="video-container">
-    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay data-setup='{}'>
+    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
     </video>
   </div>
 
@@ -130,26 +133,6 @@
 
         const player = videojs('video-player');
 
-        const Button = videojs.getComponent('Button');
-
-        class SkipForwardButton extends Button {
-          handleClick() {
-            player.currentTime(player.currentTime() + 10);
-          }
-        }
-
-        class SkipBackButton extends Button {
-          handleClick() {
-            player.currentTime(player.currentTime() - 10);
-          }
-        }
-
-        videojs.registerComponent('SkipForwardButton', SkipForwardButton);
-        videojs.registerComponent('SkipBackButton', SkipBackButton);
-
-        player.getChild('controlBar').addChild('SkipBackButton', {}, 0);
-        player.getChild('controlBar').addChild('SkipForwardButton', {}, 2);
-
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
         if (isMP4) {
@@ -184,6 +167,18 @@
                 });
               });
           }
+
+          player.textTrackSettings.setValues({
+            backgroundColor: '#000',
+            backgroundOpacity: '70',
+            edgeStyle: 'uniform',
+            fontFamily: 'proportionalSansSerif',
+            fontPercent: '1.25',
+            textColor: '#00ffcc',
+            windowColor: '#000',
+            windowOpacity: '0'
+          });
+          player.textTrackSettings.setEnabled(true);
         });
       })
       .catch(() => {
