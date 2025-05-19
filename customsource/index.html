@@ -120,14 +120,74 @@
       .then(res => res.json())
       .then(data => {
         const videoUrl = data.url;
-        if (!videoUrl) {
-          throw new Error("No video URL returned");
-        }
-
         const isMP4 = videoUrl.includes('.mp4');
 
         const player = videojs('video-player');
-        if (isMP4) {
+
+        if (videoUrl.includes('kendrickl-3amar.site') && data.audio) {
+          // Handle separate video and audio sources
+          player.src([
+            {
+              src: videoUrl,
+              type: 'application/x-mpegURL'
+            }
+          ]);
+
+          player.ready(() => {
+            const audio = document.createElement('audio');
+            audio.src = data.audio;
+            audio.crossOrigin = 'anonymous';
+            audio.autoplay = true;
+            audio.controls = false;
+            audio.style.display = 'none';
+
+            document.body.appendChild(audio);
+
+            player.on('play', () => {
+              audio.play();
+            });
+
+            player.on('pause', () => {
+              audio.pause();
+            });
+
+            player.on('seeked', () => {
+              audio.currentTime = player.currentTime();
+            });
+
+            player.on('timeupdate', () => {
+              if (Math.abs(audio.currentTime - player.currentTime()) > 0.3) {
+                audio.currentTime = player.currentTime();
+              }
+            });
+
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('video-container').style.display = 'block';
+            document.getElementById('search-label').style.display = 'none';
+
+            if (data.subtitle) {
+              fetch(data.subtitle)
+                .then(res => res.text())
+                .then(srtData => {
+                  const vttData = "WEBVTT\n\n" + srtData
+                    .replace(/\r+/g, '')
+                    .replace(/^\d+\n/gm, '')
+                    .replace(/,/g, '.');
+
+                  const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                  const vttUrl = URL.createObjectURL(vttBlob);
+
+                  player.addRemoteTextTrack({
+                    kind: 'subtitles',
+                    src: vttUrl,
+                    srclang: 'en',
+                    label: 'English',
+                    default: true
+                  });
+                });
+            }
+          });
+        } else if (isMP4) {
           player.src({
             src: videoUrl,
             type: 'video/mp4',
@@ -144,34 +204,6 @@
             type: 'application/x-mpegURL'
           }]);
         }
-
-        player.ready(() => {
-          document.getElementById('loader').style.display = 'none';
-          document.getElementById('video-container').style.display = 'block';
-          document.getElementById('search-label').style.display = 'none';
-
-          if (data.subtitle) {
-            fetch(data.subtitle)
-              .then(res => res.text())
-              .then(srtData => {
-                const vttData = "WEBVTT\n\n" + srtData
-                  .replace(/\r+/g, '')
-                  .replace(/^\d+\n/gm, '')
-                  .replace(/,/g, '.');
-
-                const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-                const vttUrl = URL.createObjectURL(vttBlob);
-
-                player.addRemoteTextTrack({
-                  kind: 'subtitles',
-                  src: vttUrl,
-                  srclang: 'en',
-                  label: 'English',
-                  default: true
-                });
-              });
-          }
-        });
       })
       .catch(() => {
         document.getElementById('loader').style.display = 'none';
