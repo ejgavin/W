@@ -59,15 +59,6 @@
       height: 100%;
     }
   </style>
-  <style>
-    video::cue {
-      background: rgba(0, 0, 0, 0.7);
-      color: #00ffcc;
-      font-size: 16px;
-      font-family: Arial, sans-serif;
-      text-shadow: 1px 1px 2px black;
-    }
-  </style>
 </head>
 <body>
   <div id="search-label">Searching for "<strong id="search-term">Loading...</strong>"</div>
@@ -167,18 +158,6 @@
                 });
               });
           }
-
-          player.textTrackSettings.setValues({
-            backgroundColor: '#000',
-            backgroundOpacity: '70',
-            edgeStyle: 'uniform',
-            fontFamily: 'proportionalSansSerif',
-            fontPercent: '1.25',
-            textColor: '#00ffcc',
-            windowColor: '#000',
-            windowOpacity: '0'
-          });
-          player.textTrackSettings.setEnabled(true);
         });
       })
       .catch(() => {
