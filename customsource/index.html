@@ -59,6 +59,13 @@
       height: 100%;
     }
   </style>
+  <link href="https://unpkg.com/@videojs/themes@1/dist/forest/index.css" rel="stylesheet" />
+  <script>
+    videojs.Hook('setup', function(player) {
+      player.controlBar.playbackRateMenuButton.show();
+      player.playbackRates([0.5, 1, 1.25, 1.5, 2]);
+    });
+  </script>
 </head>
 <body>
   <div id="search-label">Searching for "<strong id="search-term">Loading...</strong>"</div>
@@ -66,7 +73,7 @@
   <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
 
   <div id="video-container">
-    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
+    <video id="video-player" class="video-js vjs-theme-forest vjs-default-skin" controls preload="auto" autoplay data-setup='{}'>
     </video>
   </div>
 
@@ -123,6 +130,26 @@
         const isMP4 = videoUrl.includes('.mp4');
 
         const player = videojs('video-player');
+
+        const Button = videojs.getComponent('Button');
+
+        class SkipForwardButton extends Button {
+          handleClick() {
+            player.currentTime(player.currentTime() + 10);
+          }
+        }
+
+        class SkipBackButton extends Button {
+          handleClick() {
+            player.currentTime(player.currentTime() - 10);
+          }
+        }
+
+        videojs.registerComponent('SkipForwardButton', SkipForwardButton);
+        videojs.registerComponent('SkipBackButton', SkipBackButton);
+
+        player.getChild('controlBar').addChild('SkipBackButton', {}, 0);
+        player.getChild('controlBar').addChild('SkipForwardButton', {}, 2);
 
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
