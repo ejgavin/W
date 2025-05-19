@@ -67,12 +67,8 @@
 
   <div id="video-container">
     <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
+      <track kind="subtitles" label="English" srclang="en" default>
     </video>
-  </div>
-
-  <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; color: white;">
-    <label for="captionDelay">Caption Delay: <span id="delayValue">0</span>s</label>
-    <input type="range" id="captionDelay" min="-5" max="5" step="0.1" value="0" />
   </div>
 
   <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
@@ -138,28 +134,34 @@
         }
 
         player.ready(() => {
-          const captionDelayInput = document.getElementById('captionDelay');
-          const delayValueDisplay = document.getElementById('delayValue');
-
-          captionDelayInput.addEventListener('input', () => {
-            const delay = parseFloat(captionDelayInput.value);
-            delayValueDisplay.textContent = delay.toFixed(1);
-
-            const tracks = player.textTracks();
-            for (let i = 0; i < tracks.length; i++) {
-              const track = tracks[i];
-              if (track.kind === 'subtitles') {
-                track.mode = 'hidden';
-                for (let j = 0; j < track.cues.length; j++) {
-                  const cue = track.cues[j];
-                  const duration = cue.endTime - cue.startTime;
-                  cue.startTime = cue.startTimeOriginal + delay;
-                  cue.endTime = cue.startTime + duration;
+          // Caption Delay Button
+          const Button = videojs.getComponent('Button');
+          const captionDelayButton = videojs.extend(Button, {
+            constructor: function() {
+              Button.apply(this, arguments);
+              this.controlText('Caption Delay');
+            },
+            handleClick: function() {
+              const delay = parseFloat(prompt('Set caption delay in seconds (e.g., 0.5 or -0.3):', '0')) || 0;
+              const tracks = player.textTracks();
+              for (let i = 0; i < tracks.length; i++) {
+                const track = tracks[i];
+                if (track.kind === 'subtitles') {
+                  for (let j = 0; j < track.cues.length; j++) {
+                    const cue = track.cues[j];
+                    if (cue.startTimeOriginal == null) {
+                      cue.startTimeOriginal = cue.startTime;
+                      cue.endTimeOriginal = cue.endTime;
+                    }
+                    cue.startTime = cue.startTimeOriginal + delay;
+                    cue.endTime = cue.endTimeOriginal + delay;
+                  }
                 }
-                track.mode = 'showing';
               }
             }
           });
+          videojs.registerComponent('CaptionDelayButton', captionDelayButton);
+          player.getChild('controlBar').addChild('CaptionDelayButton', {}, player.controlBar.children().length - 1);
 
           document.getElementById('loader').style.display = 'none';
           document.getElementById('video-container').style.display = 'block';
@@ -188,7 +190,9 @@
 
                 track.addEventListener('load', () => {
                   for (let i = 0; i < track.cues.length; i++) {
-                    track.cues[i].startTimeOriginal = track.cues[i].startTime;
+                    const cue = track.cues[i];
+                    cue.startTimeOriginal = cue.startTime;
+                    cue.endTimeOriginal = cue.endTime;
                   }
                 });
               });
