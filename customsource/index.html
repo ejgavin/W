@@ -70,6 +70,11 @@
     </video>
   </div>
 
+  <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; color: white;">
+    <label for="captionDelay">Caption Delay: <span id="delayValue">0</span>s</label>
+    <input type="range" id="captionDelay" min="-5" max="5" step="0.1" value="0" />
+  </div>
+
   <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
   <script>
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
@@ -133,6 +138,29 @@
         }
 
         player.ready(() => {
+          const captionDelayInput = document.getElementById('captionDelay');
+          const delayValueDisplay = document.getElementById('delayValue');
+
+          captionDelayInput.addEventListener('input', () => {
+            const delay = parseFloat(captionDelayInput.value);
+            delayValueDisplay.textContent = delay.toFixed(1);
+
+            const tracks = player.textTracks();
+            for (let i = 0; i < tracks.length; i++) {
+              const track = tracks[i];
+              if (track.kind === 'subtitles') {
+                track.mode = 'hidden';
+                for (let j = 0; j < track.cues.length; j++) {
+                  const cue = track.cues[j];
+                  const duration = cue.endTime - cue.startTime;
+                  cue.startTime = cue.startTimeOriginal + delay;
+                  cue.endTime = cue.startTime + duration;
+                }
+                track.mode = 'showing';
+              }
+            }
+          });
+
           document.getElementById('loader').style.display = 'none';
           document.getElementById('video-container').style.display = 'block';
           document.getElementById('search-label').style.display = 'none';
@@ -148,13 +176,20 @@
 
                 const vttBlob = new Blob([vttData], { type: 'text/vtt' });
                 const vttUrl = URL.createObjectURL(vttBlob);
+                const trackId = 'subtitles-en';
 
-                player.addRemoteTextTrack({
+                const track = player.addRemoteTextTrack({
                   kind: 'subtitles',
                   src: vttUrl,
                   srclang: 'en',
                   label: 'English',
                   default: true
+                }, false).track;
+
+                track.addEventListener('load', () => {
+                  for (let i = 0; i < track.cues.length; i++) {
+                    track.cues[i].startTimeOriginal = track.cues[i].startTime;
+                  }
                 });
               });
           }
