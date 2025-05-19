@@ -121,17 +121,12 @@
       .then(res => res.json())
       .then(data => {
         const videoUrl = data.url;
-        const isMP4 = videoUrl.includes('.mp4');
-
         const player = videojs('video-player');
-
+        const isMP4 = videoUrl.includes('.mp4');
         const isAnimebox = videoUrl.includes('animebox.xyz');
-
-        if (isMP4) {
-          player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-        } else {
-          player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
-        }
+        const sourceType = isMP4 ? 'video/mp4' : 'application/x-mpegURL';
+        const crossOrigin = isAnimebox || isMP4 ? 'anonymous' : undefined;
+        player.src([{ src: videoUrl, type: sourceType, crossOrigin }]);
 
         player.ready(() => {
           // Caption Delay Button
