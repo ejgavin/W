@@ -128,11 +128,11 @@
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
         if (isKendrick && data.audio) {
-          player.src([{ src: videoUrl, type: 'application/x-mpegURL' }]);
+          player.src([{ src: videoUrl, type: 'application/x-mpegURL', withCredentials: true }]);
 
           const audio = document.createElement('audio');
           audio.src = data.audio;
-          audio.crossOrigin = 'anonymous';
+          audio.crossOrigin = 'use-credentials';
           audio.autoplay = true;
           audio.controls = false;
           audio.style.display = 'none';
