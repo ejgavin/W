@@ -59,7 +59,6 @@
       height: 100%;
     }
   </style>
-  <link href="https://unpkg.com/@videojs/themes@1/dist/forest/index.css" rel="stylesheet" />
   <script>
     videojs.Hook('setup', function(player) {
       player.controlBar.playbackRateMenuButton.show();
@@ -73,7 +72,7 @@
   <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
 
   <div id="video-container">
-    <video id="video-player" class="video-js vjs-theme-forest vjs-default-skin" controls preload="auto" autoplay data-setup='{}'>
+    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay data-setup='{}'>
     </video>
   </div>
 
