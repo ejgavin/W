@@ -146,17 +146,18 @@
 
               if (!bestVideo) throw new Error('No video stream found in scraped data');
 
-              player.src([{ src: bestVideo, type: 'application/x-mpegURL', withCredentials: true }]);
+              player.src([{ src: bestVideo, type: 'application/x-mpegURL' }]);
 
               if (audioUrl) {
                 const audio = document.createElement('audio');
                 audio.src = audioUrl;
                 audio.crossOrigin = 'use-credentials';
-                audio.autoplay = true;
+                audio.autoplay = false;
                 audio.controls = false;
                 audio.style.display = 'none';
                 document.body.appendChild(audio);
 
+                audio.load();
                 player.on('play', () => audio.play());
                 player.on('pause', () => audio.pause());
                 player.on('seeked', () => { audio.currentTime = player.currentTime(); });
