@@ -128,7 +128,13 @@
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
         if (isKendrick) {
-          fetch(`https://scrape2-ruddy.vercel.app/api/scrape?url=${encodeURIComponent(videoUrl)}`)
+          fetch(`https://scrape2-ruddy.vercel.app/api/scrape?url=${encodeURIComponent(videoUrl)}`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+              'Origin': 'https://ejgavin.github.io'
+            }
+          })
             .then(res => res.text())
             .then(m3u8Text => {
               const lines = m3u8Text.split('\n');
