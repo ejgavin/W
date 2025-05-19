@@ -127,25 +127,51 @@
         const isKendrick = videoUrl.includes('kendrickl-3amar.site');
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
-        if (isKendrick && data.audio) {
-          player.src([{ src: videoUrl, type: 'application/x-mpegURL', withCredentials: true }]);
+        if (isKendrick) {
+          fetch(`https://scrape2-ruddy.vercel.app/api/scrape?url=${encodeURIComponent(videoUrl)}`)
+            .then(res => res.text())
+            .then(m3u8Text => {
+              const lines = m3u8Text.split('\n');
+              const videoLines = lines.filter(line => line.includes('.m3u8') && !line.includes('audio'));
+              const audioLine = lines.find(line => line.includes('/audio/') && line.includes('.m3u8'));
 
-          const audio = document.createElement('audio');
-          audio.src = data.audio;
-          audio.crossOrigin = 'use-credentials';
-          audio.autoplay = true;
-          audio.controls = false;
-          audio.style.display = 'none';
-          document.body.appendChild(audio);
+              const bestVideo = videoLines[0] ? `https://kendrickl-3amar.site${videoLines[0]}` : null;
+              const audioUrl = audioLine ? `https://kendrickl-3amar.site${audioLine}` : null;
 
-          player.on('play', () => audio.play());
-          player.on('pause', () => audio.pause());
-          player.on('seeked', () => { audio.currentTime = player.currentTime(); });
-          player.on('timeupdate', () => {
-            if (Math.abs(audio.currentTime - player.currentTime()) > 0.3) {
-              audio.currentTime = player.currentTime();
-            }
-          });
+              if (!bestVideo) throw new Error('No video stream found in scraped data');
+
+              player.src([{ src: bestVideo, type: 'application/x-mpegURL', withCredentials: true }]);
+
+              if (audioUrl) {
+                const audio = document.createElement('audio');
+                audio.src = audioUrl;
+                audio.crossOrigin = 'use-credentials';
+                audio.autoplay = true;
+                audio.controls = false;
+                audio.style.display = 'none';
+                document.body.appendChild(audio);
+
+                player.on('play', () => audio.play());
+                player.on('pause', () => audio.pause());
+                player.on('seeked', () => { audio.currentTime = player.currentTime(); });
+                player.on('timeupdate', () => {
+                  if (Math.abs(audio.currentTime - player.currentTime()) > 0.3) {
+                    audio.currentTime = player.currentTime();
+                  }
+                });
+              }
+
+              player.ready(() => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('video-container').style.display = 'block';
+                document.getElementById('search-label').style.display = 'none';
+              });
+            })
+            .catch(() => {
+              document.getElementById('loader').style.display = 'none';
+              document.getElementById('search-label').style.display = 'none';
+              document.getElementById('error-message').style.display = 'block';
+            });
         } else if (isMP4) {
           player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
         } else {
