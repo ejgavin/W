@@ -118,14 +118,41 @@
         searchTermEl.innerText = 'Unknown Title';
       });
 
-      const apiFetchUrl = `https://customsource.vercel.app/api/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
-      
-    const reloadButton = document.getElementById('reload-button');
-    let currentVideoUrl = '';
+      const sources = ['meepet', 'gloomy', 'vidsrcsu', 'embedsu', 'autoembed', 'primebox', 'rgshows', 'xprime', 'xprime-group', 'vidify'];
 
-    fetch(apiFetchUrl)
-      .then(res => res.json())
-      .then(data => {
+      let currentVideoUrl = '';
+      let subtitleUrl = '';
+      let sourceTitle = '';
+
+      const trySources = async () => {
+        for (const src of sources) {
+          const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+          try {
+            const res = await fetch(apiUrl);
+            const data = await res.json();
+            if (data?.url) {
+              currentVideoUrl = data.url;
+              subtitleUrl = data.subtitle;
+              sourceTitle = src;
+              return data;
+            }
+          } catch (err) {
+            console.warn(`Failed to load source: ${src}`);
+          }
+        }
+        return null;
+      };
+
+      const reloadButton = document.getElementById('reload-button');
+
+      trySources().then(data => {
+        if (!data) {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('search-label').style.display = 'none';
+          document.getElementById('error-message').style.display = 'block';
+          return;
+        }
+
         const videoUrl = data.url;
         currentVideoUrl = videoUrl;
         const isMP4 = videoUrl.includes('.mp4');
@@ -146,8 +173,8 @@
           document.getElementById('search-label').style.display = 'none';
           reloadButton.style.display = 'block';
 
-          if (data.subtitle) {
-            fetch(data.subtitle)
+          if (subtitleUrl) {
+            fetch(subtitleUrl)
               .then(res => res.text())
               .then(srtData => {
                 const vttData = "WEBVTT\n\n" + srtData
@@ -175,8 +202,8 @@
             : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
           );
           player.ready(() => {
-            if (data.subtitle) {
-              fetch(data.subtitle)
+            if (subtitleUrl) {
+              fetch(subtitleUrl)
                 .then(res => res.text())
                 .then(srtData => {
                   const vttData = "WEBVTT\n\n" + srtData
@@ -199,11 +226,6 @@
             player.play();
           });
         };
-      })
-      .catch(() => {
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('search-label').style.display = 'none';
-        document.getElementById('error-message').style.display = 'block';
       });
   </script>
 </body>
