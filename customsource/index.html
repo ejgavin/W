@@ -120,6 +120,7 @@
       .then(res => res.json())
       .then(data => {
         const videoUrl = data.url;
+        const useMemoryCache = videoUrl.includes('ikm.fleurixsun.xyz');
         const isMP4 = videoUrl.includes('.mp4');
 
         const player = videojs('video-player');
@@ -127,9 +128,9 @@
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
         if (isMP4) {
-          player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
+          player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: useMemoryCache ? false : 'anonymous' });
         } else {
-          player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
+          player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: useMemoryCache ? false : (isAnimebox ? 'anonymous' : undefined) }]);
         }
 
         player.ready(() => {
