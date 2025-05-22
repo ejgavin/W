@@ -174,7 +174,30 @@
             ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
             : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
           );
-          player.play();
+          player.ready(() => {
+            if (data.subtitle) {
+              fetch(data.subtitle)
+                .then(res => res.text())
+                .then(srtData => {
+                  const vttData = "WEBVTT\n\n" + srtData
+                    .replace(/\r+/g, '')
+                    .replace(/^\d+\n/gm, '')
+                    .replace(/,/g, '.');
+
+                  const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                  const vttUrl = URL.createObjectURL(vttBlob);
+
+                  player.addRemoteTextTrack({
+                    kind: 'subtitles',
+                    src: vttUrl,
+                    srclang: 'en',
+                    label: 'English',
+                    default: true
+                  });
+                });
+            }
+            player.play();
+          });
         };
       })
       .catch(() => {
