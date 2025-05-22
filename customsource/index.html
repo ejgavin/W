@@ -70,6 +70,10 @@
     </video>
   </div>
 
+  <button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+    Reload Player
+  </button>
+
   <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
   <script>
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
@@ -116,11 +120,14 @@
 
       const apiFetchUrl = `https://customsource.vercel.app/api/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
       
+    const reloadButton = document.getElementById('reload-button');
+    let currentVideoUrl = '';
+
     fetch(apiFetchUrl)
       .then(res => res.json())
       .then(data => {
         const videoUrl = data.url;
-        const useMemoryCache = videoUrl.includes('ikm.fleurixsun.xyz');
+        currentVideoUrl = videoUrl;
         const isMP4 = videoUrl.includes('.mp4');
 
         const player = videojs('video-player');
@@ -128,15 +135,16 @@
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
         if (isMP4) {
-          player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: useMemoryCache ? false : 'anonymous' });
+          player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
         } else {
-          player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: useMemoryCache ? false : (isAnimebox ? 'anonymous' : undefined) }]);
+          player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
         }
 
         player.ready(() => {
           document.getElementById('loader').style.display = 'none';
           document.getElementById('video-container').style.display = 'block';
           document.getElementById('search-label').style.display = 'none';
+          reloadButton.style.display = 'block';
 
           if (data.subtitle) {
             fetch(data.subtitle)
@@ -160,6 +168,14 @@
               });
           }
         });
+
+        reloadButton.onclick = () => {
+          player.src(currentVideoUrl.includes('.mp4')
+            ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
+            : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
+          );
+          player.play();
+        };
       })
       .catch(() => {
         document.getElementById('loader').style.display = 'none';
