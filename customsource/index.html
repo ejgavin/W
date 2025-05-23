@@ -73,11 +73,11 @@
   <button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
     Reload Player
   </button>
-  <div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001;">
-    <button id="source-toggle" style="background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
-      Sources
+  <div id="source-selector" style="position: absolute; top: 10px; right: 10px; z-index: 1001; text-align: right;">
+    <button id="source-toggle" style="background: #1a1a1a; color: white; border: 1px solid #555; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+      🎛 Sources
     </button>
-    <div id="source-list" style="display: none; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 6px; margin-top: 4px;"></div>
+    <div id="source-list" style="display: none; background: rgba(0,0,0,0.95); color: white; padding: 10px; border-radius: 8px; margin-top: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); max-width: 200px; font-size: 14px;"></div>
   </div>
 
   <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
@@ -143,11 +143,19 @@
         sourceList.innerHTML = '';
         sourceResults.forEach((src, index) => {
           const entry = document.createElement('div');
-          entry.textContent = `Source ${index + 1}: ${src.name}`;
-          if (src.status === 'failed') entry.textContent += ' ❌';
-          if (src.status === 'success') entry.textContent += ' ▶️';
+          const number = `Source ${index + 1}`;
+          let statusIcon = '⏳'; // pending
+          if (src.status === 'success') statusIcon = '✅';
+          else if (src.status === 'failed') statusIcon = '❌';
+          else if (src.status === 'loading') statusIcon = '🔄';
+
+          entry.textContent = `${number} ${statusIcon}`;
           entry.style.cursor = 'pointer';
+          entry.style.padding = '6px 0';
+          entry.style.borderBottom = '1px solid #444';
           entry.onclick = async () => {
+            sourceResults.forEach(s => s.status = s === src ? 'loading' : s.status);
+            updateSourceListUI();
             const apiUrl = `https://customsource.vercel.app/api/${src.name}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
             try {
               const res = await fetch(apiUrl);
@@ -180,7 +188,7 @@
                   }
                   player.play();
                 });
-                sourceResults.forEach(s => s.status = 'pending');
+                sourceResults.forEach(s => s.status = 'failed');
                 src.status = 'success';
                 updateSourceListUI();
               } else {
@@ -198,6 +206,8 @@
 
       const trySources = async () => {
         for (const src of sources) {
+          sourceResults.find(s => s.name === src).status = 'loading';
+          updateSourceListUI();
           const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
           try {
             const res = await fetch(apiUrl);
