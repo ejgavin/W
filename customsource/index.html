@@ -73,6 +73,12 @@
   <button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
     Reload Player
   </button>
+  <div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001;">
+    <button id="source-toggle" style="background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+      Sources
+    </button>
+    <div id="source-list" style="display: none; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 6px; margin-top: 4px;"></div>
+  </div>
 
   <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
   <script>
@@ -124,6 +130,72 @@
       let subtitleUrl = '';
       let sourceTitle = '';
 
+      const sourceToggle = document.getElementById('source-toggle');
+      const sourceList = document.getElementById('source-list');
+
+      let sourceResults = sources.map(name => ({ name, status: 'pending' }));
+
+      sourceToggle.onclick = () => {
+        sourceList.style.display = sourceList.style.display === 'none' ? 'block' : 'none';
+      };
+
+      const updateSourceListUI = () => {
+        sourceList.innerHTML = '';
+        sourceResults.forEach((src, index) => {
+          const entry = document.createElement('div');
+          entry.textContent = `Source ${index + 1}: ${src.name}`;
+          if (src.status === 'failed') entry.textContent += ' ❌';
+          if (src.status === 'success') entry.textContent += ' ▶️';
+          entry.style.cursor = 'pointer';
+          entry.onclick = async () => {
+            const apiUrl = `https://customsource.vercel.app/api/${src.name}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+            try {
+              const res = await fetch(apiUrl);
+              const data = await res.json();
+              if (data?.url) {
+                currentVideoUrl = data.url;
+                subtitleUrl = data.subtitle;
+                const isMP4 = currentVideoUrl.includes('.mp4');
+                const player = videojs('video-player');
+                player.src(isMP4
+                  ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
+                  : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
+                );
+                player.ready(() => {
+                  if (subtitleUrl) {
+                    fetch(subtitleUrl)
+                      .then(res => res.text())
+                      .then(srtData => {
+                        const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
+                        const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                        const vttUrl = URL.createObjectURL(vttBlob);
+                        player.addRemoteTextTrack({
+                          kind: 'subtitles',
+                          src: vttUrl,
+                          srclang: 'en',
+                          label: 'English',
+                          default: true
+                        });
+                      });
+                  }
+                  player.play();
+                });
+                sourceResults.forEach(s => s.status = 'pending');
+                src.status = 'success';
+                updateSourceListUI();
+              } else {
+                src.status = 'failed';
+                updateSourceListUI();
+              }
+            } catch {
+              src.status = 'failed';
+              updateSourceListUI();
+            }
+          };
+          sourceList.appendChild(entry);
+        });
+      };
+
       const trySources = async () => {
         for (const src of sources) {
           const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
@@ -134,11 +206,16 @@
               currentVideoUrl = data.url;
               subtitleUrl = data.subtitle;
               sourceTitle = src;
+              sourceResults.find(s => s.name === src).status = 'success';
+              updateSourceListUI();
               return data;
+            } else {
+              sourceResults.find(s => s.name === src).status = 'failed';
             }
-          } catch (err) {
-            console.warn(`Failed to load source: ${src}`);
+          } catch {
+            sourceResults.find(s => s.name === src).status = 'failed';
           }
+          updateSourceListUI();
         }
         return null;
       };
