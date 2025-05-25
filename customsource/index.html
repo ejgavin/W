@@ -124,7 +124,7 @@
         searchTermEl.innerText = 'Unknown Title';
       });
 
-      const sources = ['meepet', 'gloomy', 'vidsrcsu', 'embedsu', 'autoembed', 'primebox', 'rgshows', 'xprime', 'xprime-group', 'vidify'];
+      const sources = ['meepet', 'gloomy', 'vidsrcsu', 'embedsu', 'autoembed', 'primebox', 'rgshows', 'xprime', 'xprime-group'];
 
       let currentVideoUrl = '';
       let subtitleUrl = '';
@@ -186,8 +186,6 @@
                         });
                       });
                   }
-                  player.load();
-                  player.pause();
                   player.play();
                 });
                 sourceResults.forEach(s => s.status = 'failed');
@@ -285,9 +283,6 @@
                 });
               });
           }
-          player.load();
-          player.pause();
-          player.play();
         });
 
         reloadButton.onclick = () => {
