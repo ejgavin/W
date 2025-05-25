@@ -196,7 +196,10 @@
           entry.appendChild(right);
 
           entry.onclick = async () => {
-            sourceResults.forEach(s => s.status = s === src ? 'loading' : s.status);
+            sourceResults = sourceResults.map(s => s.name === src.name
+              ? { ...s, status: 'loading' }
+              : s
+            );
             updateSourceListUI();
             const apiUrl = `https://customsource.vercel.app/api/${src.name}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
             try {
@@ -231,15 +234,20 @@
                   }
                   player.play();
                 });
-                sourceResults.forEach(s => s.status = 'failed');
-                src.status = 'success';
+                sourceResults = sourceResults.map(s =>
+                  s.name === src.name ? { ...s, status: 'success' } : s
+                );
                 updateSourceListUI();
               } else {
-                src.status = 'failed';
+                sourceResults = sourceResults.map(s =>
+                  s.name === src.name ? { ...s, status: 'failed' } : s
+                );
                 updateSourceListUI();
               }
             } catch {
-              src.status = 'failed';
+              sourceResults = sourceResults.map(s =>
+                s.name === src.name ? { ...s, status: 'failed' } : s
+              );
               updateSourceListUI();
             }
           };
