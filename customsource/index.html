@@ -205,28 +205,42 @@
       };
 
       const trySources = async () => {
-        for (const src of sources) {
-          sourceResults.find(s => s.name === src).status = 'loading';
+        const fetchPromises = sources.map((src, index) => {
+          sourceResults[index].status = 'loading';
           updateSourceListUI();
+
           const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
-          try {
-            const res = await fetch(apiUrl);
-            const data = await res.json();
-            if (data?.url) {
-              currentVideoUrl = data.url;
-              subtitleUrl = data.subtitle;
-              sourceTitle = src;
-              sourceResults.find(s => s.name === src).status = 'success';
+
+          return fetch(apiUrl)
+            .then(res => res.json())
+            .then(data => {
+              if (data?.url) {
+                sourceResults[index].status = 'success';
+                updateSourceListUI();
+                return { index, src, data };
+              } else {
+                sourceResults[index].status = 'failed';
+                updateSourceListUI();
+                return null;
+              }
+            })
+            .catch(() => {
+              sourceResults[index].status = 'failed';
               updateSourceListUI();
-              return data;
-            } else {
-              sourceResults.find(s => s.name === src).status = 'failed';
-            }
-          } catch {
-            sourceResults.find(s => s.name === src).status = 'failed';
-          }
-          updateSourceListUI();
+              return null;
+            });
+        });
+
+        const results = await Promise.all(fetchPromises);
+
+        const valid = results.find(r => r !== null);
+        if (valid) {
+          currentVideoUrl = valid.data.url;
+          subtitleUrl = valid.data.subtitle;
+          sourceTitle = valid.src;
+          return valid.data;
         }
+
         return null;
       };
 
