@@ -134,6 +134,8 @@
       }
     }
   </style>
+  <link href="https://vjs.zencdn.net/8.9.0/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/8.9.0/video.min.js"></script>
 </head>
 <body>
 
@@ -173,18 +175,60 @@
     return match ? match[1] : null;
   }
 
-  function loadVideo() {
+  async function loadVideo() {
     const input = document.getElementById('yt-link').value;
     const videoID = extractVideoID(input);
     const container = document.getElementById('video-container');
     const inputSection = document.getElementById('input-section');
     const backBtn = document.getElementById('back-btn');
 
-    if (videoID) {
-      inputSection.style.display = 'none';
-      container.innerHTML = `<iframe src="https://yewtu.be/embed/${videoID}" sandbox="allow-scripts" allowfullscreen onload="document.getElementById('back-btn').style.display = 'block'"></iframe>`;
-    } else {
+    if (!videoID) {
       alert("Invalid YouTube link.");
+      return;
+    }
+
+    inputSection.style.display = 'none';
+
+    try {
+      const response = await fetch(`https://stuff-co8p.onrender.com/proxy/https://inv.nadeko.net/embed/${videoID}`);
+      const text = await response.text();
+      const latestMatch = text.match(/https:\/\/[^"]+\/latest_version\?[^"]+/);
+
+      if (latestMatch && latestMatch[0]) {
+        const rewrittenUrl = latestMatch[0].replace(/https:\/\/[^/]+/, 'https://inv-eu4-c.nadeko.net');
+        const videoSrc = rewrittenUrl;
+        // Fetch the captions track
+        const captionMatch = text.match(/<track kind="captions" src="([^"]+)" label="([^"]+)"/);
+        let captionUrl = null;
+        let captionLabel = null;
+        if (captionMatch) {
+          const src = captionMatch[1];
+          captionUrl = `https://inv.nadeko.net${src}`;
+          captionLabel = captionMatch[2];
+        }
+        container.innerHTML = `
+          <video
+            id="video-player"
+            class="video-js vjs-default-skin"
+            controls
+            autoplay
+            style="position:absolute; top:0; left:0; width:100%; height:100%;"
+          >
+            <source src="${videoSrc}" type="video/mp4" />
+            ${captionUrl ? `<track kind="subtitles" src="${captionUrl}" srclang="en" label="${captionLabel}" default>` : ''}
+          </video>
+        `;
+        if (typeof videojs !== 'undefined') {
+          videojs('video-player');
+        }
+        backBtn.style.display = 'block';
+      } else {
+        alert("Could not find a valid video stream.");
+        inputSection.style.display = 'flex';
+      }
+    } catch (error) {
+      alert("Failed to load video.");
+      inputSection.style.display = 'flex';
     }
   }
 </script>
