@@ -31,6 +31,9 @@
       z-index: 999;
     }
 
+    .spinner {
+      display: inline-block;
+    }
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -143,16 +146,55 @@
         sourceList.innerHTML = '';
         sourceResults.forEach((src, index) => {
           const entry = document.createElement('div');
-          const number = `Source ${index + 1}`;
-          let statusIcon = '⏳'; // pending
-          if (src.status === 'success') statusIcon = '✅';
-          else if (src.status === 'failed') statusIcon = '❌';
-          else if (src.status === 'loading') statusIcon = '🔄';
-
-          entry.textContent = `${number} ${statusIcon}`;
-          entry.style.cursor = 'pointer';
+          entry.style.display = 'flex';
+          entry.style.alignItems = 'center';
+          entry.style.justifyContent = 'space-between';
           entry.style.padding = '6px 0';
           entry.style.borderBottom = '1px solid #444';
+          entry.style.cursor = 'pointer';
+
+          const left = document.createElement('div');
+          left.textContent = `Source ${index + 1}`;
+          left.style.fontWeight = 'bold';
+
+          const right = document.createElement('div');
+          right.style.display = 'flex';
+          right.style.alignItems = 'center';
+          right.style.gap = '6px';
+
+          if (src.status === 'loading') {
+            const loader = document.createElement('div');
+            loader.className = 'spinner';
+            loader.style.width = '12px';
+            loader.style.height = '12px';
+            loader.style.border = '2px solid #888';
+            loader.style.borderTop = '2px solid #09f';
+            loader.style.borderRadius = '50%';
+            loader.style.animation = 'spin 0.8s linear infinite';
+            right.appendChild(loader);
+          } else if (src.status === 'success') {
+            const status = document.createElement('span');
+            status.textContent = 'Available';
+            status.style.color = '#0f0';
+            right.appendChild(status);
+          } else if (src.status === 'failed') {
+            const status = document.createElement('span');
+            status.textContent = 'Unavailable';
+            status.style.color = '#f00';
+            right.appendChild(status);
+          }
+
+          if (src.status === 'success' && currentVideoUrl && sourceTitle === src.name) {
+            const playing = document.createElement('span');
+            playing.textContent = 'Playing';
+            playing.style.color = '#0af';
+            playing.style.marginLeft = '8px';
+            right.appendChild(playing);
+          }
+
+          entry.appendChild(left);
+          entry.appendChild(right);
+
           entry.onclick = async () => {
             sourceResults.forEach(s => s.status = s === src ? 'loading' : s.status);
             updateSourceListUI();
@@ -163,6 +205,7 @@
               if (data?.url) {
                 currentVideoUrl = data.url;
                 subtitleUrl = data.subtitle;
+                sourceTitle = src.name;
                 const isMP4 = currentVideoUrl.includes('.mp4');
                 const player = videojs('video-player');
                 player.src(isMP4
@@ -200,6 +243,7 @@
               updateSourceListUI();
             }
           };
+
           sourceList.appendChild(entry);
         });
       };
