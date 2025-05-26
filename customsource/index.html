@@ -1,4 +1,3 @@
-// Make apiCache global so it is shared across trySources and click events
 const apiCache = {};
 <!DOCTYPE html>
 <html lang="en">
@@ -204,12 +203,21 @@ fetch(tmdbUrl)
           subtitleUrl = data.subtitle;
           sourceTitle = src.name;
           const isMP4 = currentVideoUrl.includes('.mp4');
+          const isAnimebox = currentVideoUrl.includes('animebox.xyz');
           const player = videojs('video-player');
-          player.src(isMP4
-            ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
-            : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
-          );
+
+          if (isMP4) {
+            player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
+          } else {
+            player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
+          }
+
           player.ready(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('video-container').style.display = 'block';
+            document.getElementById('search-label').style.display = 'none';
+            reloadButton.style.display = 'block';
+
             if (subtitleUrl) {
               fetch(subtitleUrl)
                 .then(res => res.text())
@@ -228,6 +236,7 @@ fetch(tmdbUrl)
             }
             player.play();
           });
+
           updateSourceListUI();
           return;
         }
