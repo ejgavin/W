@@ -304,6 +304,7 @@
               .then(res => res.json())
               .then(data => {
                 if (data?.url) {
+                  apiCache[src] = data;
                   sourceResults[index].status = 'success';
                 } else {
                   sourceResults[index].status = 'failed';
