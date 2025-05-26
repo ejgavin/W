@@ -198,13 +198,14 @@
           entry.appendChild(right);
 
           entry.onclick = async () => {
+            const player = videojs('video-player');
+            const currentTime = player.currentTime();
             if (apiCache[src.name]) {
               const data = apiCache[src.name];
               currentVideoUrl = data.url;
               subtitleUrl = data.subtitle;
               sourceTitle = src.name;
               const isMP4 = currentVideoUrl.includes('.mp4');
-              const player = videojs('video-player');
               player.src(isMP4
                 ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
                 : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
@@ -227,6 +228,7 @@
                     });
                 }
                 player.play();
+                player.currentTime(currentTime);
               });
               updateSourceListUI();
               return;
@@ -246,7 +248,6 @@
                 subtitleUrl = data.subtitle;
                 sourceTitle = src.name;
                 const isMP4 = currentVideoUrl.includes('.mp4');
-                const player = videojs('video-player');
                 player.src(isMP4
                   ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
                   : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
@@ -269,6 +270,7 @@
                       });
                   }
                   player.play();
+                  player.currentTime(currentTime);
                 });
                 sourceResults = sourceResults.map(s =>
                   s.name === src.name ? { ...s, status: 'success' } : s
