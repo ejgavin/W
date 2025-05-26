@@ -262,8 +262,23 @@
           updateSourceListUI();
 
           if (src === 'premium') {
-            // Immediately mark as idle; don't wait for response
-            sourceResults[index].status = 'idle';
+            // Fetch in background but don't block video playback
+            const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+            fetch(apiUrl)
+              .then(res => res.json())
+              .then(data => {
+                if (data?.url) {
+                  sourceResults[index].status = 'success';
+                } else {
+                  sourceResults[index].status = 'failed';
+                }
+                updateSourceListUI();
+              })
+              .catch(() => {
+                sourceResults[index].status = 'failed';
+                updateSourceListUI();
+              });
+            sourceResults[index].status = 'loading';
             updateSourceListUI();
             return Promise.resolve(null);
           }
