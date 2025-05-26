@@ -127,7 +127,7 @@
         searchTermEl.innerText = 'Unknown Title';
       });
 
-      const sources = ['meepet', 'gloomy', 'vidsrcsu', 'embedsu', 'autoembed', 'primebox', 'rgshows', 'xprime', 'xprime-group'];
+      const sources = ['meepet', 'gloomy', 'vidsrcsu', 'embedsu', 'autoembed', 'primebox', 'rgshows', 'xprime', 'xprime-group', 'premium'];
 
       let currentVideoUrl = '';
       let subtitleUrl = '';
@@ -260,6 +260,13 @@
         const fetchPromises = sources.map((src, index) => {
           sourceResults[index].status = 'loading';
           updateSourceListUI();
+
+          if (src === 'premium') {
+            // Immediately mark as idle; don't wait for response
+            sourceResults[index].status = 'idle';
+            updateSourceListUI();
+            return Promise.resolve(null);
+          }
 
           const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
 
