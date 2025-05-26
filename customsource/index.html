@@ -1,230 +1,433 @@
-const apiCache = {};
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Loading...</title>
-<link href="https://unpkg.com/video.js@8/dist/video-js.min.css" rel="stylesheet" />
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #000;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  font-family: 'Segoe UI', sans-serif;
-  color: #fff;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading...</title>
+  <link href="https://unpkg.com/video.js@8/dist/video-js.min.css" rel="stylesheet" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
 
-.loader {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 6px solid #444;
-  border-top: 6px solid #09f;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite;
-  z-index: 999;
-}
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 6px solid #444;
+      border-top: 6px solid #09f;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      z-index: 999;
+    }
 
-.spinner {
-  display: inline-block;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+    .spinner {
+      display: inline-block;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-#search-label {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 18px;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 6px 12px;
-  border-radius: 8px;
-  z-index: 1000;
-}
+    #search-label {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px 12px;
+      border-radius: 8px;
+      z-index: 1000;
+    }
 
-#video-container {
-  display: none;
-  width: 100vw;
-  height: 100vh;
-}
+    #video-container {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+    }
 
-.video-js {
-  width: 100%;
-  height: 100%;
-}
-</style>
+    .video-js {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-<div id="search-label">Searching for "<strong id="search-term">Loading...</strong>"</div>
-<div class="loader" id="loader"></div>
-<div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
+  <div id="search-label">Searching for "<strong id="search-term">Loading...</strong>"</div>
+  <div class="loader" id="loader"></div>
+  <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
 
-<div id="video-container">
-<video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
-</video>
-</div>
+  <div id="video-container">
+    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
+    </video>
+  </div>
 
-<button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
-Reload Player
-</button>
-<div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001; text-align: right;">
-<button id="source-toggle" style="background: #1a1a1a; color: white; border: 1px solid #555; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-  🎛 Sources
-</button>
-<div id="source-list" style="display: none; background: rgba(0,0,0,0.95); color: white; padding: 10px; border-radius: 8px; margin-top: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); max-width: 200px; font-size: 14px;"></div>
-</div>
+  <button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+    Reload Player
+  </button>
+  <div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001; text-align: right;">
+    <button id="source-toggle" style="background: #1a1a1a; color: white; border: 1px solid #555; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+      🎛 Sources
+    </button>
+    <div id="source-list" style="display: none; background: rgba(0,0,0,0.95); color: white; padding: 10px; border-radius: 8px; margin-top: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); max-width: 200px; font-size: 14px;"></div>
+  </div>
 
-<script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
-<script>
-const pathSegments = window.location.pathname.split('/').filter(Boolean);
-const searchParams = new URLSearchParams(window.location.search);
+  <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
+  <script>
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const searchParams = new URLSearchParams(window.location.search);
 
-let id = searchParams.get('id');
-let type = searchParams.get('type');
-let season = searchParams.get('season');
-let episode = searchParams.get('episode');
+    let id = searchParams.get('id');
+    let type = searchParams.get('type');
+    let season = searchParams.get('season');
+    let episode = searchParams.get('episode');
 
-if (!id && pathSegments[0] === 'tv' && pathSegments.length >= 4) {
-  type = 'tv';
-  id = pathSegments[1];
-  season = pathSegments[2];
-  episode = pathSegments[3];
-} else if (!id && pathSegments[0] === 'movie' && pathSegments.length >= 2) {
-  type = 'movie';
-  id = pathSegments[1];
-}
+    if (!id && pathSegments[0] === 'tv' && pathSegments.length >= 4) {
+      type = 'tv';
+      id = pathSegments[1];
+      season = pathSegments[2];
+      episode = pathSegments[3];
+    } else if (!id && pathSegments[0] === 'movie' && pathSegments.length >= 2) {
+      type = 'movie';
+      id = pathSegments[1];
+    }
 
-if (!id || !type) {
-  document.getElementById('loader').innerText = '❌ Missing parameters';
-  throw new Error('Missing parameters');
-}
+    if (!id || !type) {
+      document.getElementById('loader').innerText = '❌ Missing parameters';
+      throw new Error('Missing parameters');
+    }
 
-const searchTermEl = document.getElementById("search-term");
+    const searchTermEl = document.getElementById("search-term");
 
-const apiKey = '9a2954cb0084e80efa20b3729db69067';
-let tmdbUrl =
-  type === 'tv'
-    ? `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=en-US`
-    : `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=en-US`;
+    const apiKey = '9a2954cb0084e80efa20b3729db69067';
+    let tmdbUrl =
+      type === 'tv'
+        ? `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=en-US`
+        : `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=en-US`;
 
-fetch(tmdbUrl)
-  .then(res => res.json())
-  .then(data => {
-    const title = data.name || data.title || 'Unknown Title';
-    searchTermEl.innerText = title;
-    document.title = title;
-  })
-  .catch(() => {
-    searchTermEl.innerText = 'Unknown Title';
-  });
+    fetch(tmdbUrl)
+      .then(res => res.json())
+      .then(data => {
+        const title = data.name || data.title || 'Unknown Title';
+        searchTermEl.innerText = title;
+        document.title = title;
+      })
+      .catch(() => {
+        searchTermEl.innerText = 'Unknown Title';
+      });
 
-  const sources = ['meepet', 'gloomy', 'vidsrcsu', 'embedsu', 'autoembed', 'primebox', 'rgshows', 'xprime', 'xprime-group', 'premium'];
+      const sources = ['meepet', 'gloomy', 'vidsrcsu', 'embedsu', 'autoembed', 'primebox', 'rgshows', 'xprime', 'xprime-group', 'premium'];
 
-  let currentVideoUrl = '';
-  let subtitleUrl = '';
-  let sourceTitle = '';
+      let currentVideoUrl = '';
+      let subtitleUrl = '';
+      let sourceTitle = '';
+      // Global API cache for all sources
+      const apiCache = {};
 
-  const sourceToggle = document.getElementById('source-toggle');
-  const sourceList = document.getElementById('source-list');
+      const sourceToggle = document.getElementById('source-toggle');
+      const sourceList = document.getElementById('source-list');
 
-  let sourceResults = sources.map(name => ({ name, status: 'pending' }));
+      let sourceResults = sources.map(name => ({ name, status: 'pending' }));
 
-  sourceToggle.onclick = () => {
-    sourceList.style.display = sourceList.style.display === 'none' ? 'block' : 'none';
-  };
+      sourceToggle.onclick = () => {
+        sourceList.style.display = sourceList.style.display === 'none' ? 'block' : 'none';
+      };
 
-  const updateSourceListUI = () => {
-    sourceList.innerHTML = '';
-    sourceResults.forEach((src, index) => {
-      const entry = document.createElement('div');
-      entry.style.display = 'flex';
-      entry.style.alignItems = 'center';
-      entry.style.justifyContent = 'space-between';
-      entry.style.padding = '6px 0';
-      entry.style.borderBottom = '1px solid #444';
-      entry.style.cursor = 'pointer';
+      const updateSourceListUI = () => {
+        sourceList.innerHTML = '';
+        sourceResults.forEach((src, index) => {
+          const entry = document.createElement('div');
+          entry.style.display = 'flex';
+          entry.style.alignItems = 'center';
+          entry.style.justifyContent = 'space-between';
+          entry.style.padding = '6px 0';
+          entry.style.borderBottom = '1px solid #444';
+          entry.style.cursor = 'pointer';
 
-      const left = document.createElement('div');
-      left.textContent = `Source ${index + 1}`;
-      left.style.fontWeight = 'bold';
+          const left = document.createElement('div');
+          left.textContent = `Source ${index + 1}`;
+          left.style.fontWeight = 'bold';
 
-      const right = document.createElement('div');
-      right.style.display = 'flex';
-      right.style.alignItems = 'center';
-      right.style.gap = '6px';
+          const right = document.createElement('div');
+          right.style.display = 'flex';
+          right.style.alignItems = 'center';
+          right.style.gap = '6px';
 
-      if (src.status === 'loading') {
-        const loader = document.createElement('div');
-        loader.className = 'spinner';
-        loader.style.width = '12px';
-        loader.style.height = '12px';
-        loader.style.border = '2px solid #888';
-        loader.style.borderTop = '2px solid #09f';
-        loader.style.borderRadius = '50%';
-        loader.style.animation = 'spin 0.8s linear infinite';
-        right.appendChild(loader);
-      } else if (src.status === 'success') {
-        const status = document.createElement('span');
-        status.textContent = 'Available';
-        status.style.color = '#0f0';
-        right.appendChild(status);
-      } else if (src.status === 'failed') {
-        const status = document.createElement('span');
-        status.textContent = 'Unavailable';
-        status.style.color = '#f00';
-        right.appendChild(status);
-      }
-
-      if (src.status === 'success' && currentVideoUrl && sourceTitle === src.name) {
-        const playing = document.createElement('span');
-        playing.textContent = 'Playing';
-        playing.style.color = '#0af';
-        playing.style.marginLeft = '8px';
-        right.appendChild(playing);
-      }
-
-      entry.appendChild(left);
-      entry.appendChild(right);
-
-      entry.onclick = async () => {
-        if (apiCache[src.name]) {
-          const data = apiCache[src.name];
-          currentVideoUrl = data.url;
-          subtitleUrl = data.subtitle;
-          sourceTitle = src.name;
-          const isMP4 = currentVideoUrl.includes('.mp4');
-          const isAnimebox = currentVideoUrl.includes('animebox.xyz');
-          const player = videojs('video-player');
-
-          if (isMP4) {
-            player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-          } else {
-            player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
+          if (src.status === 'loading') {
+            const loader = document.createElement('div');
+            loader.className = 'spinner';
+            loader.style.width = '12px';
+            loader.style.height = '12px';
+            loader.style.border = '2px solid #888';
+            loader.style.borderTop = '2px solid #09f';
+            loader.style.borderRadius = '50%';
+            loader.style.animation = 'spin 0.8s linear infinite';
+            right.appendChild(loader);
+          } else if (src.status === 'success') {
+            const status = document.createElement('span');
+            status.textContent = 'Available';
+            status.style.color = '#0f0';
+            right.appendChild(status);
+          } else if (src.status === 'failed') {
+            const status = document.createElement('span');
+            status.textContent = 'Unavailable';
+            status.style.color = '#f00';
+            right.appendChild(status);
           }
 
-          player.ready(() => {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('video-container').style.display = 'block';
-            document.getElementById('search-label').style.display = 'none';
-            reloadButton.style.display = 'block';
+          if (src.status === 'success' && currentVideoUrl && sourceTitle === src.name) {
+            const playing = document.createElement('span');
+            playing.textContent = 'Playing';
+            playing.style.color = '#0af';
+            playing.style.marginLeft = '8px';
+            right.appendChild(playing);
+          }
 
+          entry.appendChild(left);
+          entry.appendChild(right);
+
+          entry.onclick = async () => {
+            if (apiCache[src.name]) {
+              const data = apiCache[src.name];
+              currentVideoUrl = data.url;
+              subtitleUrl = data.subtitle;
+              sourceTitle = src.name;
+              const isMP4 = currentVideoUrl.includes('.mp4');
+              const player = videojs('video-player');
+              player.src(isMP4
+                ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
+                : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
+              );
+              player.ready(() => {
+                if (subtitleUrl) {
+                  fetch(subtitleUrl)
+                    .then(res => res.text())
+                    .then(srtData => {
+                      const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
+                      const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                      const vttUrl = URL.createObjectURL(vttBlob);
+                      player.addRemoteTextTrack({
+                        kind: 'subtitles',
+                        src: vttUrl,
+                        srclang: 'en',
+                        label: 'English',
+                        default: true
+                      });
+                    });
+                }
+                player.play();
+              });
+              updateSourceListUI();
+              return;
+            }
+            sourceResults = sourceResults.map(s => s.name === src.name
+              ? { ...s, status: 'loading' }
+              : s
+            );
+            updateSourceListUI();
+            const apiUrl = `https://customsource.vercel.app/api/${src.name}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+            try {
+              const res = await fetch(apiUrl);
+              const data = await res.json();
+              if (data?.url) {
+                apiCache[src.name] = data;
+                currentVideoUrl = data.url;
+                subtitleUrl = data.subtitle;
+                sourceTitle = src.name;
+                const isMP4 = currentVideoUrl.includes('.mp4');
+                const player = videojs('video-player');
+                player.src(isMP4
+                  ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
+                  : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
+                );
+                player.ready(() => {
+                  if (subtitleUrl) {
+                    fetch(subtitleUrl)
+                      .then(res => res.text())
+                      .then(srtData => {
+                        const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
+                        const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                        const vttUrl = URL.createObjectURL(vttBlob);
+                        player.addRemoteTextTrack({
+                          kind: 'subtitles',
+                          src: vttUrl,
+                          srclang: 'en',
+                          label: 'English',
+                          default: true
+                        });
+                      });
+                  }
+                  player.play();
+                });
+                sourceResults = sourceResults.map(s =>
+                  s.name === src.name ? { ...s, status: 'success' } : s
+                );
+                updateSourceListUI();
+              } else {
+                sourceResults = sourceResults.map(s =>
+                  s.name === src.name ? { ...s, status: 'failed' } : s
+                );
+                updateSourceListUI();
+              }
+            } catch {
+              sourceResults = sourceResults.map(s =>
+                s.name === src.name ? { ...s, status: 'failed' } : s
+              );
+              updateSourceListUI();
+            }
+          };
+
+          sourceList.appendChild(entry);
+        });
+      };
+
+      const trySources = async () => {
+        const fetchPromises = sources.map((src, index) => {
+          sourceResults[index].status = 'loading';
+          updateSourceListUI();
+
+          if (src === 'premium') {
+            // Fetch in background but don't block video playback
+            const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+            fetch(apiUrl)
+              .then(res => res.json())
+              .then(data => {
+                if (data?.url) {
+                  sourceResults[index].status = 'success';
+                } else {
+                  sourceResults[index].status = 'failed';
+                }
+                updateSourceListUI();
+              })
+              .catch(() => {
+                sourceResults[index].status = 'failed';
+                updateSourceListUI();
+              });
+            sourceResults[index].status = 'loading';
+            updateSourceListUI();
+            return Promise.resolve(null);
+          }
+
+          const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+
+          return fetch(apiUrl)
+            .then(res => res.json())
+            .then(data => {
+              if (data?.url) {
+                apiCache[src] = data;
+                sourceResults[index].status = 'success';
+                updateSourceListUI();
+                return { index, src, data };
+              } else {
+                sourceResults[index].status = 'failed';
+                updateSourceListUI();
+                return null;
+              }
+            })
+            .catch(() => {
+              sourceResults[index].status = 'failed';
+              updateSourceListUI();
+              return null;
+            });
+        });
+
+        const results = await Promise.all(fetchPromises);
+
+        const valid = results.find(r => r !== null);
+        if (valid) {
+          currentVideoUrl = valid.data.url;
+          subtitleUrl = valid.data.subtitle;
+          sourceTitle = valid.src;
+          return valid.data;
+        }
+
+        return null;
+      };
+
+      const reloadButton = document.getElementById('reload-button');
+
+      trySources().then(data => {
+        if (!data) {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('search-label').style.display = 'none';
+          document.getElementById('error-message').style.display = 'block';
+          return;
+        }
+
+        document.getElementById('loader').style.display = 'none';
+
+        const videoUrl = data.url;
+        currentVideoUrl = videoUrl;
+        const isMP4 = videoUrl.includes('.mp4');
+
+        const player = videojs('video-player');
+
+        const isAnimebox = videoUrl.includes('animebox.xyz');
+
+        if (isMP4) {
+          player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
+        } else {
+          player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
+        }
+
+        player.ready(() => {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('video-container').style.display = 'block';
+          document.getElementById('search-label').style.display = 'none';
+          reloadButton.style.display = 'block';
+
+          if (subtitleUrl) {
+            fetch(subtitleUrl)
+              .then(res => res.text())
+              .then(srtData => {
+                const vttData = "WEBVTT\n\n" + srtData
+                  .replace(/\r+/g, '')
+                  .replace(/^\d+\n/gm, '')
+                  .replace(/,/g, '.');
+
+                const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                const vttUrl = URL.createObjectURL(vttBlob);
+
+                player.addRemoteTextTrack({
+                  kind: 'subtitles',
+                  src: vttUrl,
+                  srclang: 'en',
+                  label: 'English',
+                  default: true
+                });
+              });
+          }
+        });
+
+        reloadButton.onclick = () => {
+          player.src(currentVideoUrl.includes('.mp4')
+            ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
+            : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
+          );
+          player.ready(() => {
             if (subtitleUrl) {
               fetch(subtitleUrl)
                 .then(res => res.text())
                 .then(srtData => {
-                  const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
+                  const vttData = "WEBVTT\n\n" + srtData
+                    .replace(/\r+/g, '')
+                    .replace(/^\d+\n/gm, '')
+                    .replace(/,/g, '.');
+
                   const vttBlob = new Blob([vttData], { type: 'text/vtt' });
                   const vttUrl = URL.createObjectURL(vttBlob);
+
                   player.addRemoteTextTrack({
                     kind: 'subtitles',
                     src: vttUrl,
@@ -236,220 +439,8 @@ fetch(tmdbUrl)
             }
             player.play();
           });
-
-          updateSourceListUI();
-          return;
-        }
-        sourceResults = sourceResults.map(s => s.name === src.name
-          ? { ...s, status: 'loading' }
-          : s
-        );
-        updateSourceListUI();
-        const apiUrl = `https://customsource.vercel.app/api/${src.name}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
-        try {
-          const res = await fetch(apiUrl);
-          const data = await res.json();
-          if (data?.url) {
-            apiCache[src.name] = data;
-            currentVideoUrl = data.url;
-            subtitleUrl = data.subtitle;
-            sourceTitle = src.name;
-            const isMP4 = currentVideoUrl.includes('.mp4');
-            const player = videojs('video-player');
-            player.src(isMP4
-              ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
-              : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
-            );
-            player.ready(() => {
-              if (subtitleUrl) {
-                fetch(subtitleUrl)
-                  .then(res => res.text())
-                  .then(srtData => {
-                    const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
-                    const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-                    const vttUrl = URL.createObjectURL(vttBlob);
-                    player.addRemoteTextTrack({
-                      kind: 'subtitles',
-                      src: vttUrl,
-                      srclang: 'en',
-                      label: 'English',
-                      default: true
-                    });
-                  });
-              }
-              player.play();
-            });
-            sourceResults = sourceResults.map(s =>
-              s.name === src.name ? { ...s, status: 'success' } : s
-            );
-            updateSourceListUI();
-          } else {
-            sourceResults = sourceResults.map(s =>
-              s.name === src.name ? { ...s, status: 'failed' } : s
-            );
-            updateSourceListUI();
-          }
-        } catch {
-          sourceResults = sourceResults.map(s =>
-            s.name === src.name ? { ...s, status: 'failed' } : s
-          );
-          updateSourceListUI();
-        }
-      };
-
-      sourceList.appendChild(entry);
-    });
-  };
-
-  const trySources = async () => {
-    const fetchPromises = sources.map((src, index) => {
-      sourceResults[index].status = 'loading';
-      updateSourceListUI();
-
-      if (src === 'premium') {
-        // Fetch in background but don't block video playback
-        const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
-        fetch(apiUrl)
-          .then(res => res.json())
-          .then(data => {
-            if (data?.url) {
-              sourceResults[index].status = 'success';
-            } else {
-              sourceResults[index].status = 'failed';
-            }
-            updateSourceListUI();
-          })
-          .catch(() => {
-            sourceResults[index].status = 'failed';
-            updateSourceListUI();
-          });
-        sourceResults[index].status = 'loading';
-        updateSourceListUI();
-        return Promise.resolve(null);
-      }
-
-      const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
-
-      return fetch(apiUrl)
-        .then(res => res.json())
-        .then(data => {
-          if (data?.url) {
-            apiCache[src] = data;
-            sourceResults[index].status = 'success';
-            updateSourceListUI();
-            return { index, src, data };
-          } else {
-            sourceResults[index].status = 'failed';
-            updateSourceListUI();
-            return null;
-          }
-        })
-        .catch(() => {
-          sourceResults[index].status = 'failed';
-          updateSourceListUI();
-          return null;
-        });
-    });
-
-    const results = await Promise.all(fetchPromises);
-
-    const valid = results.find(r => r !== null);
-    if (valid) {
-      currentVideoUrl = valid.data.url;
-      subtitleUrl = valid.data.subtitle;
-      sourceTitle = valid.src;
-      return valid.data;
-    }
-
-    return null;
-  };
-
-  const reloadButton = document.getElementById('reload-button');
-
-  trySources().then(data => {
-    if (!data) {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('search-label').style.display = 'none';
-      document.getElementById('error-message').style.display = 'block';
-      return;
-    }
-
-    document.getElementById('loader').style.display = 'none';
-
-    const videoUrl = data.url;
-    currentVideoUrl = videoUrl;
-    const isMP4 = videoUrl.includes('.mp4');
-
-    const player = videojs('video-player');
-
-    const isAnimebox = videoUrl.includes('animebox.xyz');
-
-    if (isMP4) {
-      player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-    } else {
-      player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
-    }
-
-    player.ready(() => {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('video-container').style.display = 'block';
-      document.getElementById('search-label').style.display = 'none';
-      reloadButton.style.display = 'block';
-
-      if (subtitleUrl) {
-        fetch(subtitleUrl)
-          .then(res => res.text())
-          .then(srtData => {
-            const vttData = "WEBVTT\n\n" + srtData
-              .replace(/\r+/g, '')
-              .replace(/^\d+\n/gm, '')
-              .replace(/,/g, '.');
-
-            const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-            const vttUrl = URL.createObjectURL(vttBlob);
-
-            player.addRemoteTextTrack({
-              kind: 'subtitles',
-              src: vttUrl,
-              srclang: 'en',
-              label: 'English',
-              default: true
-            });
-          });
-      }
-    });
-
-    reloadButton.onclick = () => {
-      player.src(currentVideoUrl.includes('.mp4')
-        ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
-        : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
-      );
-      player.ready(() => {
-        if (subtitleUrl) {
-          fetch(subtitleUrl)
-            .then(res => res.text())
-            .then(srtData => {
-              const vttData = "WEBVTT\n\n" + srtData
-                .replace(/\r+/g, '')
-                .replace(/^\d+\n/gm, '')
-                .replace(/,/g, '.');
-
-              const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-              const vttUrl = URL.createObjectURL(vttBlob);
-
-              player.addRemoteTextTrack({
-                kind: 'subtitles',
-                src: vttUrl,
-                srclang: 'en',
-                label: 'English',
-                default: true
-              });
-            });
-        }
-        player.play();
+        };
       });
-    };
-  });
-</script>
+  </script>
 </body>
 </html>
