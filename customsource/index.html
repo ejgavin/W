@@ -196,6 +196,39 @@
           entry.appendChild(right);
 
           entry.onclick = async () => {
+            if (apiCache[src.name]) {
+              const data = apiCache[src.name];
+              currentVideoUrl = data.url;
+              subtitleUrl = data.subtitle;
+              sourceTitle = src.name;
+              const isMP4 = currentVideoUrl.includes('.mp4');
+              const player = videojs('video-player');
+              player.src(isMP4
+                ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
+                : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
+              );
+              player.ready(() => {
+                if (subtitleUrl) {
+                  fetch(subtitleUrl)
+                    .then(res => res.text())
+                    .then(srtData => {
+                      const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
+                      const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+                      const vttUrl = URL.createObjectURL(vttBlob);
+                      player.addRemoteTextTrack({
+                        kind: 'subtitles',
+                        src: vttUrl,
+                        srclang: 'en',
+                        label: 'English',
+                        default: true
+                      });
+                    });
+                }
+                player.play();
+              });
+              updateSourceListUI();
+              return;
+            }
             sourceResults = sourceResults.map(s => s.name === src.name
               ? { ...s, status: 'loading' }
               : s
@@ -206,6 +239,7 @@
               const res = await fetch(apiUrl);
               const data = await res.json();
               if (data?.url) {
+                apiCache[src.name] = data;
                 currentVideoUrl = data.url;
                 subtitleUrl = data.subtitle;
                 sourceTitle = src.name;
@@ -257,6 +291,7 @@
       };
 
       const trySources = async () => {
+        const apiCache = {};
         const fetchPromises = sources.map((src, index) => {
           sourceResults[index].status = 'loading';
           updateSourceListUI();
@@ -289,6 +324,7 @@
             .then(res => res.json())
             .then(data => {
               if (data?.url) {
+                apiCache[src] = data;
                 sourceResults[index].status = 'success';
                 updateSourceListUI();
                 return { index, src, data };
