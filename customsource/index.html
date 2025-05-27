@@ -79,11 +79,13 @@
   <!-- <button id="report-bug-button" style="display:none; position: absolute; top: 50px; right: 10px; z-index: 1001; background: rgba(255,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
     Report Bug
   </button> -->
-  <div id="bug-report-container" style="display: none; position: absolute; top: 50px; right: 10px; z-index: 1001; background: rgba(255,0,0,0.1); padding: 12px; border-radius: 10px; width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
-    <h3 style="margin: 0 0 10px 0; color: #ff4c4c;">🐞 Bug Report</h3>
-    <textarea id="bug-description" placeholder="Describe the issue..." style="width: 100%; height: 80px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; resize: none; font-size: 14px;"></textarea>
-    <button id="submit-bug" style="margin-top: 8px; width: 100%; padding: 8px; background: #ff4c4c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Submit Bug Report</button>
-    <div id="bug-status" style="margin-top: 6px; font-size: 13px;"></div>
+  <div id="bug-report-wrapper" style="position: absolute; top: 50px; right: 10px; z-index: 1001;">
+    <button id="toggle-bug" style="background: #ff4c4c; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">Report</button>
+    <div id="bug-report-container" style="display: none; background: rgba(255,0,0,0.1); padding: 10px; border-radius: 8px; width: 280px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-top: 8px;">
+      <textarea id="bug-description" placeholder="Describe the issue..." style="width: 100%; height: 70px; padding: 6px; border-radius: 4px; border: 1px solid #ccc; resize: none; font-size: 13px;"></textarea>
+      <button id="submit-bug" style="margin-top: 6px; width: 100%; padding: 6px; background: #ff4c4c; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Submit</button>
+      <div id="bug-status" style="margin-top: 5px; font-size: 12px;"></div>
+    </div>
   </div>
   <div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001; text-align: right;">
     <button id="source-toggle" style="background: #1a1a1a; color: white; border: 1px solid #555; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
@@ -453,13 +455,15 @@
           });
         };
 
-        // Show and handle the inline Bug Report form
+        // Show and handle the inline Bug Report form with toggle
+        const bugToggle = document.getElementById('toggle-bug');
         const bugContainer = document.getElementById('bug-report-container');
+        bugToggle.onclick = () => {
+          bugContainer.style.display = bugContainer.style.display === 'none' ? 'block' : 'none';
+        };
         const submitBug = document.getElementById('submit-bug');
         const bugDescription = document.getElementById('bug-description');
         const bugStatus = document.getElementById('bug-status');
-        bugContainer.style.display = 'block';
-
         submitBug.onclick = () => {
           const player = videojs('video-player');
           const bugData = {
@@ -480,19 +484,17 @@
             bugStatus.style.color = 'orange';
             return;
           }
-
           const fullReport = {
             message: userMessage,
             ...bugData
           };
-
           fetch('https://discord.com/api/webhooks/1376742596776427652/3B8KwNrVZ2oIzerpdRlz9FHcjMdOikgi46Jf6NwE5iDlg7Ish4VQXyFWVYZ6NW_e1iOG', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              content: "🐛 **New Bug Report**",
+              content: "**New Bug Report**",
               embeds: [
                 {
                   title: fullReport.message || "Bug Report",
