@@ -57,6 +57,15 @@ async function generateResponse(prompt) {
 
             const data = await response.text();
 
+            try {
+                const parsed = JSON.parse(data);
+                if (parsed?.content?.content) {
+                    return parsed.content.content;
+                }
+            } catch (e) {
+                // not JSON, fall through
+            }
+
             if (data.includes('<')) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = data;
