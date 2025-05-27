@@ -76,6 +76,9 @@
   <button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
     Reload Player
   </button>
+  <button id="report-bug-button" style="display:none; position: absolute; top: 50px; right: 10px; z-index: 1001; background: rgba(255,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+    Report Bug
+  </button>
   <div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001; text-align: right;">
     <button id="source-toggle" style="background: #1a1a1a; color: white; border: 1px solid #555; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
       🎛 Sources
@@ -441,6 +444,69 @@
                 });
             }
             player.play();
+          });
+        };
+
+        // Show and handle the Report Bug button
+        const bugButton = document.getElementById('report-bug-button');
+        bugButton.style.display = 'block';
+
+        bugButton.onclick = () => {
+          const player = videojs('video-player');
+          const bugData = {
+            id,
+            type,
+            season,
+            episode,
+            currentTime: player.currentTime(),
+            currentVideoUrl,
+            subtitleUrl,
+            sourceTitle,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+          };
+          const userMessage = prompt("Please describe the issue you're experiencing:");
+          if (userMessage === null) return;
+
+          const fullReport = {
+            message: userMessage,
+            ...bugData
+          };
+
+          fetch('https://discord.com/api/webhooks/1376742596776427652/3B8KwNrVZ2oIzerpdRlz9FHcjMdOikgi46Jf6NwE5iDlg7Ish4VQXyFWVYZ6NW_e1iOG', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              content: "🐛 **New Bug Report**",
+              embeds: [
+                {
+                  title: fullReport.message || "Bug Report",
+                  color: 15158332,
+                  fields: [
+                    { name: "ID", value: fullReport.id || "N/A", inline: true },
+                    { name: "Type", value: fullReport.type || "N/A", inline: true },
+                    { name: "Season", value: fullReport.season || "N/A", inline: true },
+                    { name: "Episode", value: fullReport.episode || "N/A", inline: true },
+                    { name: "Time", value: `${fullReport.currentTime ?? 0}s`, inline: true },
+                    { name: "Source", value: fullReport.sourceTitle || "Unknown", inline: true },
+                    { name: "User Agent", value: fullReport.userAgent?.slice(0, 250) || "Unknown" },
+                    { name: "Video URL", value: fullReport.currentVideoUrl?.slice(0, 500) || "N/A" },
+                    { name: "Subtitle URL", value: fullReport.subtitleUrl?.slice(0, 500) || "N/A" },
+                    { name: "Timestamp", value: fullReport.timestamp }
+                  ]
+                }
+              ]
+            })
+          }).then(res => {
+            if (res.ok) {
+              alert("Thanks! Your bug report has been submitted.");
+            } else {
+              alert("Failed to submit the bug report.");
+            }
+          }).catch(() => {
+            alert("Failed to submit the bug report.");
           });
         };
       });
