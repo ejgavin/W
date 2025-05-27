@@ -76,9 +76,15 @@
   <button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
     Reload Player
   </button>
-  <button id="report-bug-button" style="display:none; position: absolute; top: 50px; right: 10px; z-index: 1001; background: rgba(255,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+  <!-- <button id="report-bug-button" style="display:none; position: absolute; top: 50px; right: 10px; z-index: 1001; background: rgba(255,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
     Report Bug
-  </button>
+  </button> -->
+  <div id="bug-report-container" style="display: none; position: absolute; top: 50px; right: 10px; z-index: 1001; background: rgba(255,0,0,0.1); padding: 12px; border-radius: 10px; width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+    <h3 style="margin: 0 0 10px 0; color: #ff4c4c;">🐞 Bug Report</h3>
+    <textarea id="bug-description" placeholder="Describe the issue..." style="width: 100%; height: 80px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; resize: none; font-size: 14px;"></textarea>
+    <button id="submit-bug" style="margin-top: 8px; width: 100%; padding: 8px; background: #ff4c4c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Submit Bug Report</button>
+    <div id="bug-status" style="margin-top: 6px; font-size: 13px;"></div>
+  </div>
   <div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001; text-align: right;">
     <button id="source-toggle" style="background: #1a1a1a; color: white; border: 1px solid #555; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
       🎛 Sources
@@ -447,11 +453,14 @@
           });
         };
 
-        // Show and handle the Report Bug button
-        const bugButton = document.getElementById('report-bug-button');
-        bugButton.style.display = 'block';
+        // Show and handle the inline Bug Report form
+        const bugContainer = document.getElementById('bug-report-container');
+        const submitBug = document.getElementById('submit-bug');
+        const bugDescription = document.getElementById('bug-description');
+        const bugStatus = document.getElementById('bug-status');
+        bugContainer.style.display = 'block';
 
-        bugButton.onclick = () => {
+        submitBug.onclick = () => {
           const player = videojs('video-player');
           const bugData = {
             id,
@@ -465,8 +474,12 @@
             userAgent: navigator.userAgent,
             timestamp: new Date().toISOString()
           };
-          const userMessage = prompt("Please describe the issue you're experiencing:");
-          if (userMessage === null) return;
+          const userMessage = bugDescription.value.trim();
+          if (!userMessage) {
+            bugStatus.textContent = "Please describe the issue.";
+            bugStatus.style.color = 'orange';
+            return;
+          }
 
           const fullReport = {
             message: userMessage,
@@ -501,12 +514,16 @@
             })
           }).then(res => {
             if (res.ok) {
-              alert("Thanks! Your bug report has been submitted.");
+              bugStatus.textContent = "✅ Thanks! Your bug report was submitted.";
+              bugStatus.style.color = 'lime';
+              bugDescription.value = '';
             } else {
-              alert("Failed to submit the bug report.");
+              bugStatus.textContent = "❌ Failed to send bug report.";
+              bugStatus.style.color = 'red';
             }
           }).catch(() => {
-            alert("Failed to submit the bug report.");
+            bugStatus.textContent = "❌ Error sending bug report.";
+            bugStatus.style.color = 'red';
           });
         };
       });
