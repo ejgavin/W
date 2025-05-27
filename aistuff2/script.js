@@ -1,0 +1,286 @@
+const conversationHistory = [];
+const API_KEY = 'AIzaSyCkrAVXM7VDR-zcU2rRozHHupZd6cil64o';
+// Replace with your actual Gemini API key – this stores the API key to authenticate requests to the Gemini API.
+
+const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+// The base URL of the Gemini API used to generate content (for text-based responses).
+
+const languageMap = {
+    english: 'eng',
+    spanish: 'spa',
+    french: 'fre',
+    german: 'ger',
+    italian: 'ita',
+    chinese: 'chs',
+    japanese: 'jpn',
+    korean: 'kor',
+    arabic: 'ara',
+    russian: 'rus',
+    portuguese: 'por',
+    vietnamese: 'vnm',
+    thai: 'tha',
+    auto: 'auto'
+};
+
+// Get the AI provider select dropdown
+const aiProviderSelect = document.getElementById('ai-provider-select');
+
+const chatMessages = document.getElementById('chat-messages');
+// Gets the DOM element with the ID 'chat-messages', where the chat messages (user and bot) will be displayed.
+
+const userInput = document.getElementById('user-input');
+// Gets the DOM element with the ID 'user-input', which is the input field where the user types their message.
+
+const sendButton = document.getElementById('send-button');
+// Gets the DOM element with the ID 'send-button', which is the button the user clicks to send their message.
+
+const contextToggle = document.getElementById('context-toggle');
+
+let selectedImageData = null;
+let selectedFile = null;
+
+async function generateResponse(prompt) {
+    if (aiProviderSelect?.value === 'alt') {
+        const apiKey = 'd0aab2322d828fa9de3401e651302788';
+        const model = 'gpt-3.5-turbo';
+        const qs = new URLSearchParams({
+            prompt: prompt,
+            api_key: apiKey,
+            model: model
+        });
+        const encodedUrl = encodeURIComponent(`http://195.179.229.119/gpt/api.php?${qs.toString()}`);
+        const proxyUrl = `https://scrape2-ruddy.vercel.app/api/scrape?url=${encodedUrl}`;
+
+        try {
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error('Alternate AI API request failed');
+
+            const data = await response.text();
+
+            if (data.includes('<')) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data;
+                return (tempDiv.textContent || tempDiv.innerText || '').trim();
+            }
+
+            return data;
+        } catch (err) {
+            console.error('Alternate AI API Error:', err);
+            return 'An error occurred using the alternate AI API.';
+        }
+    } else {
+        // Gemini default
+        const useContext = contextToggle?.checked;
+        const contents = useContext
+            ? [...conversationHistory, { role: "user", parts: [{ text: prompt }] }]
+            : [{ role: "user", parts: [{ text: prompt }] }];
+
+        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ contents })
+        });
+
+        if (!response.ok) throw new Error('Failed to generate response');
+
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+    }
+}
+
+function cleanMarkdown(text) {
+// Defines a function `cleanMarkdown` to remove any Markdown formatting (like headers, bold text, etc.) from the response.
+    return text
+        .replace(/#{1,6}\s?/g, '')
+        // Removes any Markdown headers (e.g., #, ##, ###).
+
+        .replace(/\*\*/g, '')
+        // Removes bold formatting (double asterisks **).
+
+        .replace(/\n{3,}/g, '\n\n')
+        // Limits excessive newlines to a maximum of two (replaces more than two newlines with two).
+
+        .trim();
+        // Removes any whitespace from the start and end of the string.
+}
+
+function addMessage(message, isUser) {
+// Defines a function `addMessage` to add a new message to the chat display. It takes the `message` (text) and `isUser` (boolean indicating whether the message is from the user or the bot).
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    // Creates a new `div` element for the message and adds the 'message' CSS class.
+
+    messageElement.classList.add(isUser ? 'user-message' : 'bot-message');
+    // Adds a class based on whether the message is from the user ('user-message') or the bot ('bot-message').
+
+    const profileImage = document.createElement('img');
+    profileImage.classList.add('profile-image');
+    // Creates an image element for the profile picture (either the user or the bot) and adds the 'profile-image' CSS class.
+
+    profileImage.src = isUser ? 'user.jpg' : 'bot.jpg';
+    // Sets the image source depending on whether it's a user or bot message ('user.jpg' or 'bot.jpg').
+
+    profileImage.alt = isUser ? 'User' : 'Bot';
+    // Sets the alternate text for the image (for accessibility), either 'User' or 'Bot'.
+
+    const messageContent = document.createElement('div');
+    messageContent.classList.add('message-content');
+    // Creates a `div` element to hold the text content of the message and adds the 'message-content' CSS class.
+
+    messageContent.textContent = message;
+    // Sets the text content of the message.
+
+    messageElement.appendChild(profileImage);
+    messageElement.appendChild(messageContent);
+    // Appends the profile image and message content to the message element.
+
+    chatMessages.appendChild(messageElement);
+    // Appends the complete message (with profile image and text) to the chat messages section.
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    // Scrolls the chat to the bottom to ensure the latest message is visible.
+}
+
+async function handleUserInput() {
+    const userMessage = userInput.value.trim();
+    if (userMessage) {
+        addMessage(userMessage, true);
+        conversationHistory.push({ role: "user", parts: [{ text: userMessage }] });
+        userInput.value = '';
+        sendButton.disabled = true;
+        userInput.disabled = true;
+        try {
+            const botMessage = await generateResponse(userMessage);
+            addMessage(cleanMarkdown(botMessage), false);
+            conversationHistory.push({ role: "model", parts: [{ text: botMessage }] });
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage('Sorry, I encountered an error. Please try again.', false);
+        } finally {
+            sendButton.disabled = false;
+            userInput.disabled = false;
+            userInput.focus();
+        }
+    }
+}
+
+sendButton.addEventListener('click', handleUserInput);
+// Adds an event listener to the send button that calls `handleUserInput` when clicked.
+
+userInput.addEventListener('keypress', (e) => {
+// Adds an event listener for when a key is pressed in the input field.
+    if (e.key === 'Enter' && !e.shiftKey) {
+    // Checks if the 'Enter' key is pressed and Shift is not held (to distinguish from Shift+Enter for newlines).
+        e.preventDefault();
+        // Prevents the default behavior of adding a newline.
+
+        handleUserInput();
+        // Calls `handleUserInput` to send the message.
+    }
+});
+
+const imageUploadButton = document.getElementById('image-upload-button');
+const imageUpload = document.getElementById('image-upload');
+
+imageUploadButton.addEventListener('click', () => {
+    imageUpload.click();
+});
+
+imageUpload.addEventListener('change', async () => {
+    const file = imageUpload.files[0];
+    if (!file) return;
+
+    addMessage("Preparing image... 🛠️", false);
+
+    // Slight compression helper
+    const compressImage = (file, maxSizeKB) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                let width = img.naturalWidth;
+                let height = img.naturalHeight;
+                const MAX_WIDTH = 1200;
+
+                if (width > MAX_WIDTH) {
+                    height = Math.round((MAX_WIDTH / width) * height);
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(blob => {
+                    if (blob && blob.size / 1024 <= maxSizeKB) {
+                        resolve(blob);
+                    } else {
+                        resolve(file); // fallback: use original if compression not sufficient
+                    }
+                    URL.revokeObjectURL(url);
+                }, 'image/jpeg', 0.85);
+            };
+            img.onerror = reject;
+            img.src = url;
+        });
+    };
+
+    addMessage("Compressing image (if needed)... 📉", false);
+    const compressedBlob = await compressImage(file, 1024);
+    const reader = new FileReader();
+
+    reader.onloadend = async function () {
+        addMessage("Converting image to base64... 🔄", false);
+        const base64Image = reader.result.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+        selectedImageData = base64Image;
+        selectedFile = new File([compressedBlob], 'compressed.jpg', { type: 'image/jpeg' });
+        addMessage("Image ready! Please choose the language. 🌐", false);
+        document.getElementById('language-modal').style.display = 'flex';
+    };
+
+    reader.readAsDataURL(compressedBlob);
+});
+
+async function processOCR(language) {
+    const formData = new FormData();
+    formData.append('apikey', 'K88205300088957');
+    formData.append('base64Image', `data:${selectedFile.type};base64,${selectedImageData}`);
+    formData.append('language', language);
+
+    addMessage(`[Image uploaded. Extracting text in '${language}'... ⏳]`, true);
+
+    try {
+        const response = await fetch('https://api.ocr.space/parse/image', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        const text = result.ParsedResults?.[0]?.ParsedText?.trim();
+
+        if (text) {
+            userInput.value = cleanMarkdown(text);
+            addMessage("Is this the correct text? Please verify it above.", false);
+        } else {
+            addMessage('OCR could not detect any readable text in the image.', false);
+        }
+    } catch (error) {
+        console.error('OCR Error:', error);
+        addMessage('There was an error while processing the image.', false);
+    }
+}
+
+const confirmLangButton = document.getElementById('confirm-language');
+confirmLangButton.addEventListener('click', () => {
+    const langInput = document.getElementById('language-input').value.trim().toLowerCase();
+    const langCode = languageMap[langInput] || langInput;
+    document.getElementById('language-modal').style.display = 'none';
+
+    if (!selectedImageData || !selectedFile) return;
+
+    processOCR(langCode);
+});
