@@ -491,6 +491,12 @@
 
         submitBug.onclick = () => {
           const player = videojs('video-player');
+          // Generate 12-hour formatted timestamp
+          const now = new Date();
+          const hours = now.getHours() % 12 || 12;
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+          const timestamp = `${now.toLocaleDateString()} ${hours}:${minutes} ${ampm}`;
           const bugData = {
             id,
             type,
@@ -501,7 +507,7 @@
             subtitleUrl,
             sourceTitle,
             userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString()
+            timestamp
           };
           const userMessage = bugDescription.value.trim();
           if (!userMessage) {
