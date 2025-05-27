@@ -219,11 +219,15 @@
               subtitleUrl = data.subtitle;
               sourceTitle = src.name;
               // Use index from closure scope.
-              const isMP4 = currentVideoUrl.includes('.mp4') || index === 2;
-              player.src(isMP4
-                ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
-                : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
-              );
+              const isMP4 = currentVideoUrl.includes('.mp4');
+              const isSourceThree = index === 2;
+              if (isMP4) {
+                player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
+              } else if (isSourceThree) {
+                player.src({ src: currentVideoUrl, type: 'application/x-mpegURL', crossOrigin: 'anonymous' });
+              } else {
+                player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL' }]);
+              }
               player.ready(() => {
                 if (subtitleUrl) {
                   fetch(subtitleUrl)
@@ -262,11 +266,15 @@
                 subtitleUrl = data.subtitle;
                 sourceTitle = src.name;
                 // Use index from closure scope.
-                const isMP4 = currentVideoUrl.includes('.mp4') || index === 2;
-                player.src(isMP4
-                  ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
-                  : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
-                );
+                const isMP4 = currentVideoUrl.includes('.mp4');
+                const isSourceThree = index === 2;
+                if (isMP4) {
+                  player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
+                } else if (isSourceThree) {
+                  player.src({ src: currentVideoUrl, type: 'application/x-mpegURL', crossOrigin: 'anonymous' });
+                } else {
+                  player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL' }]);
+                }
                 player.ready(() => {
                   if (subtitleUrl) {
                     fetch(subtitleUrl)
@@ -396,16 +404,17 @@
           }
         }
         // If not found, fallback to .mp4 logic only
-        const isMP4 = videoUrl.includes('.mp4') || foundIndex === 2;
+        const isMP4 = videoUrl.includes('.mp4');
+        const isSourceThree = foundIndex === 2;
 
         const player = videojs('video-player');
 
-        const isAnimebox = videoUrl.includes('animebox.xyz');
-
         if (isMP4) {
           player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
+        } else if (isSourceThree) {
+          player.src({ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: 'anonymous' });
         } else {
-          player.src([{ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: isAnimebox ? 'anonymous' : undefined }]);
+          player.src([{ src: videoUrl, type: 'application/x-mpegURL' }]);
         }
 
         player.ready(() => {
