@@ -45,11 +45,11 @@ async function generateResponse(prompt) {
         const apiKey = 'd0aab2322d828fa9de3401e651302788';
         const model = 'gpt-3.5-turbo';
         const useContext = contextToggle?.checked;
-        const historyText = useContext
+        const promptValue = useContext
             ? [...conversationHistory.map(entry => `${entry.role === 'user' ? 'User' : 'Assistant'}: ${entry.parts[0].text}`), `User: ${prompt}`].join('\n')
             : prompt;
         const qs = new URLSearchParams({
-            prompt: historyText,
+            prompt: promptValue,
             api_key: apiKey,
             model: model
         });
