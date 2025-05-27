@@ -469,7 +469,16 @@
           bugContainer.style.opacity = '0';
         };
 
+        // Cooldown mechanism for bug report spam prevention
+        let lastBugReportTime = 0;
         submitBug.onclick = () => {
+          const now = Date.now();
+          if (now - lastBugReportTime < 30000) { // 30 seconds cooldown
+            bugStatus.textContent = "Please wait before sending another report.";
+            bugStatus.style.color = 'orange';
+            return;
+          }
+          lastBugReportTime = now;
           const player = videojs('video-player');
           const bugData = {
             id,
@@ -481,7 +490,7 @@
             subtitleUrl,
             sourceTitle,
             userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toLocaleString('en-US', { hour12: true })
           };
           const userMessage = bugDescription.value.trim();
           if (!userMessage) {
