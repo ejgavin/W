@@ -221,10 +221,10 @@
               // Use index from closure scope.
               const isMP4 = currentVideoUrl.includes('.mp4');
               const isSourceThree = index === 2;
-              if (isMP4) {
+              if (isSourceThree) {
+                player.src({ src: currentVideoUrl, type: 'video/mp4' });
+              } else if (isMP4) {
                 player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-              } else if (isSourceThree) {
-                player.src({ src: currentVideoUrl, type: 'application/x-mpegURL', crossOrigin: 'anonymous' });
               } else {
                 player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL' }]);
               }
@@ -268,10 +268,10 @@
                 // Use index from closure scope.
                 const isMP4 = currentVideoUrl.includes('.mp4');
                 const isSourceThree = index === 2;
-                if (isMP4) {
+                if (isSourceThree) {
+                  player.src({ src: currentVideoUrl, type: 'video/mp4' });
+                } else if (isMP4) {
                   player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-                } else if (isSourceThree) {
-                  player.src({ src: currentVideoUrl, type: 'application/x-mpegURL', crossOrigin: 'anonymous' });
                 } else {
                   player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL' }]);
                 }
@@ -409,10 +409,10 @@
 
         const player = videojs('video-player');
 
-        if (isMP4) {
+        if (isSourceThree) {
+          player.src({ src: videoUrl, type: 'video/mp4' });
+        } else if (isMP4) {
           player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-        } else if (isSourceThree) {
-          player.src({ src: videoUrl, type: 'application/x-mpegURL', crossOrigin: 'anonymous' });
         } else {
           player.src([{ src: videoUrl, type: 'application/x-mpegURL' }]);
         }
