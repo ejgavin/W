@@ -40,6 +40,20 @@ let selectedImageData = null;
 let selectedFile = null;
 
 async function generateResponse(prompt) {
+    if (aiProviderSelect?.value === 'puter') {
+        const useContext = contextToggle?.checked;
+        const promptValue = useContext
+            ? [...conversationHistory.map(entry => `${entry.role === 'user' ? 'User' : 'Assistant'}: ${entry.parts[0].text}`), `User: ${prompt}`].join('\n')
+            : prompt;
+
+        try {
+            const response = await puter.ai.chat(promptValue, { model: 'gpt-4o' });
+            return typeof response === 'string' ? response : (response?.text || 'No response from Puter AI');
+        } catch (err) {
+            console.error('Puter AI Error:', err);
+            return 'An error occurred using Puter AI.';
+        }
+    }
     if (aiProviderSelect?.value === 'alt') {
         // Support "Remember Previous Messages" toggle for alternate API
         const apiKey = 'd0aab2322d828fa9de3401e651302788';
