@@ -218,7 +218,7 @@
               currentVideoUrl = data.url;
               subtitleUrl = data.subtitle;
               sourceTitle = src.name;
-              const isMP4 = currentVideoUrl.includes('.mp4');
+              const isMP4 = src.name === 'vidsrcsu' || currentVideoUrl.includes('.mp4');
               player.src(isMP4
                 ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
                 : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
@@ -260,7 +260,7 @@
                 currentVideoUrl = data.url;
                 subtitleUrl = data.subtitle;
                 sourceTitle = src.name;
-                const isMP4 = currentVideoUrl.includes('.mp4');
+                const isMP4 = src.name === 'vidsrcsu' || currentVideoUrl.includes('.mp4');
                 player.src(isMP4
                   ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
                   : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
@@ -385,7 +385,9 @@
 
         const videoUrl = data.url;
         currentVideoUrl = videoUrl;
-        const isMP4 = videoUrl.includes('.mp4');
+        const sourceName = sourceTitle || data.source || '';
+        // If sourceTitle is not set yet, fallback to 'data.source' if available.
+        const isMP4 = sourceName === 'vidsrcsu' || videoUrl.includes('.mp4');
 
         const player = videojs('video-player');
 
