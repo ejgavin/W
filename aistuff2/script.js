@@ -1,3 +1,10 @@
+function logToServer(message) {
+  fetch(`https://logsystem.vercel.app/api/log?log=${encodeURIComponent(message)}`)
+    .catch(err => console.error('Logging error:', err));
+}
+
+logToServer('User opened chat interface.');
+
 const conversationHistory = [];
 const API_KEY = 'AIzaSyCkrAVXM7VDR-zcU2rRozHHupZd6cil64o';
 // Replace with your actual Gemini API key – this stores the API key to authenticate requests to the Gemini API.
@@ -40,6 +47,7 @@ let selectedImageData = null;
 let selectedFile = null;
 
 async function generateResponse(prompt) {
+    logToServer(`Generating response using ${aiProviderSelect?.value}`);
     if (aiProviderSelect?.value === 'alt') {
         // Support "Remember Previous Messages" toggle for alternate API
         const apiKey = 'd0aab2322d828fa9de3401e651302788';
@@ -160,6 +168,7 @@ function addMessage(message, isUser) {
 async function handleUserInput() {
     const userMessage = userInput.value.trim();
     if (userMessage) {
+        logToServer(`User submitted message: ${userMessage}`);
         addMessage(userMessage, true);
         conversationHistory.push({ role: "user", parts: [{ text: userMessage }] });
         userInput.value = '';
@@ -169,6 +178,7 @@ async function handleUserInput() {
             const botMessage = await generateResponse(userMessage);
             addMessage(cleanMarkdown(botMessage), false);
             conversationHistory.push({ role: "model", parts: [{ text: botMessage }] });
+            logToServer(`Bot responded with: ${botMessage}`);
         } catch (error) {
             console.error('Error:', error);
             addMessage('Sorry, I encountered an error. Please try again.', false);
@@ -253,6 +263,7 @@ imageUpload.addEventListener('change', async () => {
         selectedImageData = base64Image;
         selectedFile = new File([compressedBlob], 'compressed.jpg', { type: 'image/jpeg' });
         addMessage("Image ready! Please choose the language. 🌐", false);
+        logToServer('Image uploaded and ready for OCR.');
         document.getElementById('language-modal').style.display = 'flex';
     };
 
@@ -279,12 +290,15 @@ async function processOCR(language) {
         if (text) {
             userInput.value = cleanMarkdown(text);
             addMessage("Is this the correct text? Please verify it above.", false);
+            logToServer(`OCR extracted text in '${language}': ${text}`);
         } else {
             addMessage('OCR could not detect any readable text in the image.', false);
+            logToServer('OCR failed to detect text in image.');
         }
     } catch (error) {
         console.error('OCR Error:', error);
         addMessage('There was an error while processing the image.', false);
+        logToServer(`OCR error: ${error.message}`);
     }
 }
 
