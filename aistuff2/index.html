@@ -81,6 +81,26 @@
       <button id="confirm-language">Confirm</button>
     </div>
   </div>
+  <script>
+    fetch("check.html")
+      .then(res => res.text())
+      .then(text => {
+        if (text.trim() !== "true") {
+          document.querySelector('.chat-container').style.display = "none";
+          const disabledMessage = document.createElement('div');
+          disabledMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
+          disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
+          document.body.appendChild(disabledMessage);
+        }
+      })
+      .catch(() => {
+        document.querySelector('.chat-container').style.display = "none";
+        const disabledMessage = document.createElement('div');
+        disabledMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
+        disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
+        document.body.appendChild(disabledMessage);
+      });
+  </script>
   <script src="script.js"></script>
 </body>
 </html>
