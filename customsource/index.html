@@ -69,7 +69,7 @@
   <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
 
   <div id="video-container">
-    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
+    <video id="video-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" autoplay playsinline crossorigin="anonymous">
     </video>
   </div>
 
@@ -389,7 +389,16 @@
         // If sourceTitle is not set yet, fallback to 'data.source' if available.
         const isMP4 = sourceName === 'vidsrcsu' || videoUrl.includes('.mp4');
 
-        const player = videojs('video-player');
+        const player = videojs('video-player', {
+          techOrder: ['html5'],
+          html5: {
+            hls: {
+              overrideNative: true
+            },
+            nativeAudioTracks: false,
+            nativeVideoTracks: false
+          }
+        });
 
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
