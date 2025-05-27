@@ -48,46 +48,6 @@
     .context-toggle label {
       font-size: 1rem;
     }
-
-    .chat-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 10px auto;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .chat-controls input[type="text"] {
-      flex: 1;
-      min-width: 200px;
-      padding: 10px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-    }
-
-    .chat-controls button,
-    .chat-controls select {
-      padding: 10px 16px;
-      border-radius: 20px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #image-upload-button {
-      background-color: orange;
-      color: white;
-    }
-
-    #send-button {
-      background-color: #007bff;
-      color: white;
-    }
-
-    #ai-provider-select {
-      background-color: #f0f0f0;
-    }
   </style>
 </head>
 <body>
@@ -102,11 +62,11 @@
         Remember Previous Messages
       </label>
     </div>
-    <div class="chat-controls">
+    <div class="chat-input-container">
       <input type="text" id="user-input" placeholder="Type your message..." />
       <button id="send-button">Send</button>
-      <button id="image-upload-button">Upload Image</button>
-      <select id="ai-provider-select">
+      <button id="image-upload-button" style="background-color: orange; color: white; border: none; border-radius: 20px; padding: 12px 18px; margin-left: 10px; cursor: pointer;">Upload Image</button>
+      <select id="ai-provider-select" style="margin-left: 10px; padding: 10px 12px; border-radius: 20px; border: none; background-color: #f0f0f0; font-weight: bold; cursor: pointer;">
         <option value="gemini">Gemini</option>
         <option value="alt">ChatGPT</option>
       </select>
