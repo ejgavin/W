@@ -46,7 +46,7 @@ async function generateResponse(prompt) {
         const model = 'gpt-3.5-turbo';
         const useContext = contextToggle?.checked;
         const historyText = useContext
-            ? conversationHistory.map(entry => `${entry.role === 'user' ? 'User' : 'Bot'}: ${entry.parts[0].text}`).join('\n') + `\nUser: ${prompt}`
+            ? [...conversationHistory.map(entry => `${entry.role === 'user' ? 'User' : 'Assistant'}: ${entry.parts[0].text}`), `User: ${prompt}`].join('\n')
             : prompt;
         const qs = new URLSearchParams({
             prompt: historyText,
