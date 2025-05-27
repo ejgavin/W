@@ -536,10 +536,7 @@
           });
         };
       });
-  </script>
-</body>
-</html>
-
+  // Bug toggle button logic
   document.getElementById('bug-toggle').addEventListener('click', () => {
     const container = document.getElementById('bug-report-container');
     if (container.style.display === 'none' || container.style.opacity === '0') {
@@ -550,3 +547,6 @@
       setTimeout(() => { container.style.display = 'none'; }, 300);
     }
   });
+</script>
+</body>
+</html>
