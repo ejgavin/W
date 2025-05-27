@@ -69,7 +69,7 @@
   <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
 
   <div id="video-container">
-    <video id="video-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" autoplay playsinline crossorigin="anonymous">
+    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
     </video>
   </div>
 
@@ -218,7 +218,8 @@
               currentVideoUrl = data.url;
               subtitleUrl = data.subtitle;
               sourceTitle = src.name;
-              const isMP4 = src.name === 'vidsrcsu' || currentVideoUrl.includes('.mp4');
+              // Use index from closure scope.
+              const isMP4 = currentVideoUrl.includes('.mp4') || index === 2;
               player.src(isMP4
                 ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
                 : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
@@ -260,7 +261,8 @@
                 currentVideoUrl = data.url;
                 subtitleUrl = data.subtitle;
                 sourceTitle = src.name;
-                const isMP4 = src.name === 'vidsrcsu' || currentVideoUrl.includes('.mp4');
+                // Use index from closure scope.
+                const isMP4 = currentVideoUrl.includes('.mp4') || index === 2;
                 player.src(isMP4
                   ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
                   : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
@@ -385,20 +387,18 @@
 
         const videoUrl = data.url;
         currentVideoUrl = videoUrl;
-        const sourceName = sourceTitle || data.source || '';
-        // If sourceTitle is not set yet, fallback to 'data.source' if available.
-        const isMP4 = sourceName === 'vidsrcsu' || videoUrl.includes('.mp4');
-
-        const player = videojs('video-player', {
-          techOrder: ['html5'],
-          html5: {
-            hls: {
-              overrideNative: true
-            },
-            nativeAudioTracks: false,
-            nativeVideoTracks: false
+        // Find the source index for this url in the sources list
+        let foundIndex = -1;
+        for (let i = 0; i < sources.length; ++i) {
+          if (sourceResults[i].name === sourceTitle) {
+            foundIndex = i;
+            break;
           }
-        });
+        }
+        // If not found, fallback to .mp4 logic only
+        const isMP4 = videoUrl.includes('.mp4') || foundIndex === 2;
+
+        const player = videojs('video-player');
 
         const isAnimebox = videoUrl.includes('animebox.xyz');
 
@@ -480,16 +480,7 @@
           bugContainer.style.opacity = '0';
         };
 
-        // Cooldown mechanism for bug report spam prevention
-        let lastBugReportTime = 0;
         submitBug.onclick = () => {
-          const now = Date.now();
-          if (now - lastBugReportTime < 30000) { // 30 seconds cooldown
-            bugStatus.textContent = "Please wait before sending another report.";
-            bugStatus.style.color = 'orange';
-            return;
-          }
-          lastBugReportTime = now;
           const player = videojs('video-player');
           const bugData = {
             id,
@@ -501,7 +492,7 @@
             subtitleUrl,
             sourceTitle,
             userAgent: navigator.userAgent,
-            timestamp: new Date().toLocaleString('en-US', { hour12: true })
+            timestamp: new Date().toISOString()
           };
           const userMessage = bugDescription.value.trim();
           if (!userMessage) {
