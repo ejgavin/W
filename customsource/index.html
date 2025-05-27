@@ -61,6 +61,97 @@
       width: 100%;
       height: 100%;
     }
+
+    /* Bug Report styles and enhancements */
+    #bug-report-container {
+      transition: all 0.4s cubic-bezier(.4,1.6,.6,1);
+      backdrop-filter: blur(10px);
+      background: rgba(255, 0, 0, 0.15);
+      border: 1px solid rgba(255, 0, 0, 0.4);
+      box-shadow: 0 8px 32px rgba(255,0,0,0.12), 0 2px 8px rgba(0,0,0,0.25);
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    #bug-report-container.hide {
+      opacity: 0;
+      transform: translateY(-30px) scale(0.98);
+      pointer-events: none;
+    }
+    #bug-report-container h3 {
+      margin: 0 0 10px 0;
+      color: #ff4c4c;
+      font-size: 1.12em;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 6px #0007;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #bug-toggle {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      z-index: 1001;
+      background: rgba(255,0,0,0.4);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+      box-shadow: 0 2px 8px rgba(255,0,0,0.13);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    #bug-toggle:hover {
+      background: #ff1a1a;
+      box-shadow: 0 2px 16px #ff1a1a55;
+    }
+    #submit-bug {
+      margin-top: 8px;
+      width: 100%;
+      padding: 8px;
+      background: #ff4c4c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+      letter-spacing: 0.2px;
+      transition: background 0.18s;
+      box-shadow: 0 1px 6px #ff4c4c22;
+    }
+    #submit-bug:hover {
+      background: #ff1a1a;
+    }
+    #bug-description {
+      width: 100%;
+      height: 80px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: none;
+      font-size: 14px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      margin-bottom: 4px;
+      box-shadow: 0 1px 5px #ff4c4c11;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    #bug-description:focus {
+      outline: none;
+      border-color: #ff4c4c;
+      box-shadow: 0 0 5px #ff4c4c;
+      background: rgba(255,255,255,0.13);
+    }
+    #bug-status {
+      margin-top: 6px;
+      font-size: 13px;
+      min-height: 16px;
+      transition: color 0.2s;
+    }
   </style>
 </head>
 <body>
@@ -79,13 +170,12 @@
   <!-- <button id="report-bug-button" style="display:none; position: absolute; top: 50px; right: 10px; z-index: 1001; background: rgba(255,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
     Report Bug
   </button> -->
-  <div id="bug-report-wrapper" style="position: absolute; top: 50px; right: 10px; z-index: 1001;">
-    <button id="toggle-bug" style="background: #ff4c4c; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">Report</button>
-    <div id="bug-report-container" style="display: none; background: rgba(255,0,0,0.1); padding: 10px; border-radius: 8px; width: 280px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-top: 8px;">
-      <textarea id="bug-description" placeholder="Describe the issue..." style="width: 100%; height: 70px; padding: 6px; border-radius: 4px; border: 1px solid #ccc; resize: none; font-size: 13px;"></textarea>
-      <button id="submit-bug" style="margin-top: 6px; width: 100%; padding: 6px; background: #ff4c4c; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Submit</button>
-      <div id="bug-status" style="margin-top: 5px; font-size: 12px;"></div>
-    </div>
+  <button id="bug-toggle">Bug Report</button>
+  <div id="bug-report-container" class="hide" style="display: block; position: absolute; top: 50px; right: 10px; z-index: 1001; padding: 12px; border-radius: 10px; width: 300px;">
+    <h3>🐞 Bug Report</h3>
+    <textarea id="bug-description" placeholder="Describe the issue..."></textarea>
+    <button id="submit-bug">Submit Bug Report</button>
+    <div id="bug-status"></div>
   </div>
   <div id="source-selector" style="position: absolute; top: 10px; left: 10px; z-index: 1001; text-align: right;">
     <button id="source-toggle" style="background: #1a1a1a; color: white; border: 1px solid #555; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
@@ -455,15 +545,27 @@
           });
         };
 
-        // Show and handle the inline Bug Report form with toggle
-        const bugToggle = document.getElementById('toggle-bug');
+        // Show and handle the inline Bug Report form
         const bugContainer = document.getElementById('bug-report-container');
-        bugToggle.onclick = () => {
-          bugContainer.style.display = bugContainer.style.display === 'none' ? 'block' : 'none';
-        };
         const submitBug = document.getElementById('submit-bug');
         const bugDescription = document.getElementById('bug-description');
         const bugStatus = document.getElementById('bug-status');
+        const bugToggle = document.getElementById('bug-toggle');
+
+        // Animation for expand/collapse
+        bugContainer.classList.add('hide');
+        bugContainer.style.display = 'block';
+        let bugVisible = false;
+        bugContainer.classList.add('hide');
+        bugToggle.onclick = () => {
+          bugVisible = !bugVisible;
+          if (bugVisible) {
+            bugContainer.classList.remove('hide');
+          } else {
+            bugContainer.classList.add('hide');
+          }
+        };
+
         submitBug.onclick = () => {
           const player = videojs('video-player');
           const bugData = {
@@ -476,7 +578,7 @@
             subtitleUrl,
             sourceTitle,
             userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toLocaleString('en-US', { hour12: true })
           };
           const userMessage = bugDescription.value.trim();
           if (!userMessage) {
@@ -484,17 +586,19 @@
             bugStatus.style.color = 'orange';
             return;
           }
+
           const fullReport = {
             message: userMessage,
             ...bugData
           };
+
           fetch('https://discord.com/api/webhooks/1376742596776427652/3B8KwNrVZ2oIzerpdRlz9FHcjMdOikgi46Jf6NwE5iDlg7Ish4VQXyFWVYZ6NW_e1iOG', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              content: "**New Bug Report**",
+              content: "🐛 **New Bug Report**",
               embeds: [
                 {
                   title: fullReport.message || "Bug Report",
