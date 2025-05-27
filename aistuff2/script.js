@@ -41,10 +41,15 @@ let selectedFile = null;
 
 async function generateResponse(prompt) {
     if (aiProviderSelect?.value === 'alt') {
+        // Support "Remember Previous Messages" toggle for alternate API
         const apiKey = 'd0aab2322d828fa9de3401e651302788';
         const model = 'gpt-3.5-turbo';
+        const useContext = contextToggle?.checked;
+        const historyText = useContext
+            ? conversationHistory.map(entry => `${entry.role === 'user' ? 'User' : 'Bot'}: ${entry.parts[0].text}`).join('\n') + `\nUser: ${prompt}`
+            : prompt;
         const qs = new URLSearchParams({
-            prompt: prompt,
+            prompt: historyText,
             api_key: apiKey,
             model: model
         });
@@ -293,3 +298,4 @@ confirmLangButton.addEventListener('click', () => {
 
     processOCR(langCode);
 });
+
