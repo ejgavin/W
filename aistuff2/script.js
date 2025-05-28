@@ -250,6 +250,7 @@ imageUpload.addEventListener('change', async () => {
         return new Promise((resolve, reject) => {
             const img = new Image();
             const url = URL.createObjectURL(file);
+            logToServer(`Generated blob URL for compression: ${url}`);
             img.onload = () => {
                 logToServer(`Image loaded for compression. Original dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
                 const canvas = document.createElement('canvas');
@@ -283,9 +284,10 @@ imageUpload.addEventListener('change', async () => {
                     URL.revokeObjectURL(url);
                 }, 'image/jpeg', 0.85);
             };
-            img.onerror = (err) => {
-                logToServer(`Image load error for compression: ${err?.message || err}`);
-                reject(err);
+            img.onerror = () => {
+                const errorMsg = 'Failed to load image for compression (possibly unsupported format or blank blob).';
+                logToServer(errorMsg);
+                reject(new Error(errorMsg));
             };
             img.src = url;
             logToServer(`Image source set for compression: ${url}`);
