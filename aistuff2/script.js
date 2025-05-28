@@ -90,6 +90,31 @@ async function generateResponse(prompt) {
             console.error('Alternate AI API Error:', err);
             return 'An error occurred using the alternate AI API.';
         }
+    } else if (aiProviderSelect?.value === 'chatgpt2') {
+        const useContext = contextToggle?.checked;
+        const promptValue = useContext
+            ? [...conversationHistory.map(entry => `${entry.role === 'user' ? 'User' : 'Assistant'}: ${entry.parts[0].text}`), `User: ${prompt}`].join('\n')
+            : prompt;
+
+        try {
+            const response = await fetch('https://chatgpt-api7.p.rapidapi.com/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-RapidAPI-Key': '1a9b0fb267msh6baa89733baea49p1b7dbfjsnab05e6fa9631',
+                    'X-RapidAPI-Host': 'chatgpt-api7.p.rapidapi.com'
+                },
+                body: JSON.stringify({ query: promptValue })
+            });
+
+            if (!response.ok) throw new Error('ChatGPT 2 API request failed');
+
+            const data = await response.json();
+            return data.response || 'No response from ChatGPT 2 API.';
+        } catch (err) {
+            console.error('ChatGPT 2 API Error:', err);
+            return 'An error occurred using ChatGPT 2.';
+        }
     } else {
         // Gemini default
         const useContext = contextToggle?.checked;
@@ -312,4 +337,3 @@ confirmLangButton.addEventListener('click', () => {
 
     processOCR(langCode);
 });
-
