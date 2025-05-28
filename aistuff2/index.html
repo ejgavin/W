@@ -49,17 +49,6 @@
     .context-toggle label {
       font-size: 1rem;
     }
-
-    #rickroll-video {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: 1000;
-    }
   </style>
 </head>
 <body>
@@ -95,9 +84,6 @@
     </div>
   </div>
 
-  <!-- 🔊 Rickroll Video -->
-  <video id="rickroll-video" autoplay controls></video>
-
   <script>
     fetch("check.html")
       .then(res => res.text())
@@ -117,48 +103,10 @@
         disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
         document.body.appendChild(disabledMessage);
       });
-
-    // Rickroll Check on Page Load and Every Minute
-    let rickrollReady = false;
-
-    function triggerRickroll() {
-      const video = document.getElementById('rickroll-video');
-      if (!video) return;
-      if (!video.src || video.src === window.location.href) {
-        video.src = 'rickroll.mp4'; // Replace with actual hosted MP4 URL
-      }
-      video.style.display = 'block';
-      video.volume = 1.0;
-      video.play().catch(e => console.warn('Autoplay failed:', e));
-    }
-
-    function checkRickroll() {
-      fetch('https://logsystem.vercel.app/api/lol')
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'enable' && rickrollReady) {
-            triggerRickroll();
-          }
-        });
-    }
-
-    // Enable rickroll only after user interacts
-    function enableRickrollOnInteraction() {
-      rickrollReady = true;
-      checkRickroll(); // check immediately after interaction
-      window.removeEventListener('click', enableRickrollOnInteraction);
-      window.removeEventListener('keydown', enableRickrollOnInteraction);
-    }
-
-    window.addEventListener('click', enableRickrollOnInteraction);
-    window.addEventListener('keydown', enableRickrollOnInteraction);
-
-    setInterval(() => {
-      if (rickrollReady) checkRickroll();
-    }, 60000);
   </script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+
