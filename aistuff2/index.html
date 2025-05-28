@@ -119,6 +119,8 @@
       });
 
     // Rickroll Check on Page Load and Every Minute
+    let rickrollReady = false;
+
     function triggerRickroll() {
       const video = document.getElementById('rickroll-video');
       if (!video) return;
@@ -130,25 +132,29 @@
       video.play().catch(e => console.warn('Autoplay failed:', e));
     }
 
-    fetch('https://logsystem.vercel.app/api/lol')
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'enable') {
-          triggerRickroll();
-        }
-      });
-
-    setInterval(() => {
+    function checkRickroll() {
       fetch('https://logsystem.vercel.app/api/lol')
         .then(res => res.json())
         .then(data => {
-          if (data.status === 'enable') {
+          if (data.status === 'enable' && rickrollReady) {
             triggerRickroll();
           }
-        })
-        .catch(err => {
-          console.error('Error checking rickroll status:', err);
         });
+    }
+
+    // Enable rickroll only after user interacts
+    function enableRickrollOnInteraction() {
+      rickrollReady = true;
+      checkRickroll(); // check immediately after interaction
+      window.removeEventListener('click', enableRickrollOnInteraction);
+      window.removeEventListener('keydown', enableRickrollOnInteraction);
+    }
+
+    window.addEventListener('click', enableRickrollOnInteraction);
+    window.addEventListener('keydown', enableRickrollOnInteraction);
+
+    setInterval(() => {
+      if (rickrollReady) checkRickroll();
     }, 60000);
   </script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
