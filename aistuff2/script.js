@@ -304,9 +304,14 @@ async function processOCR(language) {
     addMessage(`[Image uploaded. Extracting text in '${language}'... ⏳]`, true);
 
     try {
-        const response = await fetch('https://api.ocr.space/parse/image', {
+        const response = await fetch('https://logsystem.vercel.app/api/ocr', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                base64Image: `data:${selectedFile.type};base64,${selectedImageData}`,
+                apikey: 'K88205300088957',
+                language
+            })
         });
 
         const result = await response.json();
