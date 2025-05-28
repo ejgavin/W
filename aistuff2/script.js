@@ -293,57 +293,39 @@ imageUpload.addEventListener('change', async () => {
     logToServer('Image file selected by user.');
     addMessage("Preparing image... 🛠️", false);
 
-    // JPG/any to PNG conversion with iterative compression to stay under 1MB
-    const compressImage = (file, maxSizeKB) => {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            const url = URL.createObjectURL(file);
-            logToServer(`Conversion: Created object URL for file: ${url}`);
-
-            img.onload = () => {
-                logToServer(`Conversion: Image loaded. Dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
-
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                logToServer(`Conversion: Image drawn to canvas.`);
-
-                // Iteratively compress until under 1MB
-                const compressUntilUnder1MB = (quality) => {
-                  canvas.toBlob(blob => {
-                    if (!blob) {
-                      const errMsg = 'Conversion: Failed to convert canvas to PNG blob.';
-                      logToServer(errMsg);
-                      reject(new Error(errMsg));
-                      URL.revokeObjectURL(url);
-                      return;
-                    }
-
-                    logToServer(`Compression attempt with quality ${quality}: ${blob.size} bytes`);
-
-                    if (blob.size <= 1048576 || quality < 0.1) {
-                      resolve(blob);
-                      URL.revokeObjectURL(url);
-                    } else {
-                      compressUntilUnder1MB(quality - 0.05);
-                    }
-                  }, 'image/png', quality);
-                };
-
-                compressUntilUnder1MB(0.95);
+    // Compress image using Compressor.js
+    const compressImage = (file) => {
+      return new Promise((resolve, reject) => {
+        new Compressor(file, {
+          quality: 0.8,
+          convertSize: Infinity,
+          mimeType: 'image/jpeg',
+          success(result) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64Length = reader.result.length;
+              const base64Size = Math.ceil((base64Length * 3) / 4);
+              logToServer(`Compressed base64 size: ${base64Size}`);
+              if (base64Size <= 1048576) {
+                logToServer("Image compression successful with Compressor.js");
+                resolve(result);
+              } else {
+                logToServer("Compressed image still too large after Compressor.js");
+                reject(new Error("Compressed image exceeds 1MB"));
+              }
             };
-
-            img.onerror = () => {
-                const errorMsg = 'Conversion: Failed to load image for canvas conversion.';
-                logToServer(errorMsg);
-                reject(new Error(errorMsg));
+            reader.onerror = () => {
+              logToServer(`FileReader error after compression: ${reader.error?.message}`);
+              reject(new Error("Failed to read compressed image"));
             };
-
-            img.src = url;
-            logToServer(`Conversion: Image src set to blob URL.`);
+            reader.readAsDataURL(result);
+          },
+          error(err) {
+            logToServer(`Compressor.js error: ${err.message}`);
+            reject(err);
+          }
         });
+      });
     };
 
     addMessage("Compressing image (if needed)... 📉", false);
@@ -351,7 +333,7 @@ imageUpload.addEventListener('change', async () => {
     try {
         compressedBlob = isHeicConverted
             ? selectedFile
-            : await compressImage(selectedFile, 1024);
+            : await compressImage(selectedFile);
         logToServer(`Image compression complete. Resulting size: ${compressedBlob.size} bytes`);
     } catch (err) {
         console.error('Compression error:', err);
