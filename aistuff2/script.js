@@ -315,9 +315,9 @@ imageUpload.addEventListener('change', async () => {
         }
         logToServer(`Base64 conversion done. Type: ${selectedFile ? selectedFile.type : file.type}, Size: ${selectedFile ? selectedFile.size : file.size} bytes`);
         addMessage("Converting image to base64... 🔄", false);
-        const base64Image = reader.result.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+        const base64Image = reader.result.replace(/^data:image\/(png|jpg|jpeg|heic|webp);base64,/, '');
         selectedImageData = base64Image;
-        selectedFile = new File([compressedBlob], 'compressed.jpg', { type: 'image/jpeg' });
+        selectedFile = new File([compressedBlob], 'converted.png', { type: 'image/png' });
         addMessage("Image ready! Please choose the language. 🌐", false);
         logToServer('Image uploaded and ready for OCR.');
         document.getElementById('language-modal').style.display = 'flex';
