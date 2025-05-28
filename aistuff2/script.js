@@ -245,45 +245,44 @@ imageUpload.addEventListener('change', async () => {
     logToServer('Image file selected by user.');
     addMessage("Preparing image... 🛠️", false);
 
-    // Always convert image to PNG using canvas
+    // JPG/any to PNG conversion with clear logging
     const compressImage = (file, maxSizeKB) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
             const url = URL.createObjectURL(file);
-            logToServer(`Generated blob URL for compression: ${url}`);
+            logToServer(`Conversion: Created object URL for file: ${url}`);
+
             img.onload = () => {
-                logToServer(`Image loaded for compression. Original dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
+                logToServer(`Conversion: Image loaded. Dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
+
                 const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
                 const ctx = canvas.getContext('2d');
-                let width = img.naturalWidth;
-                let height = img.naturalHeight;
-                const MAX_WIDTH = 1200;
-                if (width > MAX_WIDTH) {
-                    height = Math.round((MAX_WIDTH / width) * height);
-                    width = MAX_WIDTH;
-                }
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-                logToServer(`Image drawn to canvas. Target dimensions: ${canvas.width}x${canvas.height}`);
+                ctx.drawImage(img, 0, 0);
+                logToServer(`Conversion: Image drawn to canvas.`);
+
                 canvas.toBlob(blob => {
                     if (blob) {
-                        logToServer(`Canvas toBlob successful. PNG size: ${blob.size}`);
+                        logToServer(`Conversion: Canvas toBlob complete. Blob size: ${blob.size} bytes`);
                         resolve(blob);
                     } else {
-                        logToServer(`Canvas toBlob failed.`);
-                        reject(new Error('Failed to convert image to PNG'));
+                        const errMsg = 'Conversion: Failed to convert canvas to PNG blob.';
+                        logToServer(errMsg);
+                        reject(new Error(errMsg));
                     }
                     URL.revokeObjectURL(url);
-                }, 'image/png', 0.85);
+                }, 'image/png', 0.95);
             };
+
             img.onerror = () => {
-                const errorMsg = 'Failed to load image for compression (possibly unsupported format or blank blob).';
+                const errorMsg = 'Conversion: Failed to load image for canvas conversion.';
                 logToServer(errorMsg);
                 reject(new Error(errorMsg));
             };
+
             img.src = url;
-            logToServer(`Image source set for compression: ${url}`);
+            logToServer(`Conversion: Image src set to blob URL.`);
         });
     };
 
