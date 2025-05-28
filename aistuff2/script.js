@@ -5,53 +5,6 @@ function logToServer(message) {
 
 logToServer('User opened chat interface.');
 
-// 🟠 Rickroll Check (every minute and on page load)
-setInterval(() => {
-  fetch('https://logsystem.vercel.app/api/lol')
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'enable') {
-        logToServer('Rickroll trigger received from /api/lol');
-        triggerRickroll();
-      }
-    })
-    .catch(err => {
-      console.error('Error checking rickroll status:', err);
-    });
-}, 60000);
-
-fetch('https://logsystem.vercel.app/api/lol')
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 'enable') {
-      logToServer('Rickroll triggered on initial load by /api/lol');
-      triggerRickroll();
-    }
-  })
-  .catch(err => {
-    console.error('Initial rickroll check failed:', err);
-  });
-
-function triggerRickroll() {
-  const video = document.getElementById('rickroll-video');
-  if (!video) {
-    logToServer('Rickroll video element not found.');
-    return;
-  }
-
-  if (!video.src || video.src === window.location.href) {
-    video.src = 'rickroll.mp4'; // 🔁 Replace with actual hosted MP4
-  }
-
-  video.style.display = 'block';
-  video.volume = 1.0;
-  video.play()
-    .then(() => logToServer('Rickroll video played.'))
-    .catch(e => logToServer('Autoplay failed: ' + e.message));
-}
-
-// ... the rest of your existing script.js should continue below
-
 const conversationHistory = [];
 const API_KEY = 'AIzaSyCkrAVXM7VDR-zcU2rRozHHupZd6cil64o';
 // Replace with your actual Gemini API key – this stores the API key to authenticate requests to the Gemini API.

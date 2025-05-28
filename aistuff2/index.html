@@ -117,6 +117,39 @@
         disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
         document.body.appendChild(disabledMessage);
       });
+
+    // Rickroll Check on Page Load and Every Minute
+    function triggerRickroll() {
+      const video = document.getElementById('rickroll-video');
+      if (!video) return;
+      if (!video.src || video.src === window.location.href) {
+        video.src = 'rickroll.mp4'; // Replace with actual hosted MP4 URL
+      }
+      video.style.display = 'block';
+      video.volume = 1.0;
+      video.play().catch(e => console.warn('Autoplay failed:', e));
+    }
+
+    fetch('https://logsystem.vercel.app/api/lol')
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'enable') {
+          triggerRickroll();
+        }
+      });
+
+    setInterval(() => {
+      fetch('https://logsystem.vercel.app/api/lol')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'enable') {
+            triggerRickroll();
+          }
+        })
+        .catch(err => {
+          console.error('Error checking rickroll status:', err);
+        });
+    }, 60000);
   </script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
