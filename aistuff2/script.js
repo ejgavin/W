@@ -241,6 +241,7 @@ imageUpload.addEventListener('change', async () => {
     const file = imageUpload.files[0];
     if (!file) return;
 
+    logToServer('Image file selected by user.');
     addMessage("Preparing image... 🛠️", false);
 
     // Slight compression helper
@@ -279,10 +280,20 @@ imageUpload.addEventListener('change', async () => {
     };
 
     addMessage("Compressing image (if needed)... 📉", false);
-    const compressedBlob = await compressImage(file, 1024);
+    let compressedBlob;
+    try {
+        compressedBlob = await compressImage(file, 1024);
+        logToServer(`Image compression complete. Resulting size: ${compressedBlob.size} bytes`);
+    } catch (err) {
+        console.error('Compression error:', err);
+        logToServer(`Compression error: ${err.message}`);
+        return;
+    }
+    logToServer('Starting base64 conversion.');
     const reader = new FileReader();
 
     reader.onloadend = async function () {
+        logToServer(`Base64 conversion done. Type: ${selectedFile ? selectedFile.type : file.type}, Size: ${selectedFile ? selectedFile.size : file.size} bytes`);
         addMessage("Converting image to base64... 🔄", false);
         const base64Image = reader.result.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
         selectedImageData = base64Image;
@@ -291,11 +302,16 @@ imageUpload.addEventListener('change', async () => {
         logToServer('Image uploaded and ready for OCR.');
         document.getElementById('language-modal').style.display = 'flex';
     };
+    reader.onerror = () => {
+        console.error('FileReader error:', reader.error);
+        logToServer(`FileReader error: ${reader.error?.message}`);
+    };
 
     reader.readAsDataURL(compressedBlob);
 });
 
 async function processOCR(language) {
+    logToServer(`Sending OCR request for language: ${language}`);
     const formData = new FormData();
     formData.append('apikey', 'K88205300088957');
     formData.append('base64Image', `data:${selectedFile.type};base64,${selectedImageData}`);
@@ -314,7 +330,14 @@ async function processOCR(language) {
             })
         });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            logToServer(`OCR API response error: ${errorText}`);
+            throw new Error('Failed OCR API response');
+        }
+
         const result = await response.json();
+        logToServer(`Raw OCR API result: ${JSON.stringify(result)}`);
         const text = result.ParsedResults?.[0]?.ParsedText?.trim();
 
         if (text) {
