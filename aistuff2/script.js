@@ -241,6 +241,7 @@ imageUpload.addEventListener('change', async () => {
     const file = imageUpload.files[0];
     if (!file) return;
 
+    logToServer(`Original file info - name: ${file.name}, size: ${file.size}, type: ${file.type}`);
     logToServer('Image file selected by user.');
     addMessage("Preparing image... 🛠️", false);
 
@@ -250,6 +251,7 @@ imageUpload.addEventListener('change', async () => {
             const img = new Image();
             const url = URL.createObjectURL(file);
             img.onload = () => {
+                logToServer(`Image loaded for compression. Original dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 let width = img.naturalWidth;
@@ -264,18 +266,29 @@ imageUpload.addEventListener('change', async () => {
                 canvas.width = width;
                 canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
+                logToServer(`Image drawn to canvas. Target dimensions: ${canvas.width}x${canvas.height}`);
 
                 canvas.toBlob(blob => {
-                    if (blob && blob.size / 1024 <= maxSizeKB) {
-                        resolve(blob);
+                    if (blob) {
+                        logToServer(`Canvas toBlob successful. Compressed size: ${blob.size}`);
+                        if (blob.size / 1024 <= maxSizeKB) {
+                            resolve(blob);
+                        } else {
+                            resolve(file); // fallback: use original if compression not sufficient
+                        }
                     } else {
-                        resolve(file); // fallback: use original if compression not sufficient
+                        logToServer(`Canvas toBlob failed. Falling back to original file.`);
+                        resolve(file); // fallback: use original if compression not successful
                     }
                     URL.revokeObjectURL(url);
                 }, 'image/jpeg', 0.85);
             };
-            img.onerror = reject;
+            img.onerror = (err) => {
+                logToServer(`Image load error for compression: ${err?.message || err}`);
+                reject(err);
+            };
             img.src = url;
+            logToServer(`Image source set for compression: ${url}`);
         });
     };
 
@@ -293,6 +306,11 @@ imageUpload.addEventListener('change', async () => {
     const reader = new FileReader();
 
     reader.onloadend = async function () {
+        try {
+            logToServer(`Base64 conversion result length: ${reader.result.length}`);
+        } catch (e) {
+            logToServer(`Error accessing base64 result: ${e.message}`);
+        }
         logToServer(`Base64 conversion done. Type: ${selectedFile ? selectedFile.type : file.type}, Size: ${selectedFile ? selectedFile.size : file.size} bytes`);
         addMessage("Converting image to base64... 🔄", false);
         const base64Image = reader.result.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
@@ -307,6 +325,7 @@ imageUpload.addEventListener('change', async () => {
         logToServer(`FileReader error: ${reader.error?.message}`);
     };
 
+    logToServer(`Calling readAsDataURL on compressedBlob.`);
     reader.readAsDataURL(compressedBlob);
 });
 
@@ -320,6 +339,7 @@ async function processOCR(language) {
     addMessage(`[Image uploaded. Extracting text in '${language}'... ⏳]`, true);
 
     try {
+        logToServer(`Sending OCR POST to Vercel with payload size: ${JSON.stringify({ base64Image: `data:${selectedFile.type};base64,${selectedImageData}`, apikey: 'K88205300088957', language }).length} characters`);
         const response = await fetch('https://logsystem.vercel.app/api/ocr', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -351,6 +371,7 @@ async function processOCR(language) {
     } catch (error) {
         console.error('OCR Error:', error);
         addMessage('There was an error while processing the image.', false);
+        logToServer(`Fetch to OCR endpoint failed. Error: ${error.message}`);
         logToServer(`OCR error: ${error.message}`);
     }
 }
