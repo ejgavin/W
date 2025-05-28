@@ -242,6 +242,27 @@ imageUpload.addEventListener('change', async () => {
     if (!file) return;
 
     logToServer(`Original file info - name: ${file.name}, size: ${file.size}, type: ${file.type}`);
+
+    // HEIC handling with heic2any
+    if (file.type === "image/heic" || file.name.endsWith(".heic")) {
+        logToServer("HEIC image detected. Attempting conversion with heic2any...");
+        try {
+            const convertedBlob = await heic2any({
+                blob: file,
+                toType: "image/png",
+                quality: 0.9
+            });
+            logToServer("HEIC successfully converted to PNG.");
+            selectedFile = new File([convertedBlob], 'converted.png', { type: 'image/png' });
+        } catch (err) {
+            logToServer(`HEIC conversion failed: ${err.message}`);
+            addMessage("❌ HEIC image could not be processed. Please convert it to PNG or JPEG manually.", false);
+            return;
+        }
+    } else {
+        selectedFile = file;
+    }
+
     logToServer('Image file selected by user.');
     addMessage("Preparing image... 🛠️", false);
 
@@ -289,7 +310,7 @@ imageUpload.addEventListener('change', async () => {
     addMessage("Compressing image (if needed)... 📉", false);
     let compressedBlob;
     try {
-        compressedBlob = await compressImage(file, 1024);
+        compressedBlob = await compressImage(selectedFile, 1024);
         logToServer(`Image compression complete. Resulting size: ${compressedBlob.size} bytes`);
     } catch (err) {
         console.error('Compression error:', err);
