@@ -245,7 +245,7 @@ imageUpload.addEventListener('change', async () => {
     logToServer('Image file selected by user.');
     addMessage("Preparing image... 🛠️", false);
 
-    // Slight compression helper
+    // Always convert image to PNG using canvas
     const compressImage = (file, maxSizeKB) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -258,31 +258,24 @@ imageUpload.addEventListener('change', async () => {
                 let width = img.naturalWidth;
                 let height = img.naturalHeight;
                 const MAX_WIDTH = 1200;
-
                 if (width > MAX_WIDTH) {
                     height = Math.round((MAX_WIDTH / width) * height);
                     width = MAX_WIDTH;
                 }
-
                 canvas.width = width;
                 canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
                 logToServer(`Image drawn to canvas. Target dimensions: ${canvas.width}x${canvas.height}`);
-
                 canvas.toBlob(blob => {
                     if (blob) {
-                        logToServer(`Canvas toBlob successful. Compressed size: ${blob.size}`);
-                        if (blob.size / 1024 <= maxSizeKB) {
-                            resolve(blob);
-                        } else {
-                            resolve(file); // fallback: use original if compression not sufficient
-                        }
+                        logToServer(`Canvas toBlob successful. PNG size: ${blob.size}`);
+                        resolve(blob);
                     } else {
-                        logToServer(`Canvas toBlob failed. Falling back to original file.`);
-                        resolve(file); // fallback: use original if compression not successful
+                        logToServer(`Canvas toBlob failed.`);
+                        reject(new Error('Failed to convert image to PNG'));
                     }
                     URL.revokeObjectURL(url);
-                }, 'image/jpeg', 0.85);
+                }, 'image/png', 0.85);
             };
             img.onerror = () => {
                 const errorMsg = 'Failed to load image for compression (possibly unsupported format or blank blob).';
