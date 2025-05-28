@@ -241,6 +241,30 @@ imageUpload.addEventListener('change', async () => {
     const file = imageUpload.files[0];
     if (!file) return;
 
+    // PDF support: skip image conversion and handle PDF as-is
+    const isPdf = file.type === 'application/pdf';
+    if (isPdf) {
+        logToServer("PDF file detected. Skipping image conversion and using as-is.");
+
+        const reader = new FileReader();
+        reader.onloadend = async function () {
+            const base64Data = reader.result.replace(/^data:application\/pdf;base64,/, '');
+            selectedImageData = base64Data;
+            selectedFile = file;
+            addMessage("PDF uploaded. Please choose the language. 📄🌐", false);
+            logToServer("PDF base64 conversion complete. Awaiting language selection.");
+            document.getElementById('language-modal').style.display = 'flex';
+        };
+        reader.onerror = () => {
+            logToServer(`PDF FileReader error: ${reader.error?.message}`);
+            addMessage("❌ Failed to read the PDF file.", false);
+        };
+
+        logToServer("Reading PDF as base64...");
+        reader.readAsDataURL(file);
+        return;
+    }
+
     logToServer(`Original file info - name: ${file.name}, size: ${file.size}, type: ${file.type}`);
 
     // HEIC handling with heic2any (proper await and result handling)
@@ -269,7 +293,7 @@ imageUpload.addEventListener('change', async () => {
     logToServer('Image file selected by user.');
     addMessage("Preparing image... 🛠️", false);
 
-    // JPG/any to PNG conversion with clear logging
+    // JPG/any to PNG conversion with iterative compression to stay under 1MB
     const compressImage = (file, maxSizeKB) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -286,17 +310,29 @@ imageUpload.addEventListener('change', async () => {
                 ctx.drawImage(img, 0, 0);
                 logToServer(`Conversion: Image drawn to canvas.`);
 
-                canvas.toBlob(blob => {
-                    if (blob) {
-                        logToServer(`Conversion: Canvas toBlob complete. Blob size: ${blob.size} bytes`);
-                        resolve(blob);
-                    } else {
-                        const errMsg = 'Conversion: Failed to convert canvas to PNG blob.';
-                        logToServer(errMsg);
-                        reject(new Error(errMsg));
+                // Iteratively compress until under 1MB
+                const compressUntilUnder1MB = (quality) => {
+                  canvas.toBlob(blob => {
+                    if (!blob) {
+                      const errMsg = 'Conversion: Failed to convert canvas to PNG blob.';
+                      logToServer(errMsg);
+                      reject(new Error(errMsg));
+                      URL.revokeObjectURL(url);
+                      return;
                     }
-                    URL.revokeObjectURL(url);
-                }, 'image/png', 0.95);
+
+                    logToServer(`Compression attempt with quality ${quality}: ${blob.size} bytes`);
+
+                    if (blob.size <= 1048576 || quality < 0.1) {
+                      resolve(blob);
+                      URL.revokeObjectURL(url);
+                    } else {
+                      compressUntilUnder1MB(quality - 0.05);
+                    }
+                  }, 'image/png', quality);
+                };
+
+                compressUntilUnder1MB(0.95);
             };
 
             img.onerror = () => {
@@ -335,6 +371,14 @@ imageUpload.addEventListener('change', async () => {
         addMessage("Converting image to base64... 🔄", false);
         const base64Image = reader.result.replace(/^data:image\/(png|jpg|jpeg|heic|webp);base64,/, '');
         selectedImageData = base64Image;
+        // Insert base64 size check here
+        const base64Size = Math.ceil((base64Image.length * 3) / 4);
+        logToServer(`Base64 size in bytes: ${base64Size}`);
+        if (base64Size > 1048576) {
+            addMessage("❌ Image is too large to process (must be under 1MB). Please try resizing or compressing it further.", false);
+            logToServer(`Image rejected: base64 size exceeds 1MB`);
+            return;
+        }
         selectedFile = new File([compressedBlob], 'converted.png', { type: 'image/png' });
         addMessage("Image ready! Please choose the language. 🌐", false);
         logToServer('Image uploaded and ready for OCR.');
