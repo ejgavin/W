@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chatbox</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      width: 300px;
+    }
+
+    .modal-box input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      color: black;
+    }
+
+    .modal-box button {
+      background-color: orange;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-box h3 {
+      color: black;
+    }
+    .context-toggle label {
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1>AI Chatbox</h1>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="context-toggle" style="text-align: center; margin-bottom: 10px;">
+      <label style="font-weight: bold; color: black;">
+        <input type="checkbox" id="context-toggle" checked />
+        Remember Previous Messages
+      </label>
+    </div>
+    <div class="chat-input-container">
+      <input type="text" id="user-input" placeholder="Type your message..." />
+      <button id="send-button">Send</button>
+      <button id="image-upload-button" style="background-color: orange; color: white; border: none; border-radius: 20px; padding: 12px 18px; margin-left: 10px; cursor: pointer;">Upload Image</button>
+      <select id="ai-provider-select" style="margin-left: 10px; padding: 10px 12px; border-radius: 20px; border: none; background-color: #f0f0f0; font-weight: bold; cursor: pointer;">
+        <option value="gemini">Gemini</option>
+        <option value="alt">ChatGPT</option>
+      </select>
+      <input type="file" id="image-upload" accept="image/*" style="display: none" />
+    </div>
+  </div>
+</div>
+  <div id="language-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <h3>What language is the text in?</h3>
+      <input type="text" id="language-input" placeholder="e.g. English, Spanish, Japanese" />
+      <button id="confirm-language">Confirm</button>
+    </div>
+  </div>
+  <script>
+    fetch("check.html")
+      .then(res => res.text())
+      .then(text => {
+        if (text.trim() !== "true") {
+          document.querySelector('.chat-container').style.display = "none";
+          const disabledMessage = document.createElement('div');
+          disabledMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
+          disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
+          document.body.appendChild(disabledMessage);
+        }
+      })
+      .catch(() => {
+        document.querySelector('.chat-container').style.display = "none";
+        const disabledMessage = document.createElement('div');
+        disabledMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
+        disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
+        document.body.appendChild(disabledMessage);
+      });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

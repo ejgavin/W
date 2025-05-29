@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Video Chat Launcher</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #111827;
+      font-family: sans-serif;
+    }
+    button {
+      font-size: 1.5rem;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <button id="launchBtn">Open Video Chat</button>
+
+  <script>
+    document.getElementById("launchBtn").addEventListener("click", () => {
+      const win = window.open();
+      if (!win) {
+        alert("Popup blocked. Please allow popups for this site.");
+        return;
+      }
+
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Video Chat</title>
+          <style>
+            html, body {
+              margin: 0;
+              padding: 0;
+              height: 100%;
+              width: 100%;
+              overflow: hidden;
+            }
+            iframe {
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100vw;
+              height: 100vh;
+              border: none;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <iframe
+            title="Hi"
+            src="https://videochat-986l.onrender.com/W/videochat/"
+            frameborder="0"
+            allow="camera; microphone"
+            allowfullscreen
+          ></iframe>
+        </body>
+        </html>
+      `);
+
+      win.document.close();
+    });
+  </script>
+</body>
+</html>
