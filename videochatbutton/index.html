@@ -33,7 +33,7 @@
 
   <script>
     document.getElementById("launchBtn").addEventListener("click", () => {
-      const win = window.open();
+      const win = window.open("about:blank", "_blank");
       if (!win) {
         alert("Popup blocked. Please allow popups for this site.");
         return;
