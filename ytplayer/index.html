@@ -222,13 +222,43 @@
           videojs('video-player');
         }
         backBtn.style.display = 'block';
+        const reloadBtn = document.createElement('button');
+        reloadBtn.textContent = 'Reload if it Fails';
+        reloadBtn.id = 'reload-btn';
+        reloadBtn.style.position = 'absolute';
+        reloadBtn.style.top = '60px';
+        reloadBtn.style.right = '20px';
+        reloadBtn.style.padding = '10px 20px';
+        reloadBtn.style.background = 'rgba(0, 0, 0, 0.5)';
+        reloadBtn.style.color = 'white';
+        reloadBtn.style.borderRadius = '12px';
+        reloadBtn.style.border = 'none';
+        reloadBtn.style.cursor = 'pointer';
+        reloadBtn.style.fontSize = '14px';
+        reloadBtn.style.opacity = '0.8';
+        reloadBtn.style.zIndex = '2';
+
+        reloadBtn.addEventListener('click', () => {
+          const currentVideo = document.getElementById('video-player');
+          if (currentVideo) {
+            currentVideo.src = `${videoSrc}`;
+            currentVideo.load();
+            currentVideo.play();
+          }
+        });
+
+        document.body.appendChild(reloadBtn);
       } else {
         alert("Could not find a valid video stream.");
         inputSection.style.display = 'flex';
+        const reloadEl = document.getElementById('reload-btn');
+        if (reloadEl) reloadEl.remove();
       }
     } catch (error) {
       alert("Failed to load video.");
       inputSection.style.display = 'flex';
+      const reloadEl = document.getElementById('reload-btn');
+      if (reloadEl) reloadEl.remove();
     }
   }
 </script>
