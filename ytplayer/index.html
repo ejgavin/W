@@ -191,10 +191,20 @@
 
     inputSection.style.display = 'none';
 
+    let text;
     try {
       const response = await fetch(`https://stuff-co8p.onrender.com/proxy/https://inv.nadeko.net/embed/${videoID}`);
-      const text = await response.text();
-      const latestMatch = text.match(/https:\/\/[^"]+\/latest_version\?[^"]+/);
+      if (!response.ok) throw new Error("Network response was not ok");
+      text = await response.text();
+    } catch (err) {
+      alert("Failed to load video.");
+      inputSection.style.display = 'flex';
+      const reloadEl = document.getElementById('reload-btn');
+      if (reloadEl) reloadEl.remove();
+      return;
+    }
+
+    const latestMatch = text.match(/https:\/\/[^"]+\/latest_version\?[^"]+/);
 
       if (latestMatch && latestMatch[0]) {
         const rewrittenUrl = latestMatch[0].replace(/https:\/\/[^/]+/, 'https://inv-eu4-c.nadeko.net');
@@ -228,6 +238,9 @@
                 dynamicLabel: true
               }
             }
+          });
+          player.ready(function() {
+            this.controls(true);
           });
         }
         backBtn.style.display = 'block';
@@ -267,6 +280,9 @@
                 dynamicLabel: true
               }
             }
+          });
+          player.ready(function() {
+            this.controls(true);
           });
         });
 
