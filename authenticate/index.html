@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Authenticating...</title>
+  <style>
+body {
+  background: linear-gradient(145deg, #1c1c1e, #2c2c2e);
+  color: #e0e0e0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-size: 1.75rem;
+  flex-direction: column;
+  text-align: center;
+}
+
+.message {
+  padding: 20px 40px;
+  border: 1px solid #3a3a3c;
+  border-radius: 12px;
+  background: #1c1c1e;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+  </style>
+</head>
+<body>
+  <div class="message" id="status">Authenticating...</div>
+
+  <script>
+    const allowedUserAgents = [
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    ];
+
+    const userAgent = navigator.userAgent;
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get("url");
+
+    const statusEl = document.getElementById("status");
+
+    setTimeout(() => {
+      if (allowedUserAgents.includes(userAgent)) {
+        statusEl.textContent = "Authenticated, continuing...";
+        if (redirectUrl) {
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 2000); // 2 seconds after showing Authenticated
+        }
+      } else {
+        statusEl.textContent = "Authentication failure.";
+      }
+    }, 1500); // Delay before showing result
+  </script>
+</body>
+</html>
