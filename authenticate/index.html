@@ -75,6 +75,14 @@ body {
               iframe.style.margin = 0;
               iframe.style.padding = 0;
               iframe.style.zIndex = 9999;
+              iframe.onload = () => {
+                const messageData = {
+                  type: "auth",
+                  token: "abc123", // Replace with real token if needed
+                  timestamp: Date.now()
+                };
+                iframe.contentWindow.postMessage(messageData, allowedDomain);
+              };
               document.body.appendChild(iframe);
             } else {
               window.location.href = redirectUrl;
@@ -88,4 +96,3 @@ body {
   </script>
 </body>
 </html>
-
