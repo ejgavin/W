@@ -57,26 +57,7 @@ body {
         statusEl.textContent = "Authenticated, continuing...";
         if (redirectUrl) {
           setTimeout(() => {
-            const allowedDomain = "https://vulnerable-albertine-stuff21-3c47da18hithisiskindarandomikye.koyeb.app";
-            const temp = document.createElement("a");
-            temp.href = redirectUrl;
-            if (temp.origin === allowedDomain) {
-              document.body.innerHTML = ''; // Clear existing content
-              const iframe = document.createElement("iframe");
-              iframe.src = redirectUrl;
-              iframe.style.position = "fixed";
-              iframe.style.top = 0;
-              iframe.style.left = 0;
-              iframe.style.width = "100vw";
-              iframe.style.height = "100vh";
-              iframe.style.border = "none";
-              iframe.style.margin = 0;
-              iframe.style.padding = 0;
-              iframe.style.zIndex = 9999;
-              document.body.appendChild(iframe);
-            } else {
-              window.location.href = redirectUrl;
-            }
+            window.location.href = redirectUrl;
           }, 2000); // 2 seconds after showing Authenticated
         }
       } else {
