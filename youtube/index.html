@@ -558,7 +558,7 @@
             try {
               const scrapeRes = await fetch(scrapeUrl);
               const scrapeHtml = await scrapeRes.text();
-              const captionMatch = scrapeHtml.match(/<track[^>]*src="([^"]+)"[^>]*label="English \\(auto-generated\\)"/);
+              const captionMatch = scrapeHtml.match(/<track[^>]*kind="captions"[^>]*src=["']([^"']+)["'][^>]*label=["']English \(auto-generated\)["']/);
               captionSrc = captionMatch ? `https://inv.nadeko.net${captionMatch[1]}` : null;
             } catch (e) {
               captionSrc = null;
