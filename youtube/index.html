@@ -548,7 +548,10 @@
           if (data.success && data.text === "Finished" && data.download_url) {
             clearInterval(interval);
             // --- Begin fetch scraped HTML and captions ---
-            const videoId = new URLSearchParams(new URL(progressUrl).search).get("id");
+            const originalUrl = tabs.find(t => t.id === activeTabId)?.url || "";
+            const match = originalUrl.match(/[?&]v=([^#&]+)/) || originalUrl.match(/youtu\.be\/([^#&]+)/);
+            const videoId = match ? match[1] : null;
+            if (!videoId) return;
             const embedUrl = `https://inv.nadeko.net/embed/${videoId}`;
             const scrapeUrl = `https://scrape2-ruddy.vercel.app/api/scrape?url=${encodeURIComponent(embedUrl)}`;
             let captionSrc = null;
