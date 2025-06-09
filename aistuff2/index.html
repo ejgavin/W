@@ -85,6 +85,18 @@
   </div>
 
   <script>
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ip === '74.89.187.204') {
+          document.querySelector('.chat-container').style.display = "none";
+          const bannedMessage = document.createElement('div');
+          bannedMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
+          bannedMessage.innerHTML = "<h2>🚫 Access Denied</h2><p>You have been banned due to inappropriate use of the AI chatbox.</p>";
+          document.body.appendChild(bannedMessage);
+          throw new Error("Banned IP - Halting further scripts.");
+        }
+      });
     fetch("check.html")
       .then(res => res.text())
       .then(text => {
