@@ -85,10 +85,22 @@
   </div>
 
   <script>
+    const bannedIdentifier = 'banned-user-74.89.187.204';
+
+    if (localStorage.getItem('bannedUser') === bannedIdentifier) {
+      document.querySelector('.chat-container').style.display = "none";
+      const bannedMessage = document.createElement('div');
+      bannedMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
+      bannedMessage.innerHTML = "<h2>🚫 Access Denied</h2><p>You have been banned due to inappropriate use of the AI chatbox.</p>";
+      document.body.appendChild(bannedMessage);
+      throw new Error("Banned user - Halting further scripts.");
+    }
+
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => {
         if (data.ip === '74.89.187.204') {
+          localStorage.setItem('bannedUser', bannedIdentifier);
           document.querySelector('.chat-container').style.display = "none";
           const bannedMessage = document.createElement('div');
           bannedMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
@@ -121,4 +133,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
