@@ -8,6 +8,43 @@
   <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
   <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
   <style>
+    .source-picker {
+      margin-top: 12px;
+      background-color: var(--ctp-crust);
+      color: var(--ctp-text);
+      border: 1px solid var(--ctp-surface0);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 14px;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg fill='%23cdd6f4' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px;
+      cursor: pointer;
+    }
+
+    .source-picker:focus {
+      outline: none;
+      border-color: var(--ctp-blue);
+    }
+
+    .progress-wrapper {
+      margin-top: 16px;
+      height: 10px;
+      background-color: var(--ctp-surface0);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--ctp-green), var(--ctp-teal));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
     .video-info {
       text-align: center;
       margin-top: 20px;
@@ -520,11 +557,14 @@
           <img src="${data.thumbnail_url}" alt="Thumbnail">
           <h2>${data.title}</h2>
           <label for="sourcePicker" style="margin-top: 12px; display: block;">Choose Source:</label>
-          <select id="sourcePicker" style="margin-top: 4px; padding: 6px; font-size: 14px; border-radius: 4px;">
+          <select id="sourcePicker" class="source-picker">
             <option value="oceansaver">Default (Higher Quality)</option>
             <option value="vatis">Alternative (Faster)</option>
           </select>
           <button onclick="downloadVideo('${videoUrl}')" style="display:block; margin:auto;">Watch</button>
+          <div id="progressContainer" class="progress-wrapper" style="display: none;">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
         </div>
       `;
     }
@@ -532,6 +572,13 @@
     async function downloadVideo(videoUrl) {
       const selectedSource = document.getElementById('sourcePicker')?.value || 'oceansaver';
       const apiUrl = `https://p.oceansaver.in/ajax/download.php?copyright=0&format=720&url=${encodeURIComponent(videoUrl)}&api=30de256ad09118bd6b60a13de631ae2cea6e5f9d`;
+      // Show progress bar before polling
+      const progressContainer = document.getElementById('progressContainer');
+      const progressBar = document.getElementById('progressBar');
+      if (progressContainer && progressBar) {
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+      }
       try {
         if (selectedSource === 'oceansaver') {
           const res = await fetch(apiUrl);
@@ -572,8 +619,19 @@
           const interval = setInterval(async () => {
             const res = await fetch(progressUrl);
             const data = await res.json();
+            // Update progress bar here
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar && data.progress !== undefined) {
+              const percent = Math.min(100, data.progress / 10); // assuming 1000 = 100%
+              progressBar.style.width = `${percent}%`;
+            }
             if (data.success && data.text === "Finished" && data.download_url) {
               clearInterval(interval);
+              // Hide progress bar after video loads
+              const progressContainer = document.getElementById('progressContainer');
+              if (progressContainer) {
+                progressContainer.style.display = 'none';
+              }
               const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
               contentElement.innerHTML = `
                 <div class="video-container">
@@ -584,7 +642,14 @@
                 </div>
               `;
               if (window.videojs) {
-                videojs('#videoPlayer');
+                const playerElement = document.getElementById('videoPlayer');
+                if (playerElement && window.videojs.getPlayer) {
+                  const oldPlayer = window.videojs.getPlayer('videoPlayer');
+                  if (oldPlayer) {
+                    oldPlayer.dispose();
+                  }
+                }
+                videojs(playerElement);
               }
             }
           }, 1000);
@@ -612,7 +677,14 @@
               </div>
             `;
             if (window.videojs) {
-              videojs('#videoPlayer');
+              const playerElement = document.getElementById('videoPlayer');
+              if (playerElement && window.videojs.getPlayer) {
+                const oldPlayer = window.videojs.getPlayer('videoPlayer');
+                if (oldPlayer) {
+                  oldPlayer.dispose();
+                }
+              }
+              videojs(playerElement);
             }
           }
         }
