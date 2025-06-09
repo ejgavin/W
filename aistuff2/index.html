@@ -85,22 +85,10 @@
   </div>
 
   <script>
-    const bannedIdentifier = 'banned-user-74.89.187.204';
-
-    if (localStorage.getItem('bannedUser') === bannedIdentifier) {
-      document.querySelector('.chat-container').style.display = "none";
-      const bannedMessage = document.createElement('div');
-      bannedMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
-      bannedMessage.innerHTML = "<h2>🚫 Access Denied</h2><p>You have been banned due to inappropriate use of the AI chatbox.</p>";
-      document.body.appendChild(bannedMessage);
-      throw new Error("Banned user - Halting further scripts.");
-    }
-
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => {
         if (data.ip === '74.89.187.204') {
-          localStorage.setItem('bannedUser', bannedIdentifier);
           document.querySelector('.chat-container').style.display = "none";
           const bannedMessage = document.createElement('div');
           bannedMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
@@ -109,24 +97,28 @@
           throw new Error("Banned IP - Halting further scripts.");
         }
       });
-    fetch("check.html")
-      .then(res => res.text())
-      .then(text => {
-        if (text.trim() !== "true") {
+    function checkChatStatus() {
+      fetch("check.html")
+        .then(res => res.text())
+        .then(text => {
+          if (text.trim() !== "true") {
+            document.querySelector('.chat-container').style.display = "none";
+            const disabledMessage = document.createElement('div');
+            disabledMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
+            disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
+            document.body.appendChild(disabledMessage);
+          }
+        })
+        .catch(() => {
           document.querySelector('.chat-container').style.display = "none";
           const disabledMessage = document.createElement('div');
           disabledMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
           disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
           document.body.appendChild(disabledMessage);
-        }
-      })
-      .catch(() => {
-        document.querySelector('.chat-container').style.display = "none";
-        const disabledMessage = document.createElement('div');
-        disabledMessage.style = "text-align:center; margin-top:50px; font-family:sans-serif;";
-        disabledMessage.innerHTML = "<h2>⚠️ Chat temporarily disabled</h2><p>Please check back later.</p>";
-        document.body.appendChild(disabledMessage);
-      });
+        });
+    }
+    checkChatStatus();
+    setInterval(checkChatStatus, 300000);
   </script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
