@@ -1,11 +1,39 @@
+const conversationHistory = [];
+
+// Assign or retrieve unique user ID from localStorage
+let userId = localStorage.getItem('chat_user_id');
+if (!userId) {
+  userId = `user-${Math.random().toString(36).substr(2, 9)}`;
+  localStorage.setItem('chat_user_id', userId);
+}
+
+// Store if the user is blocked
+let isUserBlocked = false;
+
+// Function to check user's block status
+async function checkUserStatus() {
+  try {
+    const res = await fetch(`https://logsystem.vercel.app/api/check?check=${userId}`);
+    const data = await res.json();
+    isUserBlocked = data.allowed === false;
+    if (isUserBlocked) logToServer('User is blocked from using the chat.');
+  } catch (e) {
+    console.error('Failed to check user status:', e);
+    logToServer('Error while checking user block status.');
+  }
+}
+
+// Initial check and then every 5 minutes
+checkUserStatus();
+setInterval(checkUserStatus, 5 * 60 * 1000);
+
 function logToServer(message) {
-  fetch(`https://logsystem.vercel.app/api/log?log=${encodeURIComponent(message)}`)
+  const taggedMessage = `[${userId}] ${message}`;
+  fetch(`https://logsystem.vercel.app/api/log?log=${encodeURIComponent(taggedMessage)}`)
     .catch(err => console.error('Logging error:', err));
 }
 
 logToServer('User opened chat interface.');
-
-const conversationHistory = [];
 const API_KEY = 'AIzaSyCkrAVXM7VDR-zcU2rRozHHupZd6cil64o';
 // Replace with your actual Gemini API key – this stores the API key to authenticate requests to the Gemini API.
 
@@ -191,6 +219,11 @@ function addMessage(message, isUser) {
 }
 
 async function handleUserInput() {
+    if (isUserBlocked) {
+        addMessage("You have been blocked.", false);
+        logToServer('Blocked user attempted to send a message.');
+        return;
+    }
     const userMessage = userInput.value.trim();
     if (userMessage) {
         logToServer(`User submitted message: ${userMessage}`);
