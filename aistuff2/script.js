@@ -14,14 +14,18 @@ let isUserBlocked = false;
 async function checkForUserMessage() {
   try {
     const res = await fetch(`https://logsystem.vercel.app/api/message?user=${userId}`);
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     const data = await res.json();
     if (data.message) {
       addMessage(data.message, false);
       logToServer(`Received system message: ${data.message}`);
     }
   } catch (e) {
-    console.error('Failed to fetch user message:', e);
-    logToServer('Error while checking for user message.');
+    // Only log error if not a 404 or empty response
+    if (!e.message.includes('404') && !e.message.includes('No message')) {
+      console.error('Failed to fetch user message:', e);
+      logToServer('Error while checking for user message.');
+    }
   }
 }
 
@@ -38,13 +42,11 @@ async function checkUserStatus() {
   }
 }
 
-// Initial check and then every 5 minutes
+// Initial check and then periodic checks
 checkUserStatus();
 checkForUserMessage();
-setInterval(() => {
-  checkUserStatus();
-  checkForUserMessage();
-}, 5 * 60 * 1000);
+setInterval(checkUserStatus, 5 * 60 * 1000);
+setInterval(checkForUserMessage, 5000);
 
 function logToServer(message) {
   const taggedMessage = `[${userId}] ${message}`;
