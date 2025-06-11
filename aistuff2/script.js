@@ -3,7 +3,7 @@ const conversationHistory = [];
 // Assign or retrieve unique user ID from localStorage
 let userId = localStorage.getItem('chat_user_id');
 if (!userId) {
-  userId = `user-${Math.random().toString(36).substr(2, 9)}`;
+  userId = Math.floor(Math.random() * 1000000000).toString(); // Random number as string
   localStorage.setItem('chat_user_id', userId);
 }
 
