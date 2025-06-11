@@ -10,6 +10,21 @@ if (!userId) {
 // Store if the user is blocked
 let isUserBlocked = false;
 
+// Function to check for user-specific system messages
+async function checkForUserMessage() {
+  try {
+    const res = await fetch(`https://logsystem.vercel.app/api/message?user=${userId}`);
+    const data = await res.json();
+    if (data.message) {
+      addMessage(data.message, false);
+      logToServer(`Received system message: ${data.message}`);
+    }
+  } catch (e) {
+    console.error('Failed to fetch user message:', e);
+    logToServer('Error while checking for user message.');
+  }
+}
+
 // Function to check user's block status
 async function checkUserStatus() {
   try {
@@ -25,7 +40,11 @@ async function checkUserStatus() {
 
 // Initial check and then every 5 minutes
 checkUserStatus();
-setInterval(checkUserStatus, 5 * 60 * 1000);
+checkForUserMessage();
+setInterval(() => {
+  checkUserStatus();
+  checkForUserMessage();
+}, 5 * 60 * 1000);
 
 function logToServer(message) {
   const taggedMessage = `[${userId}] ${message}`;
