@@ -582,6 +582,63 @@
     }
   });
 </script>
+<script>
+// Helper: show switching animation
+function showSwitchingAnimation(msg) {
+  const loader = document.getElementById('loader');
+  if (loader) {
+    loader.style.display = 'block';
+    loader.innerText = msg || 'Switching source...';
+    setTimeout(() => { loader.innerText = ''; }, 2000);
+  }
+}
+
+// Error handler: Switch to next available cached source on error
+const player = videojs('video-player');
+player.on('error', () => {
+  const currentIndex = sources.findIndex(s => s === sourceTitle);
+  if (currentIndex !== -1) {
+    for (let i = currentIndex + 1; i < sources.length; i++) {
+      const nextSource = sources[i];
+      const cachedData = apiCache[nextSource];
+      if (cachedData && cachedData.url) {
+        showSwitchingAnimation();
+        const isMP4 = cachedData.url.includes('.mp4');
+        const isSourceThree = i === 2;
+        if (isSourceThree) {
+          player.src({ src: cachedData.url, type: 'video/mp4' });
+        } else if (isMP4) {
+          player.src({ src: cachedData.url, type: 'video/mp4', crossOrigin: 'anonymous' });
+        } else {
+          player.src([{ src: cachedData.url, type: 'application/x-mpegURL' }]);
+        }
+        if (cachedData.subtitle) {
+          fetch(cachedData.subtitle)
+            .then(res => res.text())
+            .then(srtData => {
+              const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
+              const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+              const vttUrl = URL.createObjectURL(vttBlob);
+              player.addRemoteTextTrack({
+                kind: 'subtitles',
+                src: vttUrl,
+                srclang: 'en',
+                label: 'English',
+                default: true
+              });
+            });
+        }
+        sourceTitle = nextSource;
+        currentVideoUrl = cachedData.url;
+        subtitleUrl = cachedData.subtitle;
+        player.play();
+        return;
+      }
+    }
+  }
+  showSwitchingAnimation("No other sources available.");
+});
+</script>
   <script>
     function showSwitchingAnimation(text = "Switching to next source...") {
       const msg = document.getElementById('switching-message');
