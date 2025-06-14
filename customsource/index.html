@@ -61,6 +61,13 @@
       width: 100%;
       height: 100%;
     }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -96,6 +103,7 @@
   <button id="bug-toggle" style="position: absolute; top: 50px; right: 10px; z-index: 1001; background: linear-gradient(135deg, #1f1f1f, #3a3a3a); color: white; border: 1px solid #444; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">
     Bug Report
   </button>
+  <div id="switching-message" style="display:none;position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:10px 20px;border-radius:5px;font-family:sans-serif;z-index:1002;animation:fadeInOut 2s ease-in-out;">Switching to next source...</div>
   <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
   <script>
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
@@ -574,5 +582,31 @@
     }
   });
 </script>
+  <script>
+    function showSwitchingAnimation(text = "Switching to next source...") {
+      const msg = document.getElementById('switching-message');
+      msg.textContent = text;
+      msg.style.display = 'block';
+      msg.style.animation = 'none';
+      void msg.offsetWidth;
+      msg.style.animation = 'fadeInOut 2s ease-in-out';
+
+      setTimeout(() => {
+        msg.style.display = 'none';
+      }, 2000);
+    }
+
+    const player = videojs('video-player');
+    player.on('error', () => {
+      const currentIndex = sources.findIndex(s => s === sourceTitle);
+      if (currentIndex !== -1 && currentIndex + 1 < sources.length) {
+        showSwitchingAnimation();
+        const nextSource = sources[currentIndex + 1];
+        document.querySelector(`#source-list > div:nth-child(${currentIndex + 2})`).click();
+      } else {
+        showSwitchingAnimation("No other sources available.");
+      }
+    });
+  </script>
 </body>
 </html>
