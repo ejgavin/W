@@ -556,11 +556,7 @@
         <div class="video-info">
           <img src="${data.thumbnail_url}" alt="Thumbnail">
           <h2>${data.title}</h2>
-          <label for="sourcePicker" style="margin-top: 12px; display: block;">Choose Source:</label>
-          <select id="sourcePicker" class="source-picker">
-            <option value="oceansaver">Default (Higher Quality)</option>
-            <option value="vatis">Alternative (Faster)</option>
-          </select>
+          <!-- Removed source picker since there is only one source now -->
           <button onclick="downloadVideo('${videoUrl}')" style="display:block; margin:auto;">Watch</button>
           <div id="progressContainer" class="progress-wrapper" style="display: none;">
             <div id="progressBar" class="progress-bar"></div>
@@ -570,8 +566,8 @@
     }
 
     async function downloadVideo(videoUrl) {
-      const selectedSource = document.getElementById('sourcePicker')?.value || 'oceansaver';
-      const apiUrl = `https://p.oceansaver.in/ajax/download.php?copyright=0&format=720&url=${encodeURIComponent(videoUrl)}&api=30de256ad09118bd6b60a13de631ae2cea6e5f9d`;
+      const apiUrl = 'https://ejgsapis.vercel.app/api/youtubemp3';
+
       // Show progress bar before polling
       const progressContainer = document.getElementById('progressContainer');
       const progressBar = document.getElementById('progressBar');
@@ -579,118 +575,56 @@
         progressContainer.style.display = 'block';
         progressBar.style.width = '0%';
       }
+
       try {
-        if (selectedSource === 'oceansaver') {
-          const res = await fetch(apiUrl);
-          const data = await res.json();
-          if (!data.success || !data.progress_url) {
-            alert("Download initialization failed.");
-            return;
-          }
-          pollProgress(data.progress_url, selectedSource);
-        } else {
-          pollProgress(null, selectedSource);
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          // Send only the url, no downloadMode parameter
+          body: JSON.stringify({ url: videoUrl })
+        });
+
+        const data = await res.json();
+
+        if (!data.url) {
+          alert('Download initialization failed.');
+          return;
         }
+
+        pollProgress(data.url);
       } catch (err) {
-        alert("Error contacting download API.");
+        alert('Error contacting download API.');
         console.error(err);
       }
     }
 
-    async function pollProgress(progressUrl, selectedSource) {
-      try {
-        const originalUrl = tabs.find(t => t.id === activeTabId)?.url || "";
-        const match = originalUrl.match(/[?&]v=([^#&]+)/) || originalUrl.match(/youtu\.be\/([^#&]+)/);
-        const videoId = match ? match[1] : null;
-        if (!videoId) return;
-        const embedUrl = `https://inv.nadeko.net/embed/${videoId}`;
-        let captionSrc = null;
-        try {
-          const scrapeUrl = `https://scrape2-ruddy.vercel.app/api/scrape?url=${encodeURIComponent(embedUrl)}`;
-          const scrapeRes = await fetch(scrapeUrl);
-          const scrapeHtml = await scrapeRes.text();
-          const captionMatch = scrapeHtml.match(/<track[^>]*kind="captions"[^>]*src=["']([^"']+)["'][^>]*label=["']English \(auto-generated\)["']/);
-          captionSrc = captionMatch ? `https://inv.nadeko.net${captionMatch[1]}` : null;
-        } catch (e) {
-          captionSrc = null;
-        }
+    async function pollProgress(downloadUrl) {
+      // Hide progress bar immediately since this API returns URL right away
+      const progressContainer = document.getElementById('progressContainer');
+      if (progressContainer) {
+        progressContainer.style.display = 'none';
+      }
 
-        if (selectedSource === 'oceansaver') {
-          const interval = setInterval(async () => {
-            const res = await fetch(progressUrl);
-            const data = await res.json();
-            // Update progress bar here
-            const progressBar = document.getElementById('progressBar');
-            if (progressBar && data.progress !== undefined) {
-              const percent = Math.min(100, data.progress / 10); // assuming 1000 = 100%
-              progressBar.style.width = `${percent}%`;
-            }
-            if (data.success && data.text === "Finished" && data.download_url) {
-              clearInterval(interval);
-              // Hide progress bar after video loads
-              const progressContainer = document.getElementById('progressContainer');
-              if (progressContainer) {
-                progressContainer.style.display = 'none';
-              }
-              const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
-              contentElement.innerHTML = `
-                <div class="video-container">
-                  <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered embedded-player" controls preload="auto">
-                    <source src="${data.download_url}" type="video/mp4" label="Default" data-source="oceansaver">
-                    ${captionSrc ? `<track kind="captions" src="${captionSrc}" label="English (auto-generated)" default>` : ''}
-                  </video>
-                </div>
-              `;
-              if (window.videojs) {
-                const playerElement = document.getElementById('videoPlayer');
-                if (playerElement && window.videojs.getPlayer) {
-                  const oldPlayer = window.videojs.getPlayer('videoPlayer');
-                  if (oldPlayer) {
-                    oldPlayer.dispose();
-                  }
-                }
-                videojs(playerElement);
-              }
-            }
-          }, 1000);
-        }
+      const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
+      contentElement.innerHTML = `
+        <div class="video-container">
+          <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered embedded-player" controls preload="auto">
+            <source src="${downloadUrl}" type="video/mp4" label="Default">
+          </video>
+        </div>
+      `;
 
-        if (selectedSource === 'vatis') {
-          let vatisVideoUrl = null;
-          try {
-            const vatisUrl = `https://vatis.tech/app/api/youtube-downloader?url=${encodeURIComponent(originalUrl)}`;
-            const vatisRes = await fetch(vatisUrl);
-            const vatisJson = await vatisRes.json();
-            vatisVideoUrl = vatisJson.videoUrl || null;
-          } catch (e) {
-            vatisVideoUrl = null;
-          }
-
-          if (vatisVideoUrl) {
-            const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
-            contentElement.innerHTML = `
-              <div class="video-container">
-                <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered embedded-player" controls preload="auto">
-                  <source src="${vatisVideoUrl}" type="video/mp4" label="Alternative" data-source="vatis">
-                  ${captionSrc ? `<track kind="captions" src="${captionSrc}" label="English (auto-generated)" default>` : ''}
-                </video>
-              </div>
-            `;
-            if (window.videojs) {
-              const playerElement = document.getElementById('videoPlayer');
-              if (playerElement && window.videojs.getPlayer) {
-                const oldPlayer = window.videojs.getPlayer('videoPlayer');
-                if (oldPlayer) {
-                  oldPlayer.dispose();
-                }
-              }
-              videojs(playerElement);
-            }
+      if (window.videojs) {
+        const playerElement = document.getElementById('videoPlayer');
+        if (playerElement && window.videojs.getPlayer) {
+          const oldPlayer = window.videojs.getPlayer('videoPlayer');
+          if (oldPlayer) {
+            oldPlayer.dispose();
           }
         }
-      } catch (err) {
-        alert("Error loading video.");
-        console.error(err);
+        videojs(playerElement);
       }
     }
 
