@@ -53,7 +53,10 @@
     async function downloadM3U8() {
       const url = document.getElementById("m3u8url").value;
       const filenameParam = getQueryParam("filename");
-      const filename = filenameParam && filenameParam.trim() !== "" ? filenameParam.trim() : "video.mp4";
+      let filename = filenameParam && filenameParam.trim() !== "" ? filenameParam.trim() : "video";
+      if (!filename.toLowerCase().endsWith(".mp4")) {
+        filename += ".mp4";
+      }
       if (!url) {
         showStatus("Please enter a valid URL.", true);
         return;
