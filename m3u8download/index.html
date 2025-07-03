@@ -67,7 +67,10 @@
         const tsUrls = text
           .split("\n")
           .filter(line => line.startsWith("/proxy?url="))
-          .map(line => proxyBase + line);
+          .map(line => {
+            const rawUrl = decodeURIComponent(line.split("url=")[1]);
+            return `${proxyBase}?url=${encodeURIComponent(rawUrl)}`;
+          });
 
         if (!tsUrls.length) throw new Error("No .ts segments found.");
 
@@ -76,7 +79,7 @@
         const blobs = [];
         for (let i = 0; i < tsUrls.length; i++) {
           showStatus(`Downloading segment ${i + 1} of ${tsUrls.length}...`);
-          const tsRes = await fetch(`${proxyBase}${encodeURIComponent(tsUrls[i])}`);
+          const tsRes = await fetch(tsUrls[i]);
           const tsData = await tsRes.arrayBuffer();
           blobs.push(tsData);
         }
