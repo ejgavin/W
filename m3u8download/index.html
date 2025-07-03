@@ -87,29 +87,32 @@
         const startTime = Date.now();
         const progressBarEl = document.getElementById("progressBar");
 
-        const blobs = [];
-        for (let i = 0; i < tsUrls.length; i++) {
-          const elapsed = (Date.now() - startTime) / 1000;
-          const avgTime = elapsed / (i + 1);
-          const remaining = avgTime * (tsUrls.length - i - 1);
+        const formatTime = (seconds) => {
+          const hrs = Math.floor(seconds / 3600);
+          const mins = Math.floor((seconds % 3600) / 60);
+          const secs = Math.floor(seconds % 60);
+          return [
+            hrs > 0 ? `${hrs}h` : '',
+            mins > 0 ? `${mins}m` : '',
+            `${secs}s`
+          ].filter(Boolean).join(' ');
+        };
 
-          const formatTime = (seconds) => {
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
-            const secs = Math.floor(seconds % 60);
-            return [
-              hrs > 0 ? `${hrs}h` : '',
-              mins > 0 ? `${mins}m` : '',
-              `${secs}s`
-            ].filter(Boolean).join(' ');
-          };
-
-          showStatus(`Segment ${i + 1} of ${tsUrls.length} - ETA: ${formatTime(remaining)}`);
-          progressBarEl.style.width = `${((i + 1) / tsUrls.length) * 100}%`;
-          const tsRes = await fetch(tsUrls[i]);
+        let completed = 0;
+        const blobs = await Promise.all(tsUrls.map(async (tsUrl, i) => {
+          const tsRes = await fetch(tsUrl);
           const tsData = await tsRes.arrayBuffer();
-          blobs.push(tsData);
-        }
+
+          completed++;
+          const elapsed = (Date.now() - startTime) / 1000;
+          const avgTime = elapsed / completed;
+          const remaining = avgTime * (tsUrls.length - completed);
+
+          showStatus(`Segment ${completed} of ${tsUrls.length} - ETA: ${formatTime(remaining)}`);
+          progressBarEl.style.width = `${(completed / tsUrls.length) * 100}%`;
+
+          return tsData;
+        }));
 
         const merged = new Blob(blobs, { type: "video/mp2t" });
         const a = document.createElement("a");
