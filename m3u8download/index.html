@@ -87,7 +87,19 @@
           const elapsed = (Date.now() - startTime) / 1000;
           const avgTime = elapsed / (i + 1);
           const remaining = avgTime * (tsUrls.length - i - 1);
-          showStatus(`Segment ${i + 1} of ${tsUrls.length} - ETA: ${remaining.toFixed(1)}s`);
+
+          const formatTime = (seconds) => {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            return [
+              hrs > 0 ? `${hrs}h` : '',
+              mins > 0 ? `${mins}m` : '',
+              `${secs}s`
+            ].filter(Boolean).join(' ');
+          };
+
+          showStatus(`Segment ${i + 1} of ${tsUrls.length} - ETA: ${formatTime(remaining)}`);
           progressBarEl.style.width = `${((i + 1) / tsUrls.length) * 100}%`;
           const tsRes = await fetch(tsUrls[i]);
           const tsData = await tsRes.arrayBuffer();
