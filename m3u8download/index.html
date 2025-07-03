@@ -9,6 +9,7 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.4/dist/ffmpeg.min.js"></script>
 </head>
 <body class="bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white min-h-screen flex items-center justify-center p-4">
 
@@ -54,17 +55,30 @@
         return;
       }
 
-      showStatus("Downloading...");
+      showStatus("Loading FFmpeg...");
+
+      const { createFFmpeg, fetchFile } = FFmpeg;
+      const ffmpeg = createFFmpeg({ log: true });
 
       try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Failed to fetch M3U8 file.");
-        const text = await response.text();
+        await ffmpeg.load();
 
-        const blob = new Blob([text], { type: "application/vnd.apple.mpegurl" });
+        const proxiedUrl = `https://stuff-x3vi.onrender.com/proxy/${encodeURIComponent(url)}`;
+        showStatus("Downloading M3U8 playlist...");
+
+        const playlistResponse = await fetch(proxiedUrl);
+        const playlistText = await playlistResponse.text();
+        ffmpeg.FS("writeFile", "input.m3u8", new TextEncoder().encode(playlistText));
+
+        showStatus("Converting to MP4...");
+        await ffmpeg.run("-protocol_whitelist", "file,http,https,tcp,tls", "-i", "input.m3u8", "-c", "copy", "output.mp4");
+
+        const data = ffmpeg.FS("readFile", "output.mp4");
+        const blob = new Blob([data.buffer], { type: "video/mp4" });
+
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "playlist.m3u8";
+        a.download = "video.mp4";
         a.click();
         URL.revokeObjectURL(a.href);
 
