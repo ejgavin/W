@@ -109,7 +109,7 @@
         const merged = new Blob(blobs, { type: "video/mp2t" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(merged);
-        a.download = "video.ts";
+        a.download = "video.mp4";
         a.click();
         URL.revokeObjectURL(a.href);
 
