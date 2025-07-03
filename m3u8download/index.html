@@ -52,6 +52,8 @@
 
     async function downloadM3U8() {
       const url = document.getElementById("m3u8url").value;
+      const filenameParam = getQueryParam("filename");
+      const filename = filenameParam && filenameParam.trim() !== "" ? filenameParam.trim() : "video.mp4";
       if (!url) {
         showStatus("Please enter a valid URL.", true);
         return;
@@ -109,11 +111,11 @@
         const merged = new Blob(blobs, { type: "video/mp2t" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(merged);
-        a.download = "video.mp4";
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(a.href);
 
-        showStatus("Download complete. File saved as .ts");
+        showStatus(`Download complete. File saved as ${filename}`);
       } catch (err) {
         showStatus("Error: " + err.message, true);
       }
