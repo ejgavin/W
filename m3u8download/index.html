@@ -64,11 +64,10 @@
         if (!response.ok) throw new Error("Failed to fetch M3U8 playlist.");
         const text = await response.text();
 
-        const baseUrl = url.split("/").slice(0, -1).join("/") + "/";
         const tsUrls = text
           .split("\n")
-          .filter(line => line && !line.startsWith("#"))
-          .map(line => (line.startsWith("http") ? line : baseUrl + line));
+          .filter(line => line.startsWith("/proxy?url="))
+          .map(line => proxyBase + line);
 
         if (!tsUrls.length) throw new Error("No .ts segments found.");
 
