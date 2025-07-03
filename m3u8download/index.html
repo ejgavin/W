@@ -29,10 +29,13 @@
       onclick="downloadM3U8()"
       class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all font-semibold py-2 px-4 rounded-lg shadow-lg"
     >
-      ⬇️ Download M3U8
+      Download M3U8
     </button>
 
     <div id="status" class="text-sm text-gray-400 text-center transition-opacity duration-300"></div>
+    <div class="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+      <div id="progressBar" class="bg-blue-600 h-2.5 transition-all duration-300 ease-out" style="width: 0%;"></div>
+    </div>
   </div>
 
   <script>
@@ -76,9 +79,16 @@
 
         showStatus(`Downloading ${tsUrls.length} segments...`);
 
+        const startTime = Date.now();
+        const progressBarEl = document.getElementById("progressBar");
+
         const blobs = [];
         for (let i = 0; i < tsUrls.length; i++) {
-          showStatus(`Downloading segment ${i + 1} of ${tsUrls.length}...`);
+          const elapsed = (Date.now() - startTime) / 1000;
+          const avgTime = elapsed / (i + 1);
+          const remaining = avgTime * (tsUrls.length - i - 1);
+          showStatus(`Segment ${i + 1} of ${tsUrls.length} - ETA: ${remaining.toFixed(1)}s`);
+          progressBarEl.style.width = `${((i + 1) / tsUrls.length) * 100}%`;
           const tsRes = await fetch(tsUrls[i]);
           const tsData = await tsRes.arrayBuffer();
           blobs.push(tsData);
