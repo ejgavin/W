@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<!--------------------------------------*
+*
+*  ARCORA
+*  Modified for VAPOR -> US5
+*
+*  Credits:
+* - iTunes api - searching
+* - lyrics.ovh - lyrics
+* - youtube data v3 - player
+*
+*  developed by technonyte0
+*  https://techno.pics
+*  Edited version of V1 by Voucan: Minor CSS Changed, Lyrics Sync, Loop, Time Buttons, Vercel Deployment, Key Controls
+*--------------------------------------->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Music Player</title>
+<meta content="Music Player" property="og:title"/>
+<meta content="Music player by vapor.my, and edited by US5" property="og:description"/>
+<meta content="https://us5.pages.dev/storage/images/music.png" property="og:image"/>
+<meta content="noindex" name="robots"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://site-assets.fontawesome.com/releases/v6.7.2/css/all.css" rel="stylesheet"/>
+<link href="https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-solid.css" rel="stylesheet"/>
+<link href="https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-regular.css" rel="stylesheet"/>
+<link href="https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-light.css" rel="stylesheet"/>
+<link href="https://site-assets.fontawesome.com/releases/v6.7.2/css/duotone.css" rel="stylesheet">
+<link href="https://site-assets.fontawesome.com/releases/v6.7.2/css/brands.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.4.0/color-thief.min.js"></script>
+<link href="https://us5.pages.dev/storage/images/music.png" rel="icon" type="image/png"/>
+<!-- Google tag (gtag.js) --> <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-HWSLDV5486"></script>
+
+</link></link><link href="styles.css" rel="stylesheet"/></head>
+<body>
+<div class="search-container">
+<input class="search-input" id="searchInput" placeholder="Search for any song... (Artist, Track)" type="text"/>
+</div>
+<div class="search-results" id="searchResults">
+<!-- cappuccino assassino -->
+</div>
+<div class="player">
+<div class="album-art" id="album">
+<img alt="Album" crossorigin="anonymous" id="albumCover" src="https://raw.githubusercontent.com/voucan-us4/music-player/refs/heads/main/empty-art.png"/>
+</div>
+<div class="info" id="playerInfo">
+<div class="track-title" id="trackTitle">Not Playing</div>
+<div class="artist" id="artistName">Not Playing</div>
+<div class="controls">
+<i class="fa-solid fa-repeat" data-tooltip="Loop (L)" id="loopToggle"></i>
+<i class="fas fa-backward" data-tooltip="Backwards 10 seconds" id="backward10"></i>
+<i class="fa-solid fa-chevron-left" data-tooltip="Backwards 5 seconds (←)" id="backward5"></i>
+<i class="fa-solid fa-play" data-tooltip="Pause (K)" id="playPause"></i>
+<i class="fa-solid fa-chevron-right" data-tooltip="Forwards 5 seconds (→)" id="forward5"></i>
+<i class="fas fa-forward" data-tooltip="Forwards 10 seconds" id="forward10"></i>
+</div>
+<div class="seekbar" id="seekbar">
+<div id="progress"></div>
+</div>
+<div class="timecodes">
+<span id="currentTime">0:00</span>
+<span id="remainingTime">-0:00</span>
+</div>
+</div>
+<div class="lyrics-info" id="lyricsInfo">
+<div class="lyrics-header">
+<div>
+<div class="lyrics-title" id="lyricsSongTitle">Not Playing</div>
+<div class="lyrics-artist" id="lyricsArtistName">Not Playing</div>
+</div>
+</div>
+<div class="lyrics-content" id="lyricsContent">No lyrics available.
+        </div>
+</div>
+<!-- TUNG TUNG TUGN TUNG TUNG TUNG TUNG SAHUR -->
+</div>
+<div class="otherbuttonscontainer">
+<div>
+<i class="fa-solid fa-volume-high" data-tooltip="Mute (m)" id="volumeBtn"></i>
+</div>
+<!-- tralalero tralala -->
+<div id="lyricsToggle">
+<i class="lyrics-toggle fa-solid fa-align-left" data-tooltip="Toggle Lyrics (t)"></i>
+</div>
+<!-- TUNG TUNG TUGN TUNG TUNG TUNG TUNG SAHUR -->
+</div>
+<!-- ballerina cappuccina -->
+<!-- Endpoints, By Bombardino Crocodilo-->
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="app.js"></script></body>
+</html>
