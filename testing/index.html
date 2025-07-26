@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Iframe Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100% - 49px); /* account for nav bar height */
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="addressBar" style="display: flex; align-items: center; padding: 8px; background: #f1f1f1; border-bottom: 1px solid #ccc;">
+    <button onclick="goBack()" style="margin-right: 6px;">←</button>
+    <button onclick="goForward()" style="margin-right: 6px;">→</button>
+    <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
+    <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" onkeydown="if(event.key === 'Enter') navigateToInput()" />
+    <button onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
+  </div>
+  <iframe id="isite" frameborder="0" title="site"></iframe>
+  <script>
+    let historyStack = [];
+    let historyIndex = -1;
+
+    function updateIframe(newUrl) {
+      const iframe = document.getElementById("isite");
+      if (iframe) iframe.src = newUrl;
+      document.getElementById("urlInput").value = newUrl;
+    }
+
+    function navigateToInput() {
+      const input = document.getElementById("urlInput").value;
+      let fullUrl = input.startsWith("http") ? input : "https://" + input;
+      historyStack = historyStack.slice(0, historyIndex + 1);
+      historyStack.push(fullUrl);
+      historyIndex++;
+      updateIframe(fullUrl);
+    }
+
+    function reloadIframe() {
+      const iframe = document.getElementById("isite");
+      if (iframe) iframe.src = iframe.src;
+    }
+
+    function goBack() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        updateIframe(historyStack[historyIndex]);
+      }
+    }
+
+    function goForward() {
+      if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        updateIframe(historyStack[historyIndex]);
+      }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get("url");
+
+    if (url) {
+      const iframe = document.getElementById("isite");
+      iframe.src = url.startsWith("http") ? url : "https://" + url;
+      // Update history stack and input after iframe src is set
+      historyStack.push(iframe.src);
+      historyIndex = 0;
+      document.getElementById("urlInput").value = iframe.src;
+    } else {
+      document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
+    }
+  </script>
+</body>
+</html>
