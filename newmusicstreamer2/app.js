@@ -43,6 +43,9 @@ let currentLyricsCache = {};
 function addToQueue(song) {
   queue.push(song);
   updateQueueUI();
+  if (queue.length === 1) {
+    playQueuedSong(0);
+  }
 }
 
 function addToPlaylist(song, playlistName) {
@@ -54,9 +57,23 @@ function addToPlaylist(song, playlistName) {
 
 function updateQueueUI() {
   const container = document.getElementById("queueList");
-  if (container) {
-    container.innerHTML = queue.map((s, i) => `<div>${i + 1}. ${s.title} - ${s.artist}</div>`).join("");
-  }
+  if (!container) return;
+
+  container.innerHTML = "";
+  queue.forEach((song, index) => {
+    const div = document.createElement("div");
+    div.className = "queue-entry";
+    div.innerHTML = `
+      <span>${song.title} - ${song.artist}</span>
+      <div>
+        <button onclick="event.stopPropagation(); moveUp(${index})">↑</button>
+        <button onclick="event.stopPropagation(); moveDown(${index})">↓</button>
+        <button onclick="event.stopPropagation(); removeFromQueue(${index})">✕</button>
+      </div>
+    `;
+    div.onclick = () => playQueuedSong(index);
+    container.appendChild(div);
+  });
 }
 
 function updatePlaylistUI() {
@@ -67,8 +84,43 @@ function updatePlaylistUI() {
 }
 
 function togglePanel(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = (el.style.display === "none") ? "block" : "none";
+  const panel = document.getElementById(id);
+  if (panel) {
+    panel.classList.toggle("open");
+  }
+}
+// --- Queue interaction helpers ---
+function removeFromQueue(index) {
+  queue.splice(index, 1);
+  updateQueueUI();
+}
+
+function moveUp(index) {
+  if (index <= 0) return;
+  [queue[index], queue[index - 1]] = [queue[index - 1], queue[index]];
+  updateQueueUI();
+}
+
+function moveDown(index) {
+  if (index >= queue.length - 1) return;
+  [queue[index], queue[index + 1]] = [queue[index + 1], queue[index]];
+  updateQueueUI();
+}
+
+function playQueuedSong(index) {
+  const song = queue[index];
+  searchAndPlay(song.title, song.artist);
+  queue.splice(index, 1);
+  updateQueueUI();
+}
+
+function searchAndPlay(title, artist) {
+  fetch(`${SEARCH_EP}${encodeURIComponent(title + " " + artist)}`)
+    .then(res => res.json())
+    .then(data => {
+      const track = data?.data?.find(t => t.title === title && t.artist?.name === artist);
+      if (track) playSong(track);
+    });
 }
 
 const colorThief = new ColorThief();
@@ -493,6 +545,9 @@ window.addEventListener("DOMContentLoaded", () => {
     if (isLooping) {
       audioPlayer.currentTime = 0;
       audioPlayer.play();
+    }
+    if (queue.length > 0) {
+      playQueuedSong(0);
     }
   });
 });

@@ -37,7 +37,58 @@
 <link href="https://us5.pages.dev/storage/images/music.png" rel="icon" type="image/png"/>
 <!-- Google tag (gtag.js) --> <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-HWSLDV5486"></script>
 <style>
-  #queuePanel, #playlistPanel { font-family: 'Inter', sans-serif; font-size: 14px; }
+  .slide-panel {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 300px;
+    height: 100%;
+    background: #111;
+    color: #fff;
+    transition: right 0.3s ease;
+    padding: 10px;
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+
+  .slide-panel.open {
+    right: 0;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .panel-content {
+    margin-top: 10px;
+  }
+
+  .panel-toggle-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .panel-toggle-btn {
+    background: #222;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .panel-toggle-btn:hover {
+    background: #333;
+  }
 </style>
 </link></link><link href="styles.css" rel="stylesheet"/></head>
 <body>
@@ -107,21 +158,28 @@
 
 
 </script>
-<div id="queuePanel" style="display:none; position:absolute; right:10px; top:60px; background:#111; color:#fff; padding:10px; border-radius:8px; max-width:300px; z-index:999;">
-  <h3>Queue</h3>
-  <div id="queueList"></div>
+
+<div id="sidePanels">
+  <div id="queuePanel" class="slide-panel">
+    <div class="panel-header">
+      <h3>Queue</h3>
+      <button onclick="togglePanel('queuePanel')">×</button>
+    </div>
+    <div id="queueList" class="panel-content"></div>
+  </div>
+
+  <div id="playlistPanel" class="slide-panel">
+    <div class="panel-header">
+      <h3>Playlists</h3>
+      <button onclick="togglePanel('playlistPanel')">×</button>
+    </div>
+    <div id="playlistList" class="panel-content"></div>
+  </div>
 </div>
 
-<div id="playlistPanel" style="display:none; position:absolute; right:10px; top:60px; background:#111; color:#fff; padding:10px; border-radius:8px; max-width:300px; z-index:999;">
-  <h3>Playlists</h3>
-  <div id="playlistList"></div>
-</div>
-
-<div style="position: absolute; top: 10px; right: 90px;">
-  <button onclick="togglePanel('queuePanel')">Queue</button>
-</div>
-<div style="position: absolute; top: 10px; right: 10px;">
-  <button onclick="togglePanel('playlistPanel')">Playlists</button>
+<div class="panel-toggle-buttons">
+  <button onclick="togglePanel('queuePanel')" class="panel-toggle-btn">Queue</button>
+  <button onclick="togglePanel('playlistPanel')" class="panel-toggle-btn">Playlists</button>
 </div>
 <script src="app.js"></script></body>
 </html>
