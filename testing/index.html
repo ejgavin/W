@@ -31,7 +31,6 @@
   <div id="initScreen" style="display: none; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
     <button onclick="initiateIframe()" style="font-size: 20px; padding: 12px 24px;">Initiate</button>
   </div>
-  <iframe id="isite" frameborder="0" title="site"></iframe>
   <script>
     let historyStack = [];
     let historyIndex = -1;
@@ -71,8 +70,17 @@
     }
 
     function initiateIframe() {
-      const iframe = document.getElementById("isite");
-      iframe.style.display = "block";
+      const iframe = document.createElement("iframe");
+      iframe.id = "isite";
+      iframe.title = "site";
+      iframe.frameBorder = "0";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
+      const params = new URLSearchParams(window.location.search);
+      const url = params.get("url");
+      iframe.src = url.startsWith("http") ? url : "https://" + url;
+      document.body.appendChild(iframe);
       document.getElementById("initScreen").style.display = "none";
     }
 
@@ -82,11 +90,10 @@
     if (url) {
       document.getElementById("navBar").style.display = "none";
       document.getElementById("initScreen").style.display = "flex";
-      const iframe = document.getElementById("isite");
-      iframe.src = url.startsWith("http") ? url : "https://" + url;
-      historyStack.push(iframe.src);
+      const fullUrl = url.startsWith("http") ? url : "https://" + url;
+      historyStack.push(fullUrl);
       historyIndex = 0;
-      document.getElementById("urlInput").value = iframe.src;
+      document.getElementById("urlInput").value = fullUrl;
     } else {
       document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
     }
