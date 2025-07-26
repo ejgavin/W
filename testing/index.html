@@ -29,9 +29,6 @@
       </div>
     </div>
   </div>
-  <div id="enterPrompt" style="display: none; text-align: center; padding: 10px; background: #f9f9f9; font-family: sans-serif;">
-    Press Enter to load the site.
-  </div>
   <script>
     let historyStack = [];
     let historyIndex = -1;
@@ -69,7 +66,7 @@
 
       iframe.src = fullUrl;
       document.getElementById("urlInput").value = fullUrl;
-      document.getElementById("enterPrompt").style.display = "none";
+      // document.getElementById("enterPrompt").style.display = "none";
       deferredUrl = null;
 
       enableUrlBar();
@@ -112,7 +109,7 @@
 if (url) {
   document.getElementById("urlInput").value = url.startsWith("http") ? url : "https://" + url;
   document.getElementById("urlBarContainer").style.display = "none";
-  document.getElementById("enterPrompt").style.display = "block";
+  // document.getElementById("enterPrompt").style.display = "block";
   deferredUrl = document.getElementById("urlInput").value;
 } else {
   document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
