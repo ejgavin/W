@@ -23,8 +23,10 @@
       <button onclick="goBack()" style="margin-right: 6px;">←</button>
       <button onclick="goForward()" style="margin-right: 6px;">→</button>
       <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
-      <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" onkeydown="if(event.key === 'Enter') navigateToInput()" />
-      <button onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
+      <div id="urlBarContainer" style="display: flex; flex: 1;">
+        <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" />
+        <button onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
+      </div>
     </div>
   </div>
   <div id="enterPrompt" style="display: none; text-align: center; padding: 10px; background: #f9f9f9; font-family: sans-serif;">
@@ -33,6 +35,7 @@
   <script>
     let historyStack = [];
     let historyIndex = -1;
+    let deferredUrl = null;
 
     function updateIframe(newUrl) {
       const iframe = document.getElementById("isite");
@@ -41,8 +44,13 @@
     }
 
     function navigateToInput() {
-      const input = document.getElementById("urlInput").value;
-      let fullUrl = input.startsWith("http") ? input : "https://" + input;
+      let fullUrl;
+      if (deferredUrl) {
+        fullUrl = deferredUrl;
+      } else {
+        const input = document.getElementById("urlInput").value;
+        fullUrl = input.startsWith("http") ? input : "https://" + input;
+      }
       historyStack = historyStack.slice(0, historyIndex + 1);
       historyStack.push(fullUrl);
       historyIndex++;
@@ -63,7 +71,16 @@
       document.getElementById("urlInput").value = fullUrl;
       document.getElementById("enterPrompt").style.display = "none";
       document.getElementById("navBar").style.display = "flex";
+      document.getElementById("urlBarContainer").style.display = "none";
+      deferredUrl = null;
     }
+
+    document.getElementById("urlInput").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        navigateToInput();
+      }
+    });
 
     function reloadIframe() {
       const iframe = document.getElementById("isite");
@@ -88,12 +105,9 @@
     const url = params.get("url");
 
     if (url) {
-      document.getElementById("navBar").style.display = "none";
+      document.getElementById("navBar").style.display = "flex";
       document.getElementById("enterPrompt").style.display = "block";
-      const fullUrl = url.startsWith("http") ? url : "https://" + url;
-      historyStack.push(fullUrl);
-      historyIndex = 0;
-      document.getElementById("urlInput").value = fullUrl;
+      deferredUrl = url.startsWith("http") ? url : "https://" + url;
     } else {
       document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
     }
