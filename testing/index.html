@@ -12,8 +12,9 @@
     }
     iframe {
       width: 100%;
-      height: calc(100% - 49px); /* account for nav bar height */
+      height: 100%;
       border: none;
+      display: none;
     }
   </style>
 </head>
@@ -26,6 +27,9 @@
       <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" onkeydown="if(event.key === 'Enter') navigateToInput()" />
       <button onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
     </div>
+  </div>
+  <div id="initScreen" style="display: none; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
+    <button onclick="initiateIframe()" style="font-size: 20px; padding: 12px 24px;">Initiate</button>
   </div>
   <iframe id="isite" frameborder="0" title="site"></iframe>
   <script>
@@ -66,14 +70,20 @@
       }
     }
 
+    function initiateIframe() {
+      const iframe = document.getElementById("isite");
+      iframe.style.display = "block";
+      document.getElementById("initScreen").style.display = "none";
+    }
+
     const params = new URLSearchParams(window.location.search);
     const url = params.get("url");
 
     if (url) {
       document.getElementById("navBar").style.display = "none";
+      document.getElementById("initScreen").style.display = "flex";
       const iframe = document.getElementById("isite");
       iframe.src = url.startsWith("http") ? url : "https://" + url;
-      // Update history stack and input after iframe src is set
       historyStack.push(iframe.src);
       historyIndex = 0;
       document.getElementById("urlInput").value = iframe.src;
