@@ -36,7 +36,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.4.0/color-thief.min.js"></script>
 <link href="https://us5.pages.dev/storage/images/music.png" rel="icon" type="image/png"/>
 <!-- Google tag (gtag.js) --> <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-HWSLDV5486"></script>
-
+<style>
+  #queuePanel, #playlistPanel { font-family: 'Inter', sans-serif; font-size: 14px; }
+</style>
 </link></link><link href="styles.css" rel="stylesheet"/></head>
 <body>
 <div class="search-container">
@@ -104,29 +106,22 @@
 
 
 
-<script src="app.js"></script>
-    <!-- Queue Panel -->
-    <div id="queuePanel" class="side-panel hidden">
-        <h2>Queue</h2>
-        <ul id="queueList"></ul>
-    </div>
+</script>
+<div id="queuePanel" style="display:none; position:absolute; right:10px; top:60px; background:#111; color:#fff; padding:10px; border-radius:8px; max-width:300px; z-index:999;">
+  <h3>Queue</h3>
+  <div id="queueList"></div>
+</div>
 
-    <!-- Playlists Panel -->
-    <div id="playlistsPanel" class="side-panel hidden">
-        <h2>Playlists</h2>
-        <div id="playlistsContainer"></div>
-    </div>
+<div id="playlistPanel" style="display:none; position:absolute; right:10px; top:60px; background:#111; color:#fff; padding:10px; border-radius:8px; max-width:300px; z-index:999;">
+  <h3>Playlists</h3>
+  <div id="playlistList"></div>
+</div>
 
-    <!-- Playlist Modal -->
-    <div id="playlistModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Add to Playlist</h3>
-            <input type="text" id="newPlaylistName" placeholder="New Playlist Name">
-            <button id="createPlaylistBtn">Create Playlist</button>
-            <div id="playlistOptions"></div>
-            <button id="closePlaylistModal">Close</button>
-        </div>
-    </div>
-
-    </body>
+<div style="position: absolute; top: 10px; right: 90px;">
+  <button onclick="togglePanel('queuePanel')">Queue</button>
+</div>
+<div style="position: absolute; top: 10px; right: 10px;">
+  <button onclick="togglePanel('playlistPanel')">Playlists</button>
+</div>
+<script src="app.js"></script></body>
 </html>
