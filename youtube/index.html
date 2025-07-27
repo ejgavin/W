@@ -633,8 +633,27 @@
                 const videoTracks = player.getTracksFor('video');
                 const audioTracks = player.getTracksFor('audio');
 
-                const controlsContainer = video.art.control;
+                // Dynamically set Artplayer quality menu based on available video tracks
+                if (videoTracks && videoTracks.length > 0) {
+                  const qualityOptions = videoTracks.map((track, index) => ({
+                      name: `${track.height}p`,
+                      index: index,
+                      default: track.height === 720 // Or any logic to set default
+                  }));
 
+                  video.art.option.quality = {
+                      default: qualityOptions.find(q => q.default)?.name || qualityOptions[0].name,
+                      html: qualityOptions.map(q => q.name),
+                      selector: (name) => {
+                          const selected = qualityOptions.find(q => q.name === name);
+                          if (selected) {
+                              player.setCurrentTrack(videoTracks[selected.index]);
+                          }
+                      },
+                  };
+                }
+
+                // const controlsContainer = video.art.control;
               });
               player.updateSettings({
                 streaming: {
