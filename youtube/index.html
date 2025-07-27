@@ -787,7 +787,7 @@
           card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
           card.onclick = () => {
             urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
-            handleUrlSubmit(new Event("submit"));
+            addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
           };
 
           card.innerHTML = `
