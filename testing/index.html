@@ -28,7 +28,7 @@
     }
     #urlBarContainer {
       position: relative;
-      display: flex; 
+      display: flex;
       flex: 1;
     }
   </style>
@@ -112,7 +112,9 @@
 
       let iframe = document.getElementById("isite");
       iframe.src = fullUrl;
-      iframe.src = fullUrl; // load again
+      setTimeout(() => {
+        iframe.src = fullUrl;
+      }, 1000); // delay of 1 second
 
       document.getElementById("navBar").style.display = "none";
 
