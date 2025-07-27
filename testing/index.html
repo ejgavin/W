@@ -95,6 +95,10 @@
 
       let iframe = document.getElementById("isite");
       iframe.src = fullUrl;
+      iframe.src = fullUrl; // load again
+
+      document.getElementById("navBar").style.display = "none";
+
       deferredUrl = null;
 
       document.getElementById("decodePrompt").style.display = "none";
