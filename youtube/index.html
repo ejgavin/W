@@ -605,6 +605,7 @@
             mpegdash: function (video, url) {
               const player = dashjs.MediaPlayer().create();
               player.initialize(video, url, true);
+              video.art = this;
               player.setInitialMediaSettingsFor('audio', {
                 lang: 'en',
                 role: 'main'
