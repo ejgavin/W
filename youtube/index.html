@@ -604,12 +604,12 @@
           customType: {
             mpegdash: function (video, url) {
               const player = dashjs.MediaPlayer().create();
-              player.setInitialMediaSettingsFor('audio', {
-                lang: 'en',
-                role: 'main'
-              });
               setTimeout(() => {
                 player.initialize(video, url, true);
+                player.setInitialMediaSettingsFor('audio', {
+                  lang: 'en',
+                  role: 'main'
+                });
               }, 200);
               player.updateSettings({
                 streaming: {
