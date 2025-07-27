@@ -604,25 +604,19 @@
           customType: {
             mpegdash: function (video, url) {
               const player = dashjs.MediaPlayer().create();
-              player.initialize(video, url, true);
+              player.setInitialMediaSettingsFor('audio', {
+                lang: 'en',
+                role: 'main'
+              });
+              setTimeout(() => {
+                player.initialize(video, url, true);
+              }, 200);
               player.updateSettings({
                 streaming: {
                   buffer: { stableBufferTime: 30, bufferToKeep: 20, bufferPruningInterval: 10 },
                   retryIntervals: { manifest: 1000, segment: 500, timeout: 10000 },
                   fastSwitchEnabled: true,
                 }
-              });
-              player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
-                setTimeout(() => {
-                  const audioTracks = player.getTracksFor('audio');
-                  const englishTrack = audioTracks.find(track => track.lang && track.lang.toLowerCase().startsWith('en'));
-                  if (englishTrack) {
-                    player.setCurrentTrack(englishTrack);
-                    console.log('Switched audio to English track:', englishTrack);
-                  } else {
-                    console.log('English audio track not found, using default.');
-                  }
-                }, 500);
               });
             }
           },
