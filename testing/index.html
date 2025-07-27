@@ -3,97 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <title>Simple Iframe Viewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
-      margin: 0; height: 100%; overflow: hidden;
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
     }
     iframe {
-      width: 100%; height: 100%; border: none;
-    }
-    #navBar {
-      display: flex;
-      align-items: center;
-      padding: 8px;
-      background: #f1f1f1;
-      border-bottom: 1px solid #ccc;
-    }
-    #urlBarContainer {
-      display: flex;
-      flex: 1;
-    }
-    #urlInput {
-      flex: 1;
-      padding: 4px 8px;
-    }
-    #goButton {
-      margin-left: 6px;
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
 <body>
   <div id="navBar">
-    <button onclick="goBack()" style="margin-right: 6px;">←</button>
-    <button onclick="goForward()" style="margin-right: 6px;">→</button>
-    <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
-    <div id="urlBarContainer">
-      <input id="urlInput" type="text" placeholder="Enter URL" />
-      <button id="goButton" onclick="navigateToInput()">Go</button>
+    <div class="addressBar" style="display: flex; align-items: center; padding: 8px; background: #f1f1f1; border-bottom: 1px solid #ccc;">
+      <button onclick="goBack()" style="margin-right: 6px;">←</button>
+      <button onclick="goForward()" style="margin-right: 6px;">→</button>
+      <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
+      <div id="urlBarContainer" style="display: flex; flex: 1;">
+        <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" />
+        <button id="goButton" onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
+      </div>
+    </div>
+    <div id="decodePrompt" style="display: none; text-align: center; padding: 10px;">
+      <p>⬆ Paste the copied link into the bar above ⬆</p>
+      <button onclick="copyDecodeLink()">Copy Link to Clipboard</button>
     </div>
   </div>
-
   <iframe id="isite" title="site" src="about:blank"></iframe>
-
   <script>
     let historyStack = [];
     let historyIndex = -1;
     let deferredUrl = null;
 
-    function fromBase64Url(str) {
-      str = str.replace(/-/g, '+').replace(/_/g, '/');
-      while (str.length % 4) {
-        str += '=';
+    function hexToString(hex) {
+      let str = '';
+      for (let i = 0; i < hex.length; i += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
       }
-      return atob(str);
+      return str;
     }
 
-    function flipString(str) {
-      return str.split('').reverse().join('');
+    function copyDecodeLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("Link copied to clipboard!");
+      });
     }
 
-    function tripleDecodeUrlSafe(encoded) {
-      try {
-        let step1 = fromBase64Url(encoded);
-        let step2 = flipString(step1);
-        let step3 = fromBase64Url(step2);
-        let step4 = flipString(step3);
-        let decoded = fromBase64Url(step4);
-        return decoded;
-      } catch (e) {
-        console.error("Failed triple decode", e);
-        return encoded;
-      }
+    function updateIframe(newUrl) {
+      const iframe = document.getElementById("isite");
+      if (iframe) iframe.src = newUrl;
+      document.getElementById("urlInput").value = newUrl;
     }
 
     function navigateToInput() {
-      let inputVal = deferredUrl ? deferredUrl : document.getElementById("urlInput").value;
-      let fullUrl = tripleDecodeUrlSafe(inputVal);
-      console.log('Decoded URL:', fullUrl);
-      if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
-        fullUrl = 'https://' + fullUrl;
+      let fullUrl;
+      if (deferredUrl) {
+        fullUrl = deferredUrl;
+      } else {
+        const input = document.getElementById("urlInput").value;
+        fullUrl = input.startsWith("http") ? input : "https://" + input;
       }
       historyStack = historyStack.slice(0, historyIndex + 1);
       historyStack.push(fullUrl);
       historyIndex++;
 
       let iframe = document.getElementById("isite");
-      iframe.src = fullUrl;
 
-      document.getElementById("urlInput").value = inputVal;
+      iframe.src = fullUrl;
+      // do not set urlInput value to deferredUrl
+      // document.getElementById("urlInput").value = fullUrl;
       deferredUrl = null;
 
       enableUrlBar();
-      document.getElementById("navBar").style.display = "none";
     }
 
     function enableUrlBar() {
@@ -127,43 +112,22 @@
       }
     }
 
-    function updateIframe(newUrl) {
-      const iframe = document.getElementById("isite");
-      if (iframe) iframe.src = newUrl;
-      document.getElementById("urlInput").value = newUrl;
-    }
-
-    function hexToString(hex) {
-      let str = '';
-      for (let i = 0; i < hex.length; i += 2) {
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-      }
-      return str;
-    }
-
     const params = new URLSearchParams(window.location.search);
-    const urlParam = params.get("url");
     const decodeParam = params.get("decode");
 
     if (decodeParam) {
-      try {
-        const base64Decoded = atob(decodeParam);
-        const finalUrl = hexToString(base64Decoded);
-        deferredUrl = finalUrl;
-        document.getElementById("urlInput").value = decodeParam; // show encoded value
-        document.getElementById("urlInput").readOnly = true;
-        document.getElementById("goButton").style.display = "inline-block";
-      } catch (e) {
-        console.error("Decode failed:", e);
-        document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>Invalid decode parameter.</p>";
-      }
-    } else if (urlParam) {
-      document.getElementById("urlInput").value = urlParam;
-      document.getElementById("urlInput").readOnly = true;
-      document.getElementById("goButton").style.display = "inline-block";
-      deferredUrl = urlParam;
+      document.getElementById("decodePrompt").style.display = "block";
+      deferredUrl = (() => {
+        try {
+          const base64Decoded = atob(decodeParam);
+          return hexToString(base64Decoded);
+        } catch (e) {
+          console.error("Failed to decode:", e);
+          return null;
+        }
+      })();
     } else {
-      document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=</code> or <code>?decode=</code> in the address bar.</p>";
+      document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No decode param specified. Use <code>?decode=</code> in the address bar.</p>";
     }
   </script>
 </body>
