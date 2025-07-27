@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Iframe Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="navBar">
+    <div class="addressBar" style="display: flex; align-items: center; padding: 8px; background: #f1f1f1; border-bottom: 1px solid #ccc;">
+      <button onclick="goBack()" style="margin-right: 6px;">←</button>
+      <button onclick="goForward()" style="margin-right: 6px;">→</button>
+      <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
+      <div id="urlBarContainer" style="display: flex; flex: 1;">
+        <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" />
+        <button id="goButton" onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let historyStack = [];
+    let historyIndex = -1;
+    let deferredUrl = null;
+
+    function updateIframe(newUrl) {
+      const iframe = document.getElementById("isite");
+      if (iframe) iframe.src = newUrl;
+      document.getElementById("urlInput").value = newUrl;
+    }
+
+    function navigateToInput() {
+      let fullUrl;
+      if (deferredUrl) {
+        fullUrl = deferredUrl;
+      } else {
+        const input = document.getElementById("urlInput").value;
+        fullUrl = input.startsWith("http") ? input : "https://" + input;
+      }
+      historyStack = historyStack.slice(0, historyIndex + 1);
+      historyStack.push(fullUrl);
+      historyIndex++;
+
+      let iframe = document.getElementById("isite");
+      if (!iframe) {
+        iframe = document.createElement("iframe");
+        iframe.id = "isite";
+        iframe.title = "site";
+        iframe.frameBorder = "0";
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.border = "none";
+        document.body.appendChild(iframe);
+      }
+
+      iframe.src = fullUrl;
+      document.getElementById("urlInput").value = fullUrl;
+      // document.getElementById("enterPrompt").style.display = "none";
+      deferredUrl = null;
+
+      enableUrlBar();
+    }
+
+    function enableUrlBar() {
+      document.getElementById("urlInput").readOnly = false;
+      document.getElementById("goButton").style.display = "inline-block";
+    }
+
+    document.getElementById("urlInput").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        navigateToInput();
+      }
+    });
+
+    function reloadIframe() {
+      const iframe = document.getElementById("isite");
+      if (iframe) iframe.src = iframe.src;
+    }
+
+    function goBack() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        updateIframe(historyStack[historyIndex]);
+      }
+    }
+
+    function goForward() {
+      if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        updateIframe(historyStack[historyIndex]);
+      }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get("url");
+
+if (url) {
+  document.getElementById("urlInput").value = url.startsWith("http") ? url : "https://" + url;
+  document.getElementById("urlInput").style.display = "none";
+  document.getElementById("goButton").style.display = "inline-block";
+  // document.getElementById("enterPrompt").style.display = "block";
+  deferredUrl = document.getElementById("urlInput").value;
+} else {
+  document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
+}
+  </script>
+</body>
+</html>
