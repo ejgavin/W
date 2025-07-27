@@ -3,32 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <title>Simple Iframe Viewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     html, body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
+      margin: 0; height: 100%; overflow: hidden;
     }
     iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+      width: 100%; height: 100%; border: none;
+    }
+    #navBar {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      background: #f1f1f1;
+      border-bottom: 1px solid #ccc;
+    }
+    #urlBarContainer {
+      display: flex;
+      flex: 1;
+    }
+    #urlInput {
+      flex: 1;
+      padding: 4px 8px;
+    }
+    #goButton {
+      margin-left: 6px;
     }
   </style>
 </head>
 <body>
   <div id="navBar">
-    <div class="addressBar" style="display: flex; align-items: center; padding: 8px; background: #f1f1f1; border-bottom: 1px solid #ccc;">
-      <button onclick="goBack()" style="margin-right: 6px;">←</button>
-      <button onclick="goForward()" style="margin-right: 6px;">→</button>
-      <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
-      <div id="urlBarContainer" style="display: flex; flex: 1;">
-        <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" />
-        <button id="goButton" onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
-      </div>
+    <button onclick="goBack()" style="margin-right: 6px;">←</button>
+    <button onclick="goForward()" style="margin-right: 6px;">→</button>
+    <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
+    <div id="urlBarContainer">
+      <input id="urlInput" type="text" placeholder="Enter URL" />
+      <button id="goButton" onclick="navigateToInput()">Go</button>
     </div>
   </div>
+
   <script>
     let historyStack = [];
     let historyIndex = -1;
@@ -60,15 +73,13 @@
       }
     }
 
-    function updateIframe(newUrl) {
-      const iframe = document.getElementById("isite");
-      if (iframe) iframe.src = newUrl;
-      document.getElementById("urlInput").value = newUrl;
-    }
-
     function navigateToInput() {
       let inputVal = deferredUrl ? deferredUrl : document.getElementById("urlInput").value;
       let fullUrl = tripleDecodeUrlSafe(inputVal);
+      console.log('Decoded URL:', fullUrl);
+      if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+        fullUrl = 'https://' + fullUrl;
+      }
       historyStack = historyStack.slice(0, historyIndex + 1);
       historyStack.push(fullUrl);
       historyIndex++;
@@ -86,8 +97,7 @@
       }
 
       iframe.src = fullUrl;
-      document.getElementById("urlInput").value = fullUrl;
-      // document.getElementById("enterPrompt").style.display = "none";
+      document.getElementById("urlInput").value = inputVal;
       deferredUrl = null;
 
       enableUrlBar();
@@ -125,17 +135,45 @@
       }
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const url = params.get("url");
+    function updateIframe(newUrl) {
+      const iframe = document.getElementById("isite");
+      if (iframe) iframe.src = newUrl;
+      document.getElementById("urlInput").value = newUrl;
+    }
 
-if (url) {
-  document.getElementById("urlInput").value = url;
-  document.getElementById("urlInput").readOnly = true;
-  document.getElementById("goButton").style.display = "inline-block";
-  deferredUrl = url;
-} else {
-  document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
-}
+    function hexToString(hex) {
+      let str = '';
+      for (let i = 0; i < hex.length; i += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      }
+      return str;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const urlParam = params.get("url");
+    const decodeParam = params.get("decode");
+
+    if (decodeParam) {
+      try {
+        const base64Decoded = atob(decodeParam);
+        const finalUrl = hexToString(base64Decoded);
+        deferredUrl = finalUrl;
+        document.getElementById("urlInput").value = decodeParam; // show encoded value
+        document.getElementById("urlInput").readOnly = true;
+        document.getElementById("goButton").style.display = "inline-block";
+      } catch (e) {
+        console.error("Decode failed:", e);
+        document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>Invalid decode parameter.</p>";
+      }
+    } else if (urlParam) {
+      document.getElementById("urlInput").value = urlParam;
+      document.getElementById("urlInput").readOnly = true;
+      document.getElementById("goButton").style.display = "inline-block";
+      deferredUrl = urlParam;
+    } else {
+      document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=</code> or <code>?decode=</code> in the address bar.</p>";
+    }
   </script>
 </body>
 </html>
+
