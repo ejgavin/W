@@ -604,41 +604,46 @@
           customType: {
             mpegdash: function (video, url) {
               const player = dashjs.MediaPlayer().create();
-              setTimeout(() => {
-                player.initialize(video, url, true);
-                player.setInitialMediaSettingsFor('audio', {
-                  lang: 'en',
-                  role: 'main'
-                });
+              player.initialize(video, url, true);
+              player.setInitialMediaSettingsFor('audio', {
+                lang: 'en',
+                role: 'main'
+              });
 
-                // Expose video and audio track selection in Artplayer settings
+              player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
                 if (video.art) {
-                  // Video Quality selector
-                  video.art.addSetting({
-                    html: 'Video Quality',
-                    selector: player.getTracksFor('video').map(track => ({
-                      name: track.height ? `${track.height}p` : track.id,
-                      value: track,
-                      default: track === player.getCurrentTrackFor('video'),
-                    })),
-                    onSelect: (item) => {
-                      player.setCurrentTrack(item.value);
-                    },
-                  });
-                  // Audio Track selector
-                  video.art.addSetting({
-                    html: 'Audio Track',
-                    selector: player.getTracksFor('audio').map(track => ({
-                      name: `${track.lang || 'unknown'}${track.roles ? ' (' + track.roles.join(', ') + ')' : ''}`,
-                      value: track,
-                      default: track === player.getCurrentTrackFor('audio'),
-                    })),
-                    onSelect: (item) => {
-                      player.setCurrentTrack(item.value);
-                    },
-                  });
+                  const videoTracks = player.getTracksFor('video');
+                  const audioTracks = player.getTracksFor('audio');
+
+                  if (videoTracks.length > 1) {
+                    video.art.addSetting({
+                      html: 'Video Quality',
+                      selector: videoTracks.map(track => ({
+                        name: track.height ? `${track.height}p` : track.id,
+                        value: track,
+                        default: track === player.getCurrentTrackFor('video'),
+                      })),
+                      onSelect: (item) => {
+                        player.setCurrentTrack(item.value);
+                      },
+                    });
+                  }
+
+                  if (audioTracks.length > 1) {
+                    video.art.addSetting({
+                      html: 'Audio Track',
+                      selector: audioTracks.map(track => ({
+                        name: `${track.lang || 'unknown'}${track.roles ? ' (' + track.roles.join(', ') + ')' : ''}`,
+                        value: track,
+                        default: track === player.getCurrentTrackFor('audio'),
+                      })),
+                      onSelect: (item) => {
+                        player.setCurrentTrack(item.value);
+                      },
+                    });
+                  }
                 }
-              }, 200);
+              });
               player.updateSettings({
                 streaming: {
                   buffer: { stableBufferTime: 30, bufferToKeep: 20, bufferPruningInterval: 10 },
