@@ -610,6 +610,34 @@
                   lang: 'en',
                   role: 'main'
                 });
+
+                // Expose video and audio track selection in Artplayer settings
+                if (video.art) {
+                  // Video Quality selector
+                  video.art.addSetting({
+                    html: 'Video Quality',
+                    selector: player.getTracksFor('video').map(track => ({
+                      name: track.height ? `${track.height}p` : track.id,
+                      value: track,
+                      default: track === player.getCurrentTrackFor('video'),
+                    })),
+                    onSelect: (item) => {
+                      player.setCurrentTrack(item.value);
+                    },
+                  });
+                  // Audio Track selector
+                  video.art.addSetting({
+                    html: 'Audio Track',
+                    selector: player.getTracksFor('audio').map(track => ({
+                      name: `${track.lang || 'unknown'}${track.roles ? ' (' + track.roles.join(', ') + ')' : ''}`,
+                      value: track,
+                      default: track === player.getCurrentTrackFor('audio'),
+                    })),
+                    onSelect: (item) => {
+                      player.setCurrentTrack(item.value);
+                    },
+                  });
+                }
               }, 200);
               player.updateSettings({
                 streaming: {
