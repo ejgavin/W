@@ -42,6 +42,8 @@
     </div>
   </div>
 
+  <iframe id="isite" title="site" src="about:blank"></iframe>
+
   <script>
     let historyStack = [];
     let historyIndex = -1;
@@ -85,18 +87,8 @@
       historyIndex++;
 
       let iframe = document.getElementById("isite");
-      if (!iframe) {
-        iframe = document.createElement("iframe");
-        iframe.id = "isite";
-        iframe.title = "site";
-        iframe.frameBorder = "0";
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-        iframe.style.border = "none";
-        document.body.appendChild(iframe);
-      }
-
       iframe.src = fullUrl;
+
       document.getElementById("urlInput").value = inputVal;
       deferredUrl = null;
 
@@ -176,4 +168,3 @@
   </script>
 </body>
 </html>
-
