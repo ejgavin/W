@@ -34,12 +34,17 @@
     let historyIndex = -1;
     let deferredUrl = null;
 
-    function decodeUrlParam(param) {
+    function tripleDecode(encoded) {
       try {
-        return atob(decodeURIComponent(param));
+        let step1 = atob(encoded);
+        let step2 = step1.split("").reverse().join("");
+        let step3 = atob(step2);
+        let step4 = step3.split("").reverse().join("");
+        let decoded = atob(step4);
+        return decoded;
       } catch (e) {
-        console.error("Failed to decode URL parameter", e);
-        return param;
+        console.error("Failed triple decode", e);
+        return encoded;
       }
     }
 
@@ -50,13 +55,8 @@
     }
 
     function navigateToInput() {
-      let fullUrl;
-      if (deferredUrl) {
-        fullUrl = deferredUrl;
-      } else {
-        const input = document.getElementById("urlInput").value;
-        fullUrl = input.startsWith("http") ? input : "https://" + input;
-      }
+      let inputVal = deferredUrl ? deferredUrl : document.getElementById("urlInput").value;
+      let fullUrl = tripleDecode(inputVal);
       historyStack = historyStack.slice(0, historyIndex + 1);
       historyStack.push(fullUrl);
       historyIndex++;
@@ -117,11 +117,10 @@
     const url = params.get("url");
 
 if (url) {
-  const decodedUrl = decodeUrlParam(url);
-  document.getElementById("urlInput").value = decodedUrl;
+  document.getElementById("urlInput").value = url;
   document.getElementById("urlInput").readOnly = true;
   document.getElementById("goButton").style.display = "inline-block";
-  deferredUrl = decodedUrl;
+  deferredUrl = url;
 } else {
   document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
 }
