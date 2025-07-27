@@ -48,9 +48,13 @@
     }
 
     function copyDecodeLink() {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        alert("Link copied to clipboard!");
-      });
+      const params = new URLSearchParams(window.location.search);
+      const decode = params.get("decode");
+      if (decode) {
+        navigator.clipboard.writeText(decode).then(() => {
+          alert("Decoded key copied to clipboard!");
+        });
+      }
     }
 
     function updateIframe(newUrl) {
@@ -64,18 +68,21 @@
       if (deferredUrl) {
         fullUrl = deferredUrl;
       } else {
-        const input = document.getElementById("urlInput").value;
-        fullUrl = input.startsWith("http") ? input : "https://" + input;
+        const input = document.getElementById("urlInput").value.trim();
+        try {
+          const base64Decoded = atob(input);
+          fullUrl = hexToString(base64Decoded);
+        } catch (e) {
+          alert("Invalid encoded input.");
+          return;
+        }
       }
       historyStack = historyStack.slice(0, historyIndex + 1);
       historyStack.push(fullUrl);
       historyIndex++;
 
       let iframe = document.getElementById("isite");
-
       iframe.src = fullUrl;
-      // do not set urlInput value to deferredUrl
-      // document.getElementById("urlInput").value = fullUrl;
       deferredUrl = null;
 
       enableUrlBar();
@@ -91,6 +98,17 @@
         event.preventDefault();
         navigateToInput();
       }
+    });
+
+    document.getElementById("urlInput").addEventListener("input", function () {
+      const val = this.value.trim();
+      const goBtn = document.getElementById("goButton");
+
+      // Only allow valid base64 + hex-looking strings
+      const isValid = /^[A-Za-z0-9+/=]+$/.test(val);
+      this.style.borderColor = isValid ? "" : "red";
+      goBtn.disabled = !isValid;
+      this.readOnly = !isValid;
     });
 
     function reloadIframe() {
