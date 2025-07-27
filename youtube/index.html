@@ -612,73 +612,137 @@
               });
 
               player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
-                if (video.art) {
-                  const videoTracks = player.getTracksFor('video');
-                  const audioTracks = player.getTracksFor('audio');
+                if (!video.art) return;
 
-                  // Add quality selector as a plugin control
-                  if (videoTracks.length > 1) {
-                    video.art.plugins.add(() => {
-                      const control = document.createElement('div');
-                      control.style.marginRight = '12px';
+                const videoTracks = player.getTracksFor('video');
+                const audioTracks = player.getTracksFor('audio');
 
-                      const select = document.createElement('select');
-                      select.style.padding = '4px';
-                      select.style.borderRadius = '4px';
-                      select.style.backgroundColor = '#1e1e2e';
-                      select.style.color = '#cdd6f4';
-                      select.style.border = '1px solid #444';
-                      videoTracks.forEach(track => {
-                        const option = document.createElement('option');
-                        option.textContent = track.height ? `${track.height}p` : track.id;
-                        option.value = track.id;
-                        if (track === player.getCurrentTrackFor('video')) option.selected = true;
-                        select.appendChild(option);
+                const controlsContainer = video.art.control;
+
+                // Create container for custom controls (to left of settings)
+                const customControlsWrapper = document.createElement('div');
+                customControlsWrapper.style.display = 'flex';
+                customControlsWrapper.style.alignItems = 'center';
+                customControlsWrapper.style.marginRight = '12px';
+
+                // Utility to create dropdown button
+                function createDropdownButton(label) {
+                  const btn = document.createElement('button');
+                  btn.type = 'button';
+                  btn.className = 'art-icon-btn';
+                  btn.style.position = 'relative';
+                  btn.style.marginRight = '8px';
+                  btn.style.padding = '4px 8px';
+                  btn.style.color = '#cdd6f4';
+                  btn.style.background = 'transparent';
+                  btn.style.border = 'none';
+                  btn.style.cursor = 'pointer';
+                  btn.textContent = label;
+
+                  const dropdown = document.createElement('div');
+                  dropdown.style.position = 'absolute';
+                  dropdown.style.bottom = '120%';
+                  dropdown.style.left = '0';
+                  dropdown.style.background = '#1e1e2e';
+                  dropdown.style.border = '1px solid #444';
+                  dropdown.style.borderRadius = '4px';
+                  dropdown.style.padding = '4px 0';
+                  dropdown.style.display = 'none';
+                  dropdown.style.minWidth = '120px';
+                  dropdown.style.zIndex = '9999';
+                  dropdown.style.maxHeight = '200px';
+                  dropdown.style.overflowY = 'auto';
+
+                  btn.appendChild(dropdown);
+
+                  btn.addEventListener('click', () => {
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                  });
+
+                  // Hide dropdown if clicking outside
+                  document.addEventListener('click', (e) => {
+                    if (!btn.contains(e.target)) {
+                      dropdown.style.display = 'none';
+                    }
+                  });
+
+                  return { btn, dropdown };
+                }
+
+                // Create video quality button and dropdown
+                if (videoTracks.length > 1) {
+                  const { btn: videoBtn, dropdown: videoDropdown } = createDropdownButton('Quality');
+
+                  videoTracks.forEach(track => {
+                    const option = document.createElement('div');
+                    option.textContent = track.height ? `${track.height}p` : track.id;
+                    option.style.padding = '6px 12px';
+                    option.style.cursor = 'pointer';
+                    option.style.color = '#cdd6f4';
+
+                    if (track === player.getCurrentTrackFor('video')) {
+                      option.style.backgroundColor = '#444';
+                      option.style.fontWeight = 'bold';
+                    }
+
+                    option.addEventListener('click', () => {
+                      player.setCurrentTrack(track);
+                      // Highlight selected
+                      Array.from(videoDropdown.children).forEach(child => {
+                        child.style.backgroundColor = '';
+                        child.style.fontWeight = '';
                       });
-                      select.onchange = () => {
-                        const selected = videoTracks.find(t => t.id === select.value);
-                        if (selected) player.setCurrentTrack(selected);
-                      };
-                      control.appendChild(select);
-                      return {
-                        name: 'qualitySelector',
-                        index: 10,
-                        html: control,
-                      };
+                      option.style.backgroundColor = '#444';
+                      option.style.fontWeight = 'bold';
+                      videoDropdown.style.display = 'none';
                     });
-                  }
 
-                  // Add audio selector as a plugin control
-                  if (audioTracks.length > 1) {
-                    video.art.plugins.add(() => {
-                      const control = document.createElement('div');
-                      control.style.marginRight = '12px';
+                    videoDropdown.appendChild(option);
+                  });
 
-                      const select = document.createElement('select');
-                      select.style.padding = '4px';
-                      select.style.borderRadius = '4px';
-                      select.style.backgroundColor = '#1e1e2e';
-                      select.style.color = '#cdd6f4';
-                      select.style.border = '1px solid #444';
-                      audioTracks.forEach(track => {
-                        const option = document.createElement('option');
-                        option.textContent = `${track.lang || 'unknown'}${track.roles ? ' (' + track.roles.join(', ') + ')' : ''}`;
-                        option.value = track.id;
-                        if (track === player.getCurrentTrackFor('audio')) option.selected = true;
-                        select.appendChild(option);
+                  customControlsWrapper.appendChild(videoBtn);
+                }
+
+                // Create audio language button and dropdown
+                if (audioTracks.length > 1) {
+                  const { btn: audioBtn, dropdown: audioDropdown } = createDropdownButton('Audio');
+
+                  audioTracks.forEach(track => {
+                    const label = `${track.lang || 'unknown'}${track.roles ? ' (' + track.roles.join(', ') + ')' : ''}`;
+                    const option = document.createElement('div');
+                    option.textContent = label;
+                    option.style.padding = '6px 12px';
+                    option.style.cursor = 'pointer';
+                    option.style.color = '#cdd6f4';
+
+                    if (track === player.getCurrentTrackFor('audio')) {
+                      option.style.backgroundColor = '#444';
+                      option.style.fontWeight = 'bold';
+                    }
+
+                    option.addEventListener('click', () => {
+                      player.setCurrentTrack(track);
+                      Array.from(audioDropdown.children).forEach(child => {
+                        child.style.backgroundColor = '';
+                        child.style.fontWeight = '';
                       });
-                      select.onchange = () => {
-                        const selected = audioTracks.find(t => t.id === select.value);
-                        if (selected) player.setCurrentTrack(selected);
-                      };
-                      control.appendChild(select);
-                      return {
-                        name: 'audioSelector',
-                        index: 11,
-                        html: control,
-                      };
+                      option.style.backgroundColor = '#444';
+                      option.style.fontWeight = 'bold';
+                      audioDropdown.style.display = 'none';
                     });
-                  }
+
+                    audioDropdown.appendChild(option);
+                  });
+
+                  customControlsWrapper.appendChild(audioBtn);
+                }
+
+                // Insert custom controls before the settings button
+                const settingsBtn = controlsContainer.querySelector('.art-setting-btn');
+                if (settingsBtn) {
+                  controlsContainer.insertBefore(customControlsWrapper, settingsBtn);
+                } else {
+                  controlsContainer.appendChild(customControlsWrapper);
                 }
               });
               player.updateSettings({
