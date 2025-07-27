@@ -15,6 +15,22 @@
       height: 100%;
       border: none;
     }
+    #overlayDiv {
+      position: absolute;
+      background: white;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+    }
+    #urlBarContainer {
+      position: relative;
+      display: flex; 
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -25,6 +41,7 @@
       <button onclick="reloadIframe()" style="margin-right: 6px;">⟳</button>
       <div id="urlBarContainer" style="display: flex; flex: 1;">
         <input id="urlInput" type="text" placeholder="Enter URL" style="flex: 1; padding: 4px 8px;" />
+        <div id="overlayDiv"></div>
         <button id="goButton" onclick="navigateToInput()" style="margin-left: 6px;">Go</button>
       </div>
     </div>
@@ -150,6 +167,9 @@
 
     const params = new URLSearchParams(window.location.search);
     const decodeParam = params.get("decode");
+    const urlParam = params.get("url");
+    const overlayDiv = document.getElementById("overlayDiv");
+    const urlInput = document.getElementById("urlInput");
 
     if (decodeParam) {
       document.getElementById("decodePrompt").style.display = "block";
@@ -162,8 +182,18 @@
           return null;
         }
       })();
+      overlayDiv.style.display = "none";
+    } else if (urlParam) {
+      urlInput.value = urlParam;
+      deferredUrl = urlParam;
+      overlayDiv.style.display = "block";
+      document.getElementById("decodePrompt").style.display = "none";
+      document.getElementById("goButton").disabled = false;
+      // input can remain editable but overlay hides the text
+      urlInput.readOnly = false;
     } else {
       document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No decode param specified. Use <code>?decode=</code> in the address bar.</p>";
+      overlayDiv.style.display = "none";
     }
   </script>
 </body>
