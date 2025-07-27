@@ -616,31 +616,67 @@
                   const videoTracks = player.getTracksFor('video');
                   const audioTracks = player.getTracksFor('audio');
 
+                  // Add quality selector as a plugin control
                   if (videoTracks.length > 1) {
-                    video.art.addSetting({
-                      html: 'Video Quality',
-                      selector: videoTracks.map(track => ({
-                        name: track.height ? `${track.height}p` : track.id,
-                        value: track,
-                        default: track === player.getCurrentTrackFor('video'),
-                      })),
-                      onSelect: (item) => {
-                        player.setCurrentTrack(item.value);
-                      },
+                    video.art.plugins.add(() => {
+                      const control = document.createElement('div');
+                      control.style.marginRight = '12px';
+
+                      const select = document.createElement('select');
+                      select.style.padding = '4px';
+                      select.style.borderRadius = '4px';
+                      select.style.backgroundColor = '#1e1e2e';
+                      select.style.color = '#cdd6f4';
+                      select.style.border = '1px solid #444';
+                      videoTracks.forEach(track => {
+                        const option = document.createElement('option');
+                        option.textContent = track.height ? `${track.height}p` : track.id;
+                        option.value = track.id;
+                        if (track === player.getCurrentTrackFor('video')) option.selected = true;
+                        select.appendChild(option);
+                      });
+                      select.onchange = () => {
+                        const selected = videoTracks.find(t => t.id === select.value);
+                        if (selected) player.setCurrentTrack(selected);
+                      };
+                      control.appendChild(select);
+                      return {
+                        name: 'qualitySelector',
+                        index: 10,
+                        html: control,
+                      };
                     });
                   }
 
+                  // Add audio selector as a plugin control
                   if (audioTracks.length > 1) {
-                    video.art.addSetting({
-                      html: 'Audio Track',
-                      selector: audioTracks.map(track => ({
-                        name: `${track.lang || 'unknown'}${track.roles ? ' (' + track.roles.join(', ') + ')' : ''}`,
-                        value: track,
-                        default: track === player.getCurrentTrackFor('audio'),
-                      })),
-                      onSelect: (item) => {
-                        player.setCurrentTrack(item.value);
-                      },
+                    video.art.plugins.add(() => {
+                      const control = document.createElement('div');
+                      control.style.marginRight = '12px';
+
+                      const select = document.createElement('select');
+                      select.style.padding = '4px';
+                      select.style.borderRadius = '4px';
+                      select.style.backgroundColor = '#1e1e2e';
+                      select.style.color = '#cdd6f4';
+                      select.style.border = '1px solid #444';
+                      audioTracks.forEach(track => {
+                        const option = document.createElement('option');
+                        option.textContent = `${track.lang || 'unknown'}${track.roles ? ' (' + track.roles.join(', ') + ')' : ''}`;
+                        option.value = track.id;
+                        if (track === player.getCurrentTrackFor('audio')) option.selected = true;
+                        select.appendChild(option);
+                      });
+                      select.onchange = () => {
+                        const selected = audioTracks.find(t => t.id === select.value);
+                        if (selected) player.setCurrentTrack(selected);
+                      };
+                      control.appendChild(select);
+                      return {
+                        name: 'audioSelector',
+                        index: 11,
+                        html: control,
+                      };
                     });
                   }
                 }
