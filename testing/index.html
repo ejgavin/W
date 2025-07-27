@@ -34,6 +34,15 @@
     let historyIndex = -1;
     let deferredUrl = null;
 
+    function decodeUrlParam(param) {
+      try {
+        return atob(decodeURIComponent(param));
+      } catch (e) {
+        console.error("Failed to decode URL parameter", e);
+        return param;
+      }
+    }
+
     function updateIframe(newUrl) {
       const iframe = document.getElementById("isite");
       if (iframe) iframe.src = newUrl;
@@ -70,6 +79,7 @@
       deferredUrl = null;
 
       enableUrlBar();
+      document.getElementById("navBar").style.display = "none";
     }
 
     function enableUrlBar() {
@@ -107,11 +117,11 @@
     const url = params.get("url");
 
 if (url) {
-  document.getElementById("urlInput").value = url.startsWith("http") ? url : "https://" + url;
-  document.getElementById("urlInput").style.display = "none";
+  const decodedUrl = decodeUrlParam(url);
+  document.getElementById("urlInput").value = decodedUrl;
+  document.getElementById("urlInput").readOnly = true;
   document.getElementById("goButton").style.display = "inline-block";
-  // document.getElementById("enterPrompt").style.display = "block";
-  deferredUrl = document.getElementById("urlInput").value;
+  deferredUrl = decodedUrl;
 } else {
   document.body.innerHTML += "<p style='text-align:center; margin-top:20px;'>No URL specified. Use <code>?url=example.com</code> in the address bar.</p>";
 }
