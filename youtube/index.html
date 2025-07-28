@@ -334,6 +334,94 @@
               textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
             },
           },
+          settings: [
+            {
+              width: 200,
+              html: 'Subtitles',
+              icon: '<i class="bi bi-cc-square"></i>',
+              tooltip: 'Subtitle Settings',
+              selector: [
+                {
+                  html: 'Display',
+                  tooltip: 'Hide',
+                  switch: true,
+                  onSwitch: function (item) {
+                    item.tooltip = item.switch ? 'Show' : 'Hide';
+                    artplayerInstance.subtitle.show = item.switch;
+                    return item.switch;
+                  },
+                },
+              ],
+            },
+            {
+              width: 200,
+              html: 'Font Size',
+              icon: '<i class="bi bi-textarea-t"></i>',
+              tooltip: 'Subtitle Font Size',
+              selector: [
+                {
+                  html: 'Small',
+                  default: false,
+                  onClick: function () {
+                    artplayerInstance.subtitle.style.fontSize = '14px';
+                    artplayerInstance.subtitle.update();
+                    return 'Small';
+                  },
+                },
+                {
+                  html: 'Medium',
+                  default: true,
+                  onClick: function () {
+                    artplayerInstance.subtitle.style.fontSize = '18px';
+                    artplayerInstance.subtitle.update();
+                    return 'Medium';
+                  },
+                },
+                {
+                  html: 'Large',
+                  default: false,
+                  onClick: function () {
+                    artplayerInstance.subtitle.style.fontSize = '24px';
+                    artplayerInstance.subtitle.update();
+                    return 'Large';
+                  },
+                },
+              ],
+            },
+            {
+              width: 200,
+              html: 'Font Family',
+              icon: '<i class="bi bi-fonts"></i>',
+              tooltip: 'Subtitle Font',
+              selector: [
+                {
+                  html: 'Arial',
+                  default: true,
+                  onClick: function () {
+                    artplayerInstance.subtitle.style.fontFamily = 'Arial, sans-serif';
+                    artplayerInstance.subtitle.update();
+                    return 'Arial';
+                  },
+                },
+                {
+                  html: 'Monospace',
+                  onClick: function () {
+                    artplayerInstance.subtitle.style.fontFamily = 'monospace';
+                    artplayerInstance.subtitle.update();
+                    return 'Monospace';
+                  },
+                },
+                {
+                  html: 'Serif',
+                  onClick: function () {
+                    artplayerInstance.subtitle.style.fontFamily = 'serif';
+                    artplayerInstance.subtitle.update();
+                    return 'Serif';
+                  },
+                },
+              ],
+            }
+          ],
           customType: {
             mpegdash: function (video, url) {
               const player = dashjs.MediaPlayer().create();
