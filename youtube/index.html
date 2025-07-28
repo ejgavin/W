@@ -253,6 +253,13 @@
         const videoId = match ? match[1] : null;
         if (!videoId) throw new Error("Invalid YouTube video ID");
 
+        // Extract video ID using extractYouTubeId if available
+        const extractedId = typeof extractYouTubeId === "function" ? extractYouTubeId(videoUrl) : videoId;
+        let subtitleUrl = '';
+        if (extractedId) {
+          subtitleUrl = await fetchAndAddCaptions(extractedId);
+        }
+
         const scrapeUrl = `https://ejgsapis.vercel.app/api/scrape?url=https://inv.nadeko.net/embed/${videoId}`;
         const res = await fetch(scrapeUrl);
         const html = await res.text();
@@ -314,7 +321,7 @@
             })
           ],
           subtitle: {
-            url: '', // will be set later by fetchAndAddCaptions
+            url: subtitleUrl, // set to generated VTT blob URL or empty if not available
             type: 'vtt',
             style: {
               color: '#fff',
@@ -335,11 +342,7 @@
           },
           type: 'mpegdash'
         });
-        // Extract video ID using extractYouTubeId if available
-        const extractedId = extractYouTubeId ? extractYouTubeId(videoUrl) : videoId;
-        if (extractedId) {
-          fetchAndAddCaptions(artplayerInstance, extractedId);
-        }
+        // No need to call fetchAndAddCaptions here, as subtitleUrl is already set
       } catch (err) {
         alert("Error loading video.");
         console.error(err);
@@ -347,14 +350,14 @@
     }
 
     // Add fetchAndAddCaptions function
-    async function fetchAndAddCaptions(player, videoId) {
+    async function fetchAndAddCaptions(videoId) {
       try {
         const proxyUrl = `https://ejgsapis.vercel.app/api/scrape?url=${encodeURIComponent(`https://youtube-caption-extractor.vercel.app/api/subtitles?videoID=${videoId}&lang=en`)}`;
         const res = await fetch(proxyUrl);
         if (!res.ok) throw new Error("Failed to fetch captions via proxy");
         const data = await res.json();
 
-        if (!data.subtitles || data.subtitles.length === 0) return;
+        if (!data.subtitles || data.subtitles.length === 0) return '';
 
         let vtt = "WEBVTT\n\n";
         data.subtitles.forEach(sub => {
@@ -374,18 +377,11 @@
 
         const blob = new Blob([vtt], { type: "text/vtt" });
         const url = URL.createObjectURL(blob);
-
-        player.addSubtitles({
-          title: 'English',
-          url,
-          kind: 'subtitles',
-          def: false, // start disabled so user can toggle
-        });
-        console.log('Subtitles added:', url);
-        // Programmatically enable the first subtitle track
-        player.switchSubtitle(0);
+        // Return the URL for use as initial subtitle
+        return url;
       } catch (err) {
         // silently fail
+        return '';
       }
     }
 
