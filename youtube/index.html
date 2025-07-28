@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classroom</title>
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-  />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://unpkg.com/artplayer/dist/artplayer.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.5.2/dash.all.min.js"></script>
   <style>
@@ -113,8 +110,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-        Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
 
     body {
@@ -388,105 +384,49 @@
     </div>
     <form class="address-bar" id="addressForm">
       <div class="url-container">
-        <input
-          type="text"
-          class="url-input"
-          id="urlInput"
-          placeholder="Enter YouTube URL..."
-        />
+        <input type="text" class="url-input" id="urlInput" placeholder="Enter YouTube URL...">
         <button type="submit" class="go-btn">
           <i class="bi bi-box-arrow-up-right"></i>
         </button>
       </div>
-      <button
-        type="button"
-        class="fullscreen-btn"
-        id="fullscreenBtn"
-        aria-label="Toggle fullscreen"
-      >
-        <svg
-          id="fullscreenIcon"
-          class="icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
-          ></path>
-        </svg>
+      <button type="button" class="fullscreen-btn" id="fullscreenBtn">
+        <i class="bi bi-fullscreen"></i>
       </button>
     </form>
   </div>
 
   <div class="browser-content" id="browserContent">
     <div id="searchContainer" style="padding: 16px;">
-      <form
-        id="searchForm"
-        style="display: flex; gap: 8px; margin-bottom: 16px;"
-      >
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search YouTube..."
-          style="
-            flex: 1;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid var(--ctp-surface0);
-            background-color: var(--ctp-crust);
-            color: var(--ctp-text);
-          "
-        />
-        <button
-          type="submit"
-          style="
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: none;
-            background-color: var(--ctp-blue);
-            color: #fff;
-            cursor: pointer;
-          "
-        >
-          Search
-        </button>
+      <form id="searchForm" style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="text" id="searchInput" placeholder="Search YouTube..." style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--ctp-surface0); background-color: var(--ctp-crust); color: var(--ctp-text);">
+        <button type="submit" style="padding: 8px 12px; border-radius: 6px; border: none; background-color: var(--ctp-blue); color: #fff; cursor: pointer;">Search</button>
       </form>
-      <div
-        id="searchResults"
-        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"
-      ></div>
+      <div id="searchResults" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
     </div>
   </div>
 
   <script>
+
     let tabs = [];
     let activeTabId = null;
     let isFullscreen = false;
 
-    const tabBar = document.getElementById("tabBar");
-    const newTabBtn = document.getElementById("newTabBtn");
-    const addressForm = document.getElementById("addressForm");
-    const urlInput = document.getElementById("urlInput");
-    const browserContent = document.getElementById("browserContent");
-    const fullscreenBtn = document.getElementById("fullscreenBtn");
-    const fullscreenIcon = document.getElementById("fullscreenIcon");
-    const searchForm = document.getElementById("searchForm");
-    const searchInput = document.getElementById("searchInput");
-    const searchResults = document.getElementById("searchResults");
+    const tabBar = document.getElementById('tabBar');
+    const newTabBtn = document.getElementById('newTabBtn');
+    const addressForm = document.getElementById('addressForm');
+    const urlInput = document.getElementById('urlInput');
+    const browserContent = document.getElementById('browserContent');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenIcon = document.getElementById('fullscreenIcon');
 
     function initBrowser() {
       createNewTab();
       fetchPopularVideos();
 
-      newTabBtn.addEventListener("click", createNewTab);
-      addressForm.addEventListener("submit", handleUrlSubmit);
-      fullscreenBtn.addEventListener("click", toggleFullscreen);
+      newTabBtn.addEventListener('click', createNewTab);
+      addressForm.addEventListener('submit', handleUrlSubmit);
+      fullscreenBtn.addEventListener('click', toggleFullscreen);
     }
-
     // --- Fetch and display popular YouTube videos on load ---
     async function fetchPopularVideos() {
       const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
@@ -497,14 +437,14 @@
 
         searchResults.innerHTML = "";
 
-        data.items.forEach((item) => {
+        data.items.forEach(item => {
           const videoId = item.id;
           const snippet = item.snippet;
           const thumb = snippet.thumbnails.medium.url;
           const title = snippet.title;
           const channel = snippet.channelTitle;
 
-          const card = document.createElement("div");
+          const card = document.createElement('div');
           card.style.background = "var(--ctp-surface0)";
           card.style.borderRadius = "8px";
           card.style.overflow = "hidden";
@@ -513,9 +453,7 @@
           card.onclick = () => {
             urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
             searchResults.innerHTML = "";
-            addressForm.dispatchEvent(
-              new Event("submit", { bubbles: true, cancelable: true })
-            );
+            addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
           };
 
           card.innerHTML = `
@@ -536,8 +474,8 @@
     function createNewTab() {
       const tabId = `tab-${Date.now()}`;
 
-      const tab = document.createElement("div");
-      tab.className = "tab";
+      const tab = document.createElement('div');
+      tab.className = 'tab';
       tab.dataset.tabId = tabId;
       tab.innerHTML = `
         <div class="tab-title">New Tab</div>
@@ -548,8 +486,8 @@
 
       tabBar.insertBefore(tab, newTabBtn);
 
-      const tabContent = document.createElement("div");
-      tabContent.className = "tab-content";
+      const tabContent = document.createElement('div');
+      tabContent.className = 'tab-content';
       tabContent.dataset.tabId = tabId;
       tabContent.innerHTML = `
         <div class="empty-tab">
@@ -564,170 +502,140 @@
 
       tabs.push({
         id: tabId,
-        url: "",
-        videoId: null,
+        url: '',
+        videoId: null
       });
 
       setActiveTab(tabId);
 
-      // Tab click
-      tab.addEventListener("click", () => {
-        setActiveTab(tabId);
-      });
-
-      // Close tab click
-      const closeBtn = tab.querySelector(".tab-close");
-      closeBtn.addEventListener("click", (e) => {
+      tab.addEventListener('click', () => setActiveTab(tabId));
+      tab.querySelector('.tab-close').addEventListener('click', (e) => {
         e.stopPropagation();
         closeTab(tabId);
       });
     }
 
     function setActiveTab(tabId) {
+
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+
+      const selectedTab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+      if (selectedTab) {
+        selectedTab.classList.add('active');
+      }
+
+      const selectedContent = document.querySelector(`.tab-content[data-tab-id="${tabId}"]`);
+      if (selectedContent) {
+        selectedContent.classList.add('active');
+      }
+
       activeTabId = tabId;
 
-      tabs.forEach((tab) => {
-        const tabElement = document.querySelector(`.tab[data-tab-id="${tab.id}"]`);
-        const tabContentElement = document.querySelector(
-          `.tab-content[data-tab-id="${tab.id}"]`
-        );
-
-        if (tab.id === tabId) {
-          tabElement.classList.add("active");
-          tabContentElement.classList.add("active");
-          urlInput.value = tab.url || "";
-        } else {
-          tabElement.classList.remove("active");
-          tabContentElement.classList.remove("active");
-        }
-      });
+      const tab = tabs.find(t => t.id === tabId);
+      if (tab) {
+        urlInput.value = tab.url;
+      }
     }
 
     function closeTab(tabId) {
-      const tabIndex = tabs.findIndex((t) => t.id === tabId);
-      if (tabIndex === -1) return;
+
+      if (tabs.length === 1) {
+
+        const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+        if (tabElement) {
+          tabElement.remove();
+        }
+
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tabId}"]`);
+        if (contentElement) {
+          contentElement.remove();
+        }
+
+        tabs = tabs.filter(tab => tab.id !== tabId);
+
+        createNewTab();
+        return;
+      }
+
+      const tabIndex = tabs.findIndex(tab => tab.id === tabId);
 
       const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
-      const tabContentElement = document.querySelector(`.tab-content[data-tab-id="${tabId}"]`);
+      if (tabElement) {
+        tabElement.remove();
+      }
 
-      if (tabElement) tabElement.remove();
-      if (tabContentElement) tabContentElement.remove();
+      const contentElement = document.querySelector(`.tab-content[data-tab-id="${tabId}"]`);
+      if (contentElement) {
+        contentElement.remove();
+      }
 
-      tabs.splice(tabIndex, 1);
+      tabs = tabs.filter(tab => tab.id !== tabId);
 
       if (activeTabId === tabId) {
-        if (tabs.length > 0) {
-          setActiveTab(tabs[Math.max(0, tabIndex - 1)].id);
-        } else {
-          activeTabId = null;
-          urlInput.value = "";
+
+        const newActiveTabId = tabs[tabIndex - 1]?.id || tabs[0]?.id;
+        if (newActiveTabId) {
+          setActiveTab(newActiveTabId);
         }
       }
     }
 
-    function extractYouTubeId(url) {
-      if (!url) return null;
-
-      const regExp =
-        /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-      const match = url.match(regExp);
-
-      return match && match[2].length === 11 ? match[2] : null;
+    // --- Begin video info & download support ---
+    async function fetchVideoInfo(url) {
+      const embedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+      try {
+        const res = await fetch(embedUrl);
+        if (!res.ok) throw new Error("Invalid YouTube URL");
+        const data = await res.json();
+        displayVideoInfo(url, data);
+      } catch (err) {
+        alert("Failed to fetch video info.");
+        console.error(err);
+      }
     }
 
-    function toggleFullscreen() {
-      isFullscreen = !isFullscreen;
-
-      if (isFullscreen) {
-        browserContent.classList.add("fullscreen");
-        fullscreenIcon.innerHTML = `
-          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        `;
-      } else {
-        browserContent.classList.remove("fullscreen");
-        fullscreenIcon.innerHTML = `
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        `;
-      }
+    function displayVideoInfo(videoUrl, data) {
+      const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
+      contentElement.innerHTML = `
+        <div class="video-info">
+          <img src="${data.thumbnail_url}" alt="Thumbnail">
+          <h2>${data.title}</h2>
+          <p style="margin-top:12px;">Loading video...</p>
+        </div>
+      `;
+      downloadVideo(videoUrl);
     }
 
     async function downloadVideo(videoUrl) {
       try {
-        // Extract video ID
-        const match =
-          videoUrl.match(/[?&]v=([^#&]+)/) || videoUrl.match(/youtu\.be\/([^#&]+)/);
+        const match = videoUrl.match(/[?&]v=([^#&]+)/) || videoUrl.match(/youtu\.be\/([^#&]+)/);
         const videoId = match ? match[1] : null;
         if (!videoId) throw new Error("Invalid YouTube video ID");
 
-        // Fetch DASH URL from Nadeko embed site proxy
         const scrapeUrl = `https://ejgsapis.vercel.app/api/scrape?url=https://inv.nadeko.net/embed/${videoId}`;
         const res = await fetch(scrapeUrl);
         const html = await res.text();
 
-        const dashMatch = html.match(
-          /<source[^>]+src="([^"]+)"[^>]+type='application\/dash\+xml'/
-        );
+        const dashMatch = html.match(/<source[^>]+src="([^"]+)"[^>]+type='application\/dash\+xml'/);
         if (!dashMatch || !dashMatch[1]) throw new Error("DASH stream not found");
 
         const dashUrl = dashMatch[1];
 
-        // Show player container
-        const contentElement = document.querySelector(
-          `.tab-content[data-tab-id="${activeTabId}"]`
-        );
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
         contentElement.innerHTML = `<div class="video-container" id="videoContainer"></div>`;
 
-        // Fetch captions JSON from subtitle extractor API
-        let subtitles = [];
-        try {
-          const captionsRes = await fetch(
-            `https://youtube-caption-extractor.vercel.app/api/subtitles?videoID=${videoId}&lang=en`
-          );
-          if (captionsRes.ok) {
-            const captionsJson = await captionsRes.json();
-            subtitles = captionsJson.subtitles || [];
-          }
-        } catch (e) {
-          console.warn("Failed to load captions", e);
-        }
-
-        // Convert subtitles JSON to WebVTT format
-        function subtitlesToVtt(subs) {
-          let vtt = "WEBVTT\n\n";
-          subs.forEach(({ start, dur, text }) => {
-            const startSec = parseFloat(start);
-            const endSec = startSec + parseFloat(dur);
-            const formatTime = (s) => {
-              const h = Math.floor(s / 3600)
-                .toString()
-                .padStart(2, "0");
-              const m = Math.floor((s % 3600) / 60)
-                .toString()
-                .padStart(2, "0");
-              const sec = (s % 60).toFixed(3).padStart(6, "0");
-              return `${h}:${m}:${sec.replace(".", ",")}`;
-            };
-            vtt += `${formatTime(startSec)} --> ${formatTime(endSec)}\n${text.replace(
-              /\n/g,
-              " "
-            )}\n\n`;
-          });
-          return vtt;
-        }
-
-        let subtitleUrl = null;
-        if (subtitles.length > 0) {
-          const vttText = subtitlesToVtt(subtitles);
-          const blob = new Blob([vttText], { type: "text/vtt" });
-          subtitleUrl = URL.createObjectURL(blob);
-        }
-
-        // Initialize Artplayer with DASH and subtitles
         new Artplayer({
-          container: document.getElementById("videoContainer"),
+          container: document.getElementById('videoContainer'),
           url: dashUrl,
           poster: "",
           autoplay: true,
+          // Enable as many built-in Artplayer features as possible
           setting: true,
           hotkey: true,
           pip: true,
@@ -747,72 +655,59 @@
           autoPlayback: true,
           autoOrientation: true,
           airplay: true,
-          lang: "en",
-          theme: "#ff4d4f",
+          lang: 'en',
+          theme: '#ff4d4f',
           volume: 0.7,
           isLive: false,
           autoSize: true,
-          subtitle: subtitleUrl
-            ? {
-                url: subtitleUrl,
-                type: "vtt",
-                style: {
-                  color: "#ff4d4f",
-                  fontSize: "16px",
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                },
-              }
-            : null,
           customType: {
             mpegdash: function (video, url) {
               const player = dashjs.MediaPlayer().create();
               player.initialize(video, url, true);
               video.art = this;
-              player.setInitialMediaSettingsFor("audio", {
-                lang: "en",
-                role: "main",
+              player.setInitialMediaSettingsFor('audio', {
+                lang: 'en',
+                role: 'main'
               });
 
               player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
                 if (!video.art) return;
 
-                const videoTracks = player.getTracksFor("video");
+                const videoTracks = player.getTracksFor('video');
+                const audioTracks = player.getTracksFor('audio');
 
+                // Dynamically set Artplayer quality menu based on available video tracks
                 if (videoTracks && videoTracks.length > 0) {
                   const qualityOptions = videoTracks.map((track, index) => ({
-                    name: `${track.height}p`,
-                    index: index,
-                    default: track.height === 720,
+                      name: `${track.height}p`,
+                      index: index,
+                      default: track.height === 720 // Or any logic to set default
                   }));
 
                   video.art.option.quality = {
-                    default:
-                      qualityOptions.find((q) => q.default)?.name ||
-                      qualityOptions[0].name,
-                    html: qualityOptions.map((q) => q.name),
-                    selector: (name) => {
-                      const selected = qualityOptions.find((q) => q.name === name);
-                      if (selected) {
-                        player.setCurrentTrack(videoTracks[selected.index]);
-                      }
-                    },
+                      default: qualityOptions.find(q => q.default)?.name || qualityOptions[0].name,
+                      html: qualityOptions.map(q => q.name),
+                      selector: (name) => {
+                          const selected = qualityOptions.find(q => q.name === name);
+                          if (selected) {
+                              player.setCurrentTrack(videoTracks[selected.index]);
+                          }
+                      },
                   };
                 }
+
+                // const controlsContainer = video.art.control;
               });
               player.updateSettings({
                 streaming: {
-                  buffer: {
-                    stableBufferTime: 30,
-                    bufferToKeep: 20,
-                    bufferPruningInterval: 10,
-                  },
+                  buffer: { stableBufferTime: 30, bufferToKeep: 20, bufferPruningInterval: 10 },
                   retryIntervals: { manifest: 1000, segment: 500, timeout: 10000 },
                   fastSwitchEnabled: true,
-                },
+                }
               });
-            },
+            }
           },
-          type: "mpegdash",
+          type: 'mpegdash'
         });
       } catch (err) {
         alert("Error loading video.");
@@ -820,6 +715,9 @@
       }
     }
 
+    // pollProgress function and oceansaver/vatis logic removed as per instructions.
+
+    // Update handleUrlSubmit to use fetchVideoInfo
     function handleUrlSubmit(e) {
       e.preventDefault();
 
@@ -828,7 +726,7 @@
       const url = urlInput.value.trim();
       if (!url) return;
 
-      const tabIndex = tabs.findIndex((tab) => tab.id === activeTabId);
+      const tabIndex = tabs.findIndex(tab => tab.id === activeTabId);
       if (tabIndex === -1) return;
 
       tabs[tabIndex].url = url;
@@ -836,41 +734,68 @@
 
       const tabElement = document.querySelector(`.tab[data-tab-id="${activeTabId}"]`);
       if (tabElement) {
-        const tabTitle = tabElement.querySelector(".tab-title");
+        const tabTitle = tabElement.querySelector('.tab-title');
         if (tabTitle) {
-          tabTitle.textContent =
-            "YouTube - " + (url.length > 30 ? url.substring(0, 30) + "..." : url);
+          tabTitle.textContent = `YouTube - ${url.length > 30 ? url.substring(0, 30) + '...' : url}`;
         }
       }
 
-      downloadVideo(url);
+      fetchVideoInfo(url);
+    }
+    // --- End video info & download support ---
+
+    function extractYouTubeId(url) {
+      if (!url) return null;
+
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+
+      return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    searchForm.addEventListener("submit", async (e) => {
+    function toggleFullscreen() {
+      isFullscreen = !isFullscreen;
+
+      if (isFullscreen) {
+        browserContent.classList.add('fullscreen');
+        fullscreenIcon.innerHTML = `
+          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        `;
+      } else {
+        browserContent.classList.remove('fullscreen');
+        fullscreenIcon.innerHTML = `
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        `;
+      }
+    }
+
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    searchForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const query = searchInput.value.trim();
       if (!query) return;
 
-      searchResults.innerHTML = "Searching...";
+      searchResults.innerHTML = 'Searching...';
 
       try {
         const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
-          query
-        )}&type=video&maxResults=12&key=${apiKey}`;
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=12&key=${apiKey}`;
         const res = await fetch(url);
         const data = await res.json();
 
         searchResults.innerHTML = "";
 
-        data.items.forEach((item) => {
+        data.items.forEach(item => {
           const videoId = item.id.videoId;
           const snippet = item.snippet;
           const thumb = snippet.thumbnails.medium.url;
           const title = snippet.title;
           const channel = snippet.channelTitle;
 
-          const card = document.createElement("div");
+          const card = document.createElement('div');
           card.style.background = "var(--ctp-surface0)";
           card.style.borderRadius = "8px";
           card.style.overflow = "hidden";
@@ -879,9 +804,7 @@
           card.onclick = () => {
             urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
             searchResults.innerHTML = "";
-            addressForm.dispatchEvent(
-              new Event("submit", { bubbles: true, cancelable: true })
-            );
+            addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
           };
 
           card.innerHTML = `
@@ -899,7 +822,8 @@
       }
     });
 
-    document.addEventListener("DOMContentLoaded", initBrowser);
+    document.addEventListener('DOMContentLoaded', initBrowser);
   </script>
 </body>
 </html>
+
