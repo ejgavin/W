@@ -318,16 +318,10 @@
               const player = dashjs.MediaPlayer().create();
               player.initialize(video, url, true);
               video.art = this;
+              this.dash = player;
               player.setInitialMediaSettingsFor('audio', {
                 lang: 'en',
                 role: 'main'
-              });
-              player.updateSettings({
-                streaming: {
-                  buffer: { stableBufferTime: 30, bufferToKeep: 20, bufferPruningInterval: 10 },
-                  retryIntervals: { manifest: 1000, segment: 500, timeout: 10000 },
-                  fastSwitchEnabled: true,
-                }
               });
             }
           },
