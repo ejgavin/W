@@ -313,7 +313,7 @@
               },
               audio: {
                 control: true,
-                setting: true,\
+                setting: true,
                 getName: (track) => track.lang.toUpperCase(),
                 title: 'Audio',
                 auto: 'Auto',
@@ -326,11 +326,14 @@
             name: 'English',
             encoding: 'utf-8',
             escape: true,
-            style: {
-              color: '#fff',
-              fontSize: '16px',
-            },
             setting: true,
+            style: {
+              color: '#ffffff',
+              fontSize: '18px',
+              fontFamily: 'Arial, sans-serif',
+              background: 'rgba(0, 0, 0, 0.6)',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+            },
           },
           customType: {
             mpegdash: function (video, url) {
