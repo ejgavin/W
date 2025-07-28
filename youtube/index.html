@@ -313,7 +313,7 @@
               },
               audio: {
                 control: true,
-                setting: true,
+                setting: true,\
                 getName: (track) => track.lang.toUpperCase(),
                 title: 'Audio',
                 auto: 'Auto',
@@ -321,7 +321,7 @@
             })
           ],
           subtitle: {
-            url: subtitleUrl, // set to generated VTT blob URL or empty if not available
+            url: subtitleUrl,
             type: 'vtt',
             name: 'English',
             encoding: 'utf-8',
@@ -330,6 +330,7 @@
               color: '#fff',
               fontSize: '16px',
             },
+            setting: true,
           },
           customType: {
             mpegdash: function (video, url) {
