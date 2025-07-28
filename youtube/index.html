@@ -265,7 +265,7 @@
         const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
         contentElement.innerHTML = `<div class="video-container" id="videoContainer"></div>`;
 
-        new Artplayer({
+        const artplayerInstance = new Artplayer({
           container: document.getElementById('videoContainer'),
           url: dashUrl,
           poster: "",
@@ -274,6 +274,7 @@
           setting: true,
           hotkey: true,
           pip: true,
+          fullscreen: true,
           fullscreenWeb: true,
           subtitleOffset: true,
           miniProgressBar: true,
@@ -291,7 +292,7 @@
           airplay: true,
           lang: 'en',
           theme: '#ff4d4f',
-          volume: 1.0,
+          volume: 0.7,
           isLive: false,
           autoSize: true,
           plugins: [
@@ -317,18 +318,74 @@
               const player = dashjs.MediaPlayer().create();
               player.initialize(video, url, true);
               video.art = this;
-              this.dash = player;
               player.setInitialMediaSettingsFor('audio', {
                 lang: 'en',
                 role: 'main'
+              });
+              player.updateSettings({
+                streaming: {
+                  buffer: { stableBufferTime: 30, bufferToKeep: 20, bufferPruningInterval: 10 },
+                  retryIntervals: { manifest: 1000, segment: 500, timeout: 10000 },
+                  fastSwitchEnabled: true,
+                }
               });
             }
           },
           type: 'mpegdash'
         });
+        // Extract video ID using extractYouTubeId if available
+        const extractedId = extractYouTubeId ? extractYouTubeId(videoUrl) : videoId;
+        if (extractedId) {
+          fetchAndAddCaptions(artplayerInstance, extractedId);
+        }
       } catch (err) {
         alert("Error loading video.");
         console.error(err);
+      }
+    }
+
+    // Add fetchAndAddCaptions function
+    async function fetchAndAddCaptions(player, videoId) {
+      try {
+        // Use Google's YouTube captions API endpoint (unofficial, may not work for all videos)
+        // This is a public endpoint for demonstration; in production, use a backend proxy if needed.
+        const captionsApiUrl = `https://video.google.com/timedtext?lang=en&v=${videoId}`;
+        const res = await fetch(captionsApiUrl);
+        if (!res.ok) return;
+        const xml = await res.text();
+        if (!xml || !xml.includes('<transcript')) return;
+
+        // Parse XML to SRT or VTT
+        function xmlToVtt(xml) {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xml, "text/xml");
+          const texts = xmlDoc.getElementsByTagName("text");
+          let vtt = "WEBVTT\n\n";
+          function decodeHtml(html) {
+            const txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+          }
+          for (let i = 0; i < texts.length; i++) {
+            const textNode = texts[i];
+            const start = parseFloat(textNode.getAttribute("start"));
+            const dur = parseFloat(textNode.getAttribute("dur") || "2");
+            const end = start + dur;
+            const startTime = new Date(start * 1000).toISOString().substr(11, 12).replace('.', ',');
+            const endTime = new Date(end * 1000).toISOString().substr(11, 12).replace('.', ',');
+            vtt += `${i + 1}\n${startTime} --> ${endTime}\n${decodeHtml(textNode.textContent)}\n\n`;
+          }
+          return vtt;
+        }
+        const vttData = xmlToVtt(xml);
+        // Create a Blob URL for the VTT
+        const vttBlob = new Blob([vttData], { type: 'text/vtt' });
+        const vttUrl = URL.createObjectURL(vttBlob);
+        // Add subtitles to Artplayer
+        player.subtitle.url = vttUrl;
+        player.notice && player.notice.show && player.notice.show('English captions loaded');
+      } catch (err) {
+        // Ignore errors, just don't load captions
       }
     }
 
