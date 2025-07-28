@@ -313,6 +313,14 @@
               }
             })
           ],
+          subtitle: {
+            url: '', // will be set later by fetchAndAddCaptions
+            type: 'vtt',
+            style: {
+              color: '#fff',
+              fontSize: '16px',
+            },
+          },
           customType: {
             mpegdash: function (video, url) {
               const player = dashjs.MediaPlayer().create();
