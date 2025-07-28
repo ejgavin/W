@@ -36,7 +36,8 @@
         <input type="text" id="searchInput" placeholder="Search YouTube..." style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--ctp-surface0); background-color: var(--ctp-crust); color: var(--ctp-text);">
         <button type="submit" style="padding: 8px 12px; border-radius: 6px; border: none; background-color: var(--ctp-blue); color: #fff; cursor: pointer;">Search</button>
       </form>
-      <div id="searchResults" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+      <div style="max-height: 85vh; overflow-y: auto;">
+        <div id="searchResults" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
     </div>
   </div>
 
@@ -270,7 +271,11 @@
         const dashUrl = dashMatch[1];
 
         const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
-        contentElement.innerHTML = `<div class="video-container" id="videoContainer"></div>`;
+        contentElement.innerHTML = `
+          <div class="video-container" id="videoContainer"></div>
+        `;
+
+
 
         // --- Subtitle style injection helpers ---
         function injectSubtitleStyles(cssText) {
@@ -291,11 +296,11 @@
           textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
         };
 
-        // Helper to produce CSS for .artplayer-subtitle
+        // Helper to produce CSS for .art-subtitle
         function subtitleCss(overrides = {}) {
           const style = Object.assign({}, defaultSubtitleStyle, subtitleCss.current || {}, overrides);
           subtitleCss.current = style;
-          return `.artplayer-subtitle {
+          return `.art-subtitle {
   color: ${style.color};
   font-size: ${style.fontSize};
   font-family: ${style.fontFamily};
@@ -305,7 +310,7 @@
         }
 
         // Initialize default subtitle style on page
-        injectSubtitleStyles(subtitleCss());
+        injectSubtitleStyles(subtitleCss()); // this will now apply to .art-subtitle
 
         const artplayerInstance = new Artplayer({
           container: document.getElementById('videoContainer'),
@@ -360,8 +365,13 @@
             name: 'English',
             encoding: 'utf-8',
             escape: true,
-            setting: true
-            // Remove style object, handled by CSS injection
+            setting: true,
+            style: {
+              fontSize: '28px',
+              bottom: '10%',
+              color: 'white',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+            }
           },
           customType: {
             mpegdash: function (video, url) {
@@ -375,98 +385,26 @@
               });
             }
           },
-          type: 'mpegdash'
+          type: 'mpegdash',
+          settings: [
+            {
+              html: 'Subtitles',
+              icon: '<i class="bi bi-cc-square"></i>',
+              tooltip: 'Toggle subtitles',
+              switch: true,
+              onSwitch: function (item) {
+                this.subtitle.show = !item.switch;
+                return !item.switch;
+              },
+            },
+          ],
         });
-
-        // Add subtitle style settings
-        artplayerInstance.settings = [
-          {
-            width: 200,
-            html: 'Font Size',
-            icon: '<i class="bi bi-textarea-t"></i>',
-            tooltip: 'Subtitle Font Size',
-            selector: [
-              {
-                html: 'Small',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ fontSize: '14px' })); return 'Small'; }
-              },
-              {
-                html: 'Medium',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ fontSize: '18px' })); return 'Medium'; }
-              },
-              {
-                html: 'Large',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ fontSize: '24px' })); return 'Large'; }
-              }
-            ]
-          },
-          {
-            width: 200,
-            html: 'Font Color',
-            icon: '<i class="bi bi-palette"></i>',
-            tooltip: 'Subtitle Font Color',
-            selector: [
-              {
-                html: 'White',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ color: 'white' })); return 'White'; }
-              },
-              {
-                html: 'Yellow',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ color: 'yellow' })); return 'Yellow'; }
-              },
-              {
-                html: 'Red',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ color: 'red' })); return 'Red'; }
-              },
-              {
-                html: 'Blue',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ color: 'blue' })); return 'Blue'; }
-              }
-            ]
-          },
-          {
-            width: 200,
-            html: 'Font Family',
-            icon: '<i class="bi bi-fonts"></i>',
-            tooltip: 'Subtitle Font Family',
-            selector: [
-              {
-                html: 'Arial',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ fontFamily: 'Arial, sans-serif' })); return 'Arial'; }
-              },
-              {
-                html: 'Monospace',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ fontFamily: 'monospace' })); return 'Monospace'; }
-              },
-              {
-                html: 'Serif',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ fontFamily: 'serif' })); return 'Serif'; }
-              }
-            ]
-          },
-          {
-            width: 200,
-            html: 'Text Shadow',
-            icon: '<i class="bi bi-text-left"></i>',
-            tooltip: 'Toggle Text Shadow',
-            selector: [
-              {
-                html: 'On',
-                default: true,
-                onClick: () => { injectSubtitleStyles(subtitleCss({ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' })); return 'On'; }
-              },
-              {
-                html: 'Off',
-                onClick: () => { injectSubtitleStyles(subtitleCss({ textShadow: 'none' })); return 'Off'; }
-              }
-            ]
-          }
-        ];
       } catch (err) {
         alert("Error loading video.");
         console.error(err);
       }
     }
+
 
     // Add fetchAndAddCaptions function
     async function fetchAndAddCaptions(videoId) {
@@ -562,57 +500,208 @@
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
 
-    searchForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const query = searchInput.value.trim();
-      if (!query) return;
+// --- Search and infinite scroll logic ---
+let currentQuery = '';
+let searchNextPageToken = '';
+let loadingSearch = false;
 
-      searchResults.innerHTML = 'Searching...';
+searchForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  currentQuery = searchInput.value.trim();
+  if (!currentQuery) return;
+  searchNextPageToken = '';
+  searchResults.innerHTML = 'Searching...';
+  await loadMoreSearchResults(true);
+});
 
-      try {
-        const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=12&key=${apiKey}`;
-        const res = await fetch(url);
-        const data = await res.json();
+async function loadMoreSearchResults(isNewSearch = false) {
+  if (loadingSearch) return;
+  loadingSearch = true;
 
-        searchResults.innerHTML = "";
+  const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
+  let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video,channel&maxResults=30&key=${apiKey}`;
+  if (searchNextPageToken) url += `&pageToken=${searchNextPageToken}`;
 
-        data.items.forEach(item => {
-          const videoId = item.id.videoId;
-          const snippet = item.snippet;
-          const thumb = snippet.thumbnails.medium.url;
-          const title = snippet.title;
-          const channel = snippet.channelTitle;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
 
-          const card = document.createElement('div');
-          card.style.background = "var(--ctp-surface0)";
-          card.style.borderRadius = "8px";
-          card.style.overflow = "hidden";
-          card.style.cursor = "pointer";
-          card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-          card.onclick = () => {
-            urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
-            searchResults.innerHTML = "";
-            addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-          };
+    if (isNewSearch) searchResults.innerHTML = '';
 
-          card.innerHTML = `
-            <img src="${thumb}" alt="Thumbnail" style="width: 100%; display: block;">
-            <div style="padding: 8px;">
-              <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
-              <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span>
-            </div>
-          `;
-          searchResults.appendChild(card);
-        });
-      } catch (err) {
-        console.error(err);
-        searchResults.innerHTML = "Failed to load search results.";
+    data.items.forEach(item => {
+      const snippet = item.snippet;
+
+      if (item.id.kind === 'youtube#channel') {
+        const channelId = item.id.channelId;
+        const thumb = snippet.thumbnails.medium.url;
+        const title = snippet.channelTitle;
+        // Channel card styled like video card
+        const card = document.createElement('div');
+        card.style.background = "var(--ctp-surface0)";
+        card.style.borderRadius = "8px";
+        card.style.overflow = "hidden";
+        card.style.cursor = "pointer";
+        card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+        card.onclick = () => fetchChannelVideos(channelId, title);
+        getChannelStats(channelId, card);
+        card.innerHTML = `
+          <img src="${thumb}" alt="Channel" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+          <div style="padding: 8px;">
+            <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
+            <span style="color: var(--ctp-subtext0); font-size: 12px;">Channel</span>
+          </div>
+        `;
+        searchResults.appendChild(card);
+      } else if (item.id.kind === 'youtube#video') {
+        const videoId = item.id.videoId;
+        const thumb = snippet.thumbnails.medium.url;
+        const title = snippet.title;
+        const channel = snippet.channelTitle;
+        const publishedAt = snippet.publishedAt ? formatDate(snippet.publishedAt) : '';
+        const card = document.createElement('div');
+        card.style.background = "var(--ctp-surface0)";
+        card.style.borderRadius = "8px";
+        card.style.overflow = "hidden";
+        card.style.cursor = "pointer";
+        card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+        card.onclick = () => {
+          urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+          searchResults.innerHTML = "";
+          addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        };
+        card.innerHTML = `
+          <img src="${thumb}" alt="Thumbnail" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+          <div style="padding: 8px;">
+            <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
+            <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span><br>
+            <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
+          </div>
+        `;
+        searchResults.appendChild(card);
       }
     });
+    searchNextPageToken = data.nextPageToken || '';
+  } catch (err) {
+    console.error(err);
+    if (isNewSearch) searchResults.innerHTML = "Failed to load search results.";
+  } finally {
+    loadingSearch = false;
+  }
+}
+
+// Infinite scroll for search results
+searchResults.addEventListener('scroll', () => {
+  if (
+    searchResults.scrollTop + searchResults.clientHeight >= searchResults.scrollHeight - 100
+  ) {
+    if (searchNextPageToken && !loadingSearch) loadMoreSearchResults();
+  }
+});
+
+function formatDate(dateStr) {
+  // YYYY-MM-DD only
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '';
+  return d.toISOString().slice(0, 10);
+}
+      
+      async function getChannelStats(channelId, cardElement) {
+        const statsUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI`;
+        try {
+          const res = await fetch(statsUrl);
+          const data = await res.json();
+          if (data.items && data.items[0]) {
+            const subs = data.items[0].statistics.subscriberCount;
+            const formattedSubs = Intl.NumberFormat().format(subs);
+            const subEl = document.createElement('div');
+            subEl.innerHTML = `<span style="color: var(--ctp-subtext1); font-size: 12px;">${formattedSubs} subscribers</span>`;
+            cardElement.querySelector('div[style*="padding"]').appendChild(subEl);
+          }
+        } catch (e) {
+          console.error("Could not load subscriber count:", e);
+        }
+      }
+
+
+// --- Channel videos with infinite scroll ---
+let channelNextPageToken = '';
+let loadingChannel = false;
+let currentChannelId = '';
+let currentChannelTitle = '';
+
+async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew = true) {
+  // Initial load or new channel: clear, set state and header
+  if (isNew) {
+    searchResults.innerHTML = `<h2 style="color: var(--ctp-text); margin-bottom: 12px;">${channelTitle}'s Videos</h2>`;
+    currentChannelId = channelId;
+    currentChannelTitle = channelTitle;
+    channelNextPageToken = '';
+  }
+  if (loadingChannel) return;
+  loadingChannel = true;
+
+  const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
+  let url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=30&type=video`;
+  if (pageToken) url += `&pageToken=${pageToken}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    // If isNew, header is already set; else, do not overwrite.
+    // Render videos (append to grid)
+    data.items.forEach(item => {
+      if (!item.id.videoId) return;
+      const videoId = item.id.videoId;
+      const thumb = item.snippet.thumbnails.medium.url;
+      const title = item.snippet.title;
+      const publishedAt = item.snippet.publishedAt ? formatDate(item.snippet.publishedAt) : '';
+      const card = document.createElement('div');
+      card.style.background = "var(--ctp-surface0)";
+      card.style.borderRadius = "8px";
+      card.style.overflow = "hidden";
+      card.style.cursor = "pointer";
+      card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+      card.onclick = () => {
+        urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+        searchResults.innerHTML = "";
+        addressForm.dispatchEvent(new Event("submit", { bubbles: true }));
+      };
+      card.innerHTML = `
+        <img src="${thumb}" alt="Video" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+        <div style="padding: 8px;">
+          <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
+          <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
+        </div>
+      `;
+      searchResults.appendChild(card);
+    });
+    channelNextPageToken = data.nextPageToken || '';
+  } catch (err) {
+    console.error(err);
+    if (isNew) searchResults.innerHTML += "<div>Failed to load channel videos.</div>";
+  } finally {
+    loadingChannel = false;
+  }
+}
+
+// Infinite scroll for channel videos
+searchResults.addEventListener('scroll', () => {
+  // If current view is channel, and scrolled near bottom, load more
+  if (
+    currentChannelId &&
+    searchResults.scrollTop + searchResults.clientHeight >= searchResults.scrollHeight - 100
+  ) {
+    if (channelNextPageToken && !loadingChannel) {
+      fetchChannelVideos(currentChannelId, currentChannelTitle, channelNextPageToken, false);
+    }
+  }
+});
 
     document.addEventListener('DOMContentLoaded', initBrowser);
   </script>
 </body>
 </html>
+
 
