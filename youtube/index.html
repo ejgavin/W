@@ -371,8 +371,11 @@
           title: 'English',
           url,
           kind: 'subtitles',
-          def: true,
+          def: false, // start disabled so user can toggle
         });
+        console.log('Subtitles added:', url);
+        // Programmatically enable the first subtitle track
+        player.switchSubtitle(0);
       } catch (err) {
         // silently fail
       }
