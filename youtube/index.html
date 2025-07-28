@@ -341,9 +341,11 @@
     // Add fetchAndAddCaptions function
     async function fetchAndAddCaptions(player, videoId) {
       try {
-        const res = await fetch(`https://youtube-caption-extractor.vercel.app/api/subtitles?videoID=${videoId}&lang=en`);
-        if (!res.ok) throw new Error("Failed to fetch captions");
+        const proxyUrl = `https://ejgsapis.vercel.app/api/scrape?url=${encodeURIComponent(`https://youtube-caption-extractor.vercel.app/api/subtitles?videoID=${videoId}&lang=en`)}`;
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error("Failed to fetch captions via proxy");
         const data = await res.json();
+
         if (!data.subtitles || data.subtitles.length === 0) return;
 
         let vtt = "WEBVTT\n\n";
