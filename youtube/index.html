@@ -318,16 +318,10 @@
               const player = dashjs.MediaPlayer().create();
               player.initialize(video, url, true);
               video.art = this;
+              this.dash = player;
               player.setInitialMediaSettingsFor('audio', {
                 lang: 'en',
                 role: 'main'
-              });
-              player.updateSettings({
-                streaming: {
-                  buffer: { stableBufferTime: 30, bufferToKeep: 20, bufferPruningInterval: 10 },
-                  retryIntervals: { manifest: 1000, segment: 500, timeout: 10000 },
-                  fastSwitchEnabled: true,
-                }
               });
             }
           },
@@ -347,45 +341,38 @@
     // Add fetchAndAddCaptions function
     async function fetchAndAddCaptions(player, videoId) {
       try {
-        // Use Google's YouTube captions API endpoint (unofficial, may not work for all videos)
-        // This is a public endpoint for demonstration; in production, use a backend proxy if needed.
-        const captionsApiUrl = `https://video.google.com/timedtext?lang=en&v=${videoId}`;
-        const res = await fetch(captionsApiUrl);
-        if (!res.ok) return;
-        const xml = await res.text();
-        if (!xml || !xml.includes('<transcript')) return;
+        const res = await fetch(`https://youtube-caption-extractor.vercel.app/api/subtitles?videoID=${videoId}&lang=en`);
+        if (!res.ok) throw new Error("Failed to fetch captions");
+        const data = await res.json();
+        if (!data.subtitles || data.subtitles.length === 0) return;
 
-        // Parse XML to SRT or VTT
-        function xmlToVtt(xml) {
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(xml, "text/xml");
-          const texts = xmlDoc.getElementsByTagName("text");
-          let vtt = "WEBVTT\n\n";
-          function decodeHtml(html) {
-            const txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
-          }
-          for (let i = 0; i < texts.length; i++) {
-            const textNode = texts[i];
-            const start = parseFloat(textNode.getAttribute("start"));
-            const dur = parseFloat(textNode.getAttribute("dur") || "2");
-            const end = start + dur;
-            const startTime = new Date(start * 1000).toISOString().substr(11, 12).replace('.', ',');
-            const endTime = new Date(end * 1000).toISOString().substr(11, 12).replace('.', ',');
-            vtt += `${i + 1}\n${startTime} --> ${endTime}\n${decodeHtml(textNode.textContent)}\n\n`;
-          }
-          return vtt;
+        let vtt = "WEBVTT\n\n";
+        data.subtitles.forEach(sub => {
+          const start = parseFloat(sub.start);
+          const dur = parseFloat(sub.dur);
+          const end = start + dur;
+          vtt += formatTime(start) + " --> " + formatTime(end) + "\n";
+          vtt += sub.text + "\n\n";
+        });
+
+        function formatTime(seconds) {
+          const h = Math.floor(seconds / 3600);
+          const m = Math.floor((seconds % 3600) / 60);
+          const s = (seconds % 60).toFixed(3);
+          return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${s.padStart(6,'0')}`;
         }
-        const vttData = xmlToVtt(xml);
-        // Create a Blob URL for the VTT
-        const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-        const vttUrl = URL.createObjectURL(vttBlob);
-        // Add subtitles to Artplayer
-        player.subtitle.url = vttUrl;
-        player.notice && player.notice.show && player.notice.show('English captions loaded');
+
+        const blob = new Blob([vtt], { type: "text/vtt" });
+        const url = URL.createObjectURL(blob);
+
+        player.addSubtitles({
+          title: 'English',
+          url,
+          kind: 'subtitles',
+          def: true,
+        });
       } catch (err) {
-        // Ignore errors, just don't load captions
+        // silently fail
       }
     }
 
