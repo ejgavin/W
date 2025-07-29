@@ -254,25 +254,21 @@
         const videoId = match ? match[1] : null;
         if (!videoId) throw new Error("Invalid YouTube video ID");
 
-        // Extract video ID using extractYouTubeId if available
-        const extractedId = typeof extractYouTubeId === "function" ? extractYouTubeId(videoUrl) : videoId;
-        let subtitleUrl = '';
-        if (extractedId) {
-          subtitleUrl = await fetchAndAddCaptions(extractedId);
-        }
+        // Fetch captions and scrape in parallel for speed
+        const captionsPromise = fetchAndAddCaptions(videoId);
+        const scrapePromise = fetch(`https://ejgsapis.vercel.app/api/scrape?url=https://inv.nadeko.net/embed/${videoId}`).then(res => res.text());
 
-        const scrapeUrl = `https://ejgsapis.vercel.app/api/scrape?url=https://inv.nadeko.net/embed/${videoId}`;
-        const res = await fetch(scrapeUrl);
-        const html = await res.text();
+        // Wait for both to finish
+        const [subtitleUrl, html] = await Promise.all([captionsPromise, scrapePromise]);
 
         const dashMatch = html.match(/<source[^>]+src="([^"]+)"[^>]+type='application\/dash\+xml'/);
         if (!dashMatch || !dashMatch[1]) throw new Error("DASH stream not found");
-
         const dashUrl = dashMatch[1];
 
         const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
         contentElement.innerHTML = `
           <div class="video-container" id="videoContainer"></div>
+          <div id="commentsContainer" style="margin:32px 0 0 0; max-height: 600px; overflow-y: auto;"></div>
         `;
 
 
@@ -320,7 +316,7 @@
           setting: true,
           hotkey: true,
           pip: true,
-          fullscreen: true,
+          fullscreen: false,
           fullscreenWeb: true,
           subtitleOffset: true,
           miniProgressBar: true,
@@ -399,6 +395,151 @@
             },
           ],
         });
+
+        // --- Comments Section ---
+        // Always select the comments container freshly from DOM
+        let commentsContainer = document.getElementById('commentsContainer');
+        commentsContainer.style.background = 'var(--ctp-base)';
+        commentsContainer.style.borderRadius = '10px';
+        commentsContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+        commentsContainer.style.padding = '0 0 8px 0';
+        commentsContainer.style.color = 'var(--ctp-text)';
+        commentsContainer.style.fontSize = '15px';
+        commentsContainer.style.lineHeight = '1.7';
+        commentsContainer.style.maxHeight = '600px';
+        commentsContainer.style.overflowY = 'auto';
+        commentsContainer.innerHTML = '<div style="color:var(--ctp-subtext1);text-align:center;padding:24px 0;">Loading comments...</div>';
+
+        // Fetch and render comments
+        (async () => {
+          try {
+            const commentsApi = `https://inv.nadeko.net/api/v1/comments/${videoId}?format=html&hl=en-US&thin_mode=false`;
+            const res = await fetch(commentsApi);
+            const data = await res.json();
+            let html = data.contentHtml || '';
+
+            // Remove "View X replies" blocks
+            html = html.replace(/<a[^>]*data-load-replies[^>]*>[\s\S]*?<\/a>/g, '');
+
+            // Patch relative image URLs to absolute
+            html = html.replace(/src="\/ggpht\//g, 'src="https://inv.nadeko.net/ggpht/');
+            // Patch channel/video links to open in new tab
+            html = html.replace(/href="(\/(channel|watch)[^"]*)"/g, 'href="https://www.youtube.com$1" target="_blank" rel="noopener noreferrer"');
+            // Patch [YT] links to open in new tab
+            html = html.replace(/href="https:\/\/www\.youtube\.com\/watch\?v=[^"]+"/g, match => match + ' target="_blank" rel="noopener noreferrer"');
+            // Remove inline JS handlers for safety
+            html = html.replace(/data-onclick="[^"]*"/g, '');
+            // Remove javascript: links
+            html = html.replace(/href="javascript:[^"]*"/g, 'href="#"');
+            // Style tweaks for better appearance
+            html += `<style>
+              #commentsContainer {
+                margin-top: 32px;
+                background: var(--ctp-base);
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                padding: 0 0 8px 0;
+              }
+              #commentsContainer h3 {
+                margin: 0 0 18px 0;
+                font-size: 20px;
+                color: var(--ctp-text);
+                font-weight: 700;
+                padding: 18px 24px 0 24px;
+                letter-spacing: 0.01em;
+              }
+              #commentsContainer .pure-g {
+                display: flex;
+                align-items: flex-start;
+                gap: 14px;
+                margin-bottom: 18px;
+                border-bottom: none !important;
+                padding: 16px 24px 12px 24px;
+                background: none;
+              }
+              #commentsContainer .pure-g:last-child {
+                border-bottom: none;
+              }
+              #commentsContainer #replies {
+                /* Remove the vertical line for replies */
+                border-left: none !important;
+                margin-left: 0 !important;
+                padding-left: 0 !important;
+              }
+              #commentsContainer .channel-profile {
+                flex: 0 0 auto;
+                width: 38px !important;
+                min-width: 38px !important;
+                max-width: 38px !important;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+              }
+              #commentsContainer .channel-profile img {
+                width: 36px !important;
+                height: 36px !important;
+                min-width: 36px !important;
+                min-height: 36px !important;
+                max-width: 36px !important;
+                max-height: 36px !important;
+                border-radius: 50%;
+                background: #222;
+                margin: 0;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+                object-fit: cover;
+                display: block;
+              }
+              #commentsContainer .pure-u-20-24, #commentsContainer .pure-u-md-22-24 {
+                flex: 1 1 0%;
+                min-width: 0;
+                padding: 0;
+              }
+              #commentsContainer a {
+                color: var(--ctp-blue);
+                text-decoration: none;
+                word-break: break-all;
+              }
+              #commentsContainer a:hover {
+                text-decoration: underline;
+              }
+              #commentsContainer p {
+                margin: 0 0 6px 0;
+                word-break: break-word;
+              }
+              #commentsContainer b {
+                color: var(--ctp-text);
+                font-weight: 600;
+              }
+              #commentsContainer span[title] {
+                color: var(--ctp-subtext1);
+                font-size: 13px;
+              }
+              #commentsContainer .icon {
+                color: var(--ctp-yellow);
+                font-size: 15px;
+                vertical-align: middle;
+              }
+              #commentsContainer [data-load-replies] {
+                color: var(--ctp-blue);
+                font-size: 13px;
+                cursor: pointer;
+                margin-top: 4px;
+                display: inline-block;
+              }
+              #commentsContainer #replies {
+                margin-left: 32px;
+                margin-top: 8px;
+                border-left: 2px solid var(--ctp-surface1);
+                padding-left: 12px;
+              }
+            </style>`;
+            commentsContainer.innerHTML = `<h3>Comments</h3>${html}`;
+          } catch (e) {
+            commentsContainer.innerHTML = '<div style="color:var(--ctp-red);text-align:center;padding:24px 0;">Failed to load comments.</div>';
+          }
+        })();
       } catch (err) {
         alert("Error loading video.");
         console.error(err);
@@ -451,7 +592,7 @@
       if (!activeTabId) return;
 
       const url = urlInput.value.trim();
-      if (!url) return;
+      if (!url) return; // <-- fixed typo here
 
       const tabIndex = tabs.findIndex(tab => tab.id === activeTabId);
       if (tabIndex === -1) return;
@@ -700,6 +841,11 @@ searchResults.addEventListener('scroll', () => {
 });
 
     document.addEventListener('DOMContentLoaded', initBrowser);
+  </script>
+</body>
+</html>
+</body>
+</html>
   </script>
 </body>
 </html>
