@@ -331,66 +331,33 @@
       };
 
       const trySources = async () => {
+        // Start all fetches in parallel but resolve them in order
         const fetchPromises = sources.map((src, index) => {
           sourceResults[index].status = 'loading';
           updateSourceListUI();
-
-          if (src === 'premium') {
-            // Fetch in background but don't block video playback
-            // CHANGED: Use new API endpoint
-            const apiUrl = `https://customsource.ejgavin11.workers.dev/${src}?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
-            fetch(apiUrl)
-              .then(res => res.json())
-              .then(data => {
-                if (data?.url) {
-                  apiCache[src] = data;
-                  sourceResults[index].status = 'success';
-                } else {
-                  sourceResults[index].status = 'failed';
-                }
-                updateSourceListUI();
-              })
-              .catch(() => {
-                sourceResults[index].status = 'failed';
-                updateSourceListUI();
-              });
-            sourceResults[index].status = 'loading';
-            updateSourceListUI();
-            return Promise.resolve(null);
-          }
-
-          // CHANGED: Use new API endpoint
           const apiUrl = `https://customsource.ejgavin11.workers.dev/${src}?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
-
           return fetch(apiUrl)
             .then(res => res.json())
-            .then(data => {
-              if (data?.url) {
-                apiCache[src] = data;
-                sourceResults[index].status = 'success';
-                updateSourceListUI();
-                return { index, src, data };
-              } else {
-                sourceResults[index].status = 'failed';
-                updateSourceListUI();
-                return null;
-              }
-            })
-            .catch(() => {
-              sourceResults[index].status = 'failed';
-              updateSourceListUI();
-              return null;
-            });
+            .then(data => ({ index, src, data }))
+            .catch(() => ({ index, src, data: null }));
         });
 
-        const results = await Promise.all(fetchPromises);
+        for (let i = 0; i < fetchPromises.length; i++) {
+          const result = await fetchPromises[i];
+          const { index, src, data } = result;
 
-        const valid = results.find(r => r !== null);
-        if (valid) {
-          currentVideoUrl = valid.data.url;
-          subtitleUrl = valid.data.subtitle;
-          sourceTitle = valid.src;
-          return valid.data;
+          if (data?.url) {
+            apiCache[src] = data;
+            sourceResults[index].status = 'success';
+            updateSourceListUI();
+            currentVideoUrl = data.url;
+            subtitleUrl = data.subtitle;
+            sourceTitle = src;
+            return data;
+          } else {
+            sourceResults[index].status = 'failed';
+            updateSourceListUI();
+          }
         }
 
         return null;
