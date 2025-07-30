@@ -353,10 +353,9 @@
             currentVideoUrl = data.url;
             subtitleUrl = data.subtitle;
             sourceTitle = src;
-            // After a successful source has been found, continue resolving the remaining fetches
+            // Update UI for all remaining sources as they resolve
             fetchPromises.forEach(promise => {
               promise.then(({ index, src, data }) => {
-                if (!sourceResults[index] || sourceResults[index].status !== 'pending') return;
                 if (data?.url) {
                   apiCache[src] = data;
                   sourceResults[index].status = 'success';
@@ -373,10 +372,9 @@
           }
         }
 
-        // After all fetches resolved with no success, still process the remaining for completeness
+        // Update UI for all remaining sources as they resolve
         fetchPromises.forEach(promise => {
           promise.then(({ index, src, data }) => {
-            if (!sourceResults[index] || sourceResults[index].status !== 'pending') return;
             if (data?.url) {
               apiCache[src] = data;
               sourceResults[index].status = 'success';
