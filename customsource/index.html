@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loading...</title>
-  <link href="https://unpkg.com/video.js@8/dist/video-js.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/artplayer@5.2.3/dist/artplayer.css" />
   <style>
     html, body {
       margin: 0;
@@ -70,8 +70,7 @@
   <div id="error-message" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;">No sources found, sorry :(</div>
 
   <div id="video-container">
-    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" autoplay>
-    </video>
+    <div id="video-player" style="width: 100%; height: 100%;"></div>
   </div>
 
   <button id="reload-button" style="display:none; position: absolute; top: 10px; right: 10px; z-index: 1001; background: rgba(0,0,0,0.4); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
@@ -97,7 +96,7 @@
   <button id="bug-toggle" style="position: absolute; top: 50px; right: 10px; z-index: 1001; background: linear-gradient(135deg, #1f1f1f, #3a3a3a); color: white; border: 1px solid #444; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">
     Bug Report
   </button>
-  <script src="https://unpkg.com/video.js@8/dist/video.min.js"></script>
+  <script src="https://unpkg.com/artplayer@5.2.3/dist/artplayer.js"></script>
   <script>
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
     const searchParams = new URLSearchParams(window.location.search);
@@ -153,6 +152,7 @@
       const sourceList = document.getElementById('source-list');
 
       let sourceResults = sources.map(name => ({ name, status: 'pending' }));
+      let player = null;
 
       sourceToggle.onclick = () => {
         sourceList.style.display = sourceList.style.display === 'none' ? 'block' : 'none';
@@ -212,43 +212,24 @@
           entry.appendChild(right);
 
           entry.onclick = async () => {
-            const player = videojs('video-player');
-            const currentTime = player.currentTime();
+            let currentTime = 0;
+            if (player && player.video) {
+              currentTime = player.video.currentTime;
+            }
             if (apiCache[src.name]) {
               const data = apiCache[src.name];
               currentVideoUrl = data.url;
               subtitleUrl = data.subtitle;
               sourceTitle = src.name;
-              // Use index from closure scope.
-              const isMP4 = currentVideoUrl.includes('.mp4');
-              const isSourceThree = index === 2;
-              if (isSourceThree) {
-                player.src({ src: currentVideoUrl, type: 'video/mp4' });
-              } else if (isMP4) {
-                player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-              } else {
-                player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL' }]);
-              }
-              player.ready(() => {
+              // Re-initialize Artplayer with new source
+              if (player) {
+                player.switchUrl(currentVideoUrl, '');
                 if (subtitleUrl) {
-                  fetch(subtitleUrl)
-                    .then(res => res.text())
-                    .then(srtData => {
-                      const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
-                      const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-                      const vttUrl = URL.createObjectURL(vttBlob);
-                      player.addRemoteTextTrack({
-                        kind: 'subtitles',
-                        src: vttUrl,
-                        srclang: 'en',
-                        label: 'English',
-                        default: true
-                      });
-                    });
+                  player.subtitle.switch(subtitleUrl);
                 }
                 player.play();
-                player.currentTime(currentTime);
-              });
+                player.seek(currentTime);
+              }
               updateSourceListUI();
               return;
             }
@@ -267,36 +248,14 @@
                 currentVideoUrl = data.url;
                 subtitleUrl = data.subtitle;
                 sourceTitle = src.name;
-                // Use index from closure scope.
-                const isMP4 = currentVideoUrl.includes('.mp4');
-                const isSourceThree = index === 2;
-                if (isSourceThree) {
-                  player.src({ src: currentVideoUrl, type: 'video/mp4' });
-                } else if (isMP4) {
-                  player.src({ src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-                } else {
-                  player.src([{ src: currentVideoUrl, type: 'application/x-mpegURL' }]);
-                }
-                player.ready(() => {
+                if (player) {
+                  player.switchUrl(currentVideoUrl, '');
                   if (subtitleUrl) {
-                    fetch(subtitleUrl)
-                      .then(res => res.text())
-                      .then(srtData => {
-                        const vttData = "WEBVTT\n\n" + srtData.replace(/\r+/g, '').replace(/^\d+\n/gm, '').replace(/,/g, '.');
-                        const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-                        const vttUrl = URL.createObjectURL(vttBlob);
-                        player.addRemoteTextTrack({
-                          kind: 'subtitles',
-                          src: vttUrl,
-                          srclang: 'en',
-                          label: 'English',
-                          default: true
-                        });
-                      });
+                    player.subtitle.switch(subtitleUrl);
                   }
                   player.play();
-                  player.currentTime(currentTime);
-                });
+                  player.seek(currentTime);
+                }
                 sourceResults = sourceResults.map(s =>
                   s.name === src.name ? { ...s, status: 'success' } : s
                 );
@@ -409,76 +368,40 @@
         }
         // If not found, fallback to .mp4 logic only
         const isMP4 = videoUrl.includes('.mp4');
-        const isSourceThree = foundIndex === 2;
+        const videoType = isMP4 ? 'mp4' : 'm3u8';
 
-        const player = videojs('video-player');
-
-        if (isSourceThree) {
-          player.src({ src: videoUrl, type: 'video/mp4' });
-        } else if (isMP4) {
-          player.src({ src: videoUrl, type: 'video/mp4', crossOrigin: 'anonymous' });
-        } else {
-          player.src([{ src: videoUrl, type: 'application/x-mpegURL' }]);
+        // Initialize Artplayer
+        if (player) {
+          player.destroy(true);
         }
+        player = new Artplayer({
+          container: '#video-player',
+          url: currentVideoUrl,
+          type: videoType,
+          autoplay: true,
+          subtitle: subtitleUrl ? {
+            url: subtitleUrl,
+            type: 'vtt',
+            style: {
+              color: '#fff',
+              fontSize: '16px',
+            },
+          } : undefined,
+        });
 
-        player.ready(() => {
+        player.on('ready', () => {
           document.getElementById('loader').style.display = 'none';
           document.getElementById('video-container').style.display = 'block';
           document.getElementById('search-label').style.display = 'none';
           reloadButton.style.display = 'block';
-
-          if (subtitleUrl) {
-            fetch(subtitleUrl)
-              .then(res => res.text())
-              .then(srtData => {
-                const vttData = "WEBVTT\n\n" + srtData
-                  .replace(/\r+/g, '')
-                  .replace(/^\d+\n/gm, '')
-                  .replace(/,/g, '.');
-
-                const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-                const vttUrl = URL.createObjectURL(vttBlob);
-
-                player.addRemoteTextTrack({
-                  kind: 'subtitles',
-                  src: vttUrl,
-                  srclang: 'en',
-                  label: 'English',
-                  default: true
-                });
-              });
-          }
         });
 
         reloadButton.onclick = () => {
-          player.src(currentVideoUrl.includes('.mp4')
-            ? { src: currentVideoUrl, type: 'video/mp4', crossOrigin: 'anonymous' }
-            : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
-          );
-          player.ready(() => {
-            if (subtitleUrl) {
-              fetch(subtitleUrl)
-                .then(res => res.text())
-                .then(srtData => {
-                  const vttData = "WEBVTT\n\n" + srtData
-                    .replace(/\r+/g, '')
-                    .replace(/^\d+\n/gm, '')
-                    .replace(/,/g, '.');
-
-                  const vttBlob = new Blob([vttData], { type: 'text/vtt' });
-                  const vttUrl = URL.createObjectURL(vttBlob);
-
-                  player.addRemoteTextTrack({
-                    kind: 'subtitles',
-                    src: vttUrl,
-                    srclang: 'en',
-                    label: 'English',
-                    default: true
-                  });
-                });
-            }
-            player.play();
-          });
+          player.switchUrl(currentVideoUrl, '');
+          if (subtitleUrl) {
+            player.subtitle.switch(subtitleUrl);
+          }
+          player.play();
         };
 
         // Show and handle the inline Bug Report form
@@ -494,8 +417,8 @@
         };
 
         submitBug.onclick = () => {
-          // CHANGED: Use artplayer to get current time
-          const currentTime = art ? art.currentTime : 0;
+          // Use Artplayer to get current time
+          const currentTime = player ? player.video.currentTime : 0;
           // Generate 12-hour formatted timestamp
           const now = new Date();
           const hours = now.getHours() % 12 || 12;
@@ -507,7 +430,6 @@
             type,
             season,
             episode,
-            // CHANGED: Use artplayer's currentTime
             currentTime: currentTime,
             currentVideoUrl,
             subtitleUrl,
