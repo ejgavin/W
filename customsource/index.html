@@ -257,7 +257,8 @@
               : s
             );
             updateSourceListUI();
-            const apiUrl = `https://customsource.vercel.app/api/${src.name}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+            // CHANGED: Use new API endpoint
+            const apiUrl = `https://customsource.ejgavin11.workers.dev/${src.name}?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
             try {
               const res = await fetch(apiUrl);
               const data = await res.json();
@@ -325,7 +326,8 @@
 
           if (src === 'premium') {
             // Fetch in background but don't block video playback
-            const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+            // CHANGED: Use new API endpoint
+            const apiUrl = `https://customsource.ejgavin11.workers.dev/${src}?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
             fetch(apiUrl)
               .then(res => res.json())
               .then(data => {
@@ -346,7 +348,8 @@
             return Promise.resolve(null);
           }
 
-          const apiUrl = `https://customsource.vercel.app/api/${src}/play?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
+          // CHANGED: Use new API endpoint
+          const apiUrl = `https://customsource.ejgavin11.workers.dev/${src}?id=${id}&type=${type}${type === 'tv' ? `&season=${season}&episode=${episode}` : ''}`;
 
           return fetch(apiUrl)
             .then(res => res.json())
