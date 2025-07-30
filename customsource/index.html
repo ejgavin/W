@@ -227,7 +227,9 @@
                   player.subtitle.switch(subtitleUrl);
                 }
                 player.play();
-                player.seek(currentTime);
+                player.once('video:canplay', () => {
+                  player.video.currentTime = currentTime;
+                });
               }
               updateSourceListUI();
               return;
@@ -253,7 +255,9 @@
                     player.subtitle.switch(subtitleUrl);
                   }
                   player.play();
-                  player.seek(currentTime);
+                  player.once('video:canplay', () => {
+                    player.video.currentTime = currentTime;
+                  });
                 }
                 sourceResults = sourceResults.map(s =>
                   s.name === src.name ? { ...s, status: 'success' } : s
