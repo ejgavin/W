@@ -213,6 +213,9 @@
 
           entry.onclick = async () => {
             const player = videojs('video-player');
+            // --- Restore playback time if available ---
+            const playbackKey = getPlaybackKey();
+            const savedTime = parseFloat(localStorage.getItem(playbackKey) || '0');
             const currentTime = player.currentTime();
             if (apiCache[src.name]) {
               const data = apiCache[src.name];
@@ -248,6 +251,10 @@
                 }
                 player.play();
                 player.currentTime(currentTime);
+                // --- Restore playback time if available ---
+                if (!isNaN(savedTime) && savedTime > 5) {
+                  player.currentTime(savedTime);
+                }
               });
               updateSourceListUI();
               return;
@@ -296,6 +303,10 @@
                   }
                   player.play();
                   player.currentTime(currentTime);
+                  // --- Restore playback time if available ---
+                  if (!isNaN(savedTime) && savedTime > 5) {
+                    player.currentTime(savedTime);
+                  }
                 });
                 sourceResults = sourceResults.map(s =>
                   s.name === src.name ? { ...s, status: 'success' } : s
@@ -427,6 +438,21 @@
           document.getElementById('search-label').style.display = 'none';
           reloadButton.style.display = 'block';
 
+          // --- Restore playback time if available ---
+          const playbackKey = getPlaybackKey();
+          const savedTime = parseFloat(localStorage.getItem(playbackKey) || '0');
+          if (!isNaN(savedTime) && savedTime > 5) {
+            player.currentTime(savedTime);
+          }
+
+          // --- Save playback time on timeupdate ---
+          player.on('timeupdate', function() {
+            try {
+              localStorage.setItem(playbackKey, player.currentTime());
+            } catch (e) {}
+          });
+
+          // ...existing code for subtitles...
           if (subtitleUrl) {
             fetch(subtitleUrl)
               .then(res => res.text())
@@ -456,6 +482,13 @@
             : [{ src: currentVideoUrl, type: 'application/x-mpegURL' }]
           );
           player.ready(() => {
+            // --- Restore playback time on reload ---
+            const playbackKey = getPlaybackKey();
+            const savedTime = parseFloat(localStorage.getItem(playbackKey) || '0');
+            if (!isNaN(savedTime) && savedTime > 5) {
+              player.currentTime(savedTime);
+            }
+            // ...existing code for subtitles...
             if (subtitleUrl) {
               fetch(subtitleUrl)
                 .then(res => res.text())
@@ -579,6 +612,15 @@
       setTimeout(() => { container.style.display = 'none'; }, 300);
     }
   });
+
+  // Generate a unique key for localStorage based on video identity
+  function getPlaybackKey() {
+    let key = `playback_${type}_${id}`;
+    if (type === 'tv') {
+      key += `_s${season}_e${episode}`;
+    }
+    return key;
+  }
 </script>
 </body>
 </html>
