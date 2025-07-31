@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TV Stream Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Rubik:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/artplayer@5.2.3/dist/artplayer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/artplayer-plugin-hls-control@latest/dist/artplayer-plugin-hls-control.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --accent: #2f81f7;
+      --text: #c9d1d9;
+      --text-light: #8b949e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Rubik', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: var(--card);
+      padding: 1.5rem 2rem;
+      font-size: 1.8rem;
+      color: var(--accent);
+      font-weight: 600;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+    }
+    .controls input, .controls select {
+      background: #21262d;
+      color: var(--text);
+      border: 1px solid #30363d;
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+    }
+    .card img {
+      max-height: 60px;
+      object-fit: contain;
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      font-size: 1.2rem;
+      margin: 0 0 0.5rem;
+      color: var(--accent);
+    }
+    .schedule {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+    }
+    .watch-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+    .watch-btn:hover {
+      background: #1f6feb;
+    }
+    #playerModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #000;
+      z-index: 9999;
+      flex-direction: column;
+    }
+    #playerHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      padding: 1rem;
+      color: var(--text);
+    }
+    #playerHeader button {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #player {
+      flex: 1;
+      width: 100vw;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Live TV Portal
+    <div class="controls">
+      <input type="text" id="searchBox" placeholder="Search channels...">
+      <select id="viewToggle">
+        <option value="grid">Grid View</option>
+        <option value="list">List View</option>
+      </select>
+    </div>
+  </header>
+  <div class="grid" id="channelGrid"></div>
+  <div id="playerModal">
+    <div id="playerHeader">
+      <span>Now Playing</span>
+      <button onclick="closePlayer()">Back</button>
+    </div>
+    <div id="player"></div>
+  </div>
+  <script>
+    let allChannels = [];
+
+    async function loadChannels() {
+      const res = await fetch('https://raw.githubusercontent.com/ejgavin/m3u8file/refs/heads/main/m3u8list.m3u8');
+      const text = await res.text();
+      const lines = text.split('\n');
+
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith('#EXTINF')) {
+          const title = lines[i].split(',').pop().trim();
+          const logoMatch = lines[i].match(/tvg-logo="(.*?)"/);
+          const logo = logoMatch ? logoMatch[1] : '';
+          const stream = lines[i + 1]?.trim();
+          if (stream) {
+            allChannels.push({ title, logo, stream });
+          }
+        }
+      }
+      renderChannels(allChannels);
+      fetchSchedule();
+    }
+
+    function renderChannels(channels) {
+      const container = document.getElementById('channelGrid');
+      container.innerHTML = '';
+      channels.forEach(channel => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${channel.logo}" alt="${channel.title}" />
+          <h3>${channel.title}</h3>
+          <div class="schedule" id="sched-${channel.title}">Loading schedule...</div>
+          <button class="watch-btn" onclick="openPlayer('${channel.stream}')">Watch</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function fetchSchedule() {
+      const res = await fetch('https://tvpass.org/tv_schedules/channels_tv_schedule.json');
+      const data = await res.json();
+
+      allChannels.forEach(channel => {
+        const match = data.find(d => d.title && d.title.toLowerCase().includes(channel.title.toLowerCase()));
+        if (match && match.next_programs) {
+          const el = document.getElementById('sched-' + channel.title);
+          el.innerHTML = match.next_programs.slice(0, 3).map(p =>
+            `<div><strong>${p['data-showname']}</strong>: ${p['data-episodetitle']}</div>`
+          ).join('');
+        }
+      });
+    }
+
+    function openPlayer(streamUrl) {
+      document.getElementById('playerModal').style.display = 'flex';
+      const art = new Artplayer({
+        container: '#player',
+        url: streamUrl,
+        isLive: true,
+        fullscreenWeb: true,
+        setting: true,
+        plugins: [
+          artplayerPluginHlsControl({
+            quality: {
+              control: true,
+              setting: true,
+              getName: level => level.height + 'P',
+              title: 'Quality',
+              auto: 'Auto',
+            },
+            audio: {
+              control: true,
+              setting: true,
+              getName: track => track.name,
+              title: 'Audio',
+              auto: 'Auto',
+            },
+          }),
+        ],
+        customType: {
+          m3u8: function(video, url, art) {
+            if (Hls.isSupported()) {
+              if (art.hls) art.hls.destroy();
+              const hls = new Hls();
+              hls.loadSource(url);
+              hls.attachMedia(video);
+              art.hls = hls;
+              art.on('destroy', () => hls.destroy());
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+              video.src = url;
+            } else {
+              art.notice.show = 'Unsupported playback format: m3u8';
+            }
+          }
+        },
+        type: 'm3u8',
+      });
+    }
+
+    function closePlayer() {
+      document.getElementById('playerModal').style.display = 'none';
+      document.getElementById('player').innerHTML = '';
+    }
+
+    document.getElementById('searchBox').addEventListener('input', e => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allChannels.filter(ch => ch.title.toLowerCase().includes(query));
+      renderChannels(filtered);
+    });
+
+    document.getElementById('viewToggle').addEventListener('change', e => {
+      const grid = document.getElementById('channelGrid');
+      grid.style.display = e.target.value === 'list' ? 'block' : 'grid';
+    });
+
+    loadChannels();
+  </script>
+</body>
+</html>
+
