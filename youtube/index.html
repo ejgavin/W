@@ -71,7 +71,22 @@
         const res = await fetch(url);
         const data = await res.json();
 
-        searchResults.innerHTML = "";
+        // Per-tab search results logic
+        const tab = tabs.find(t => t.id === activeTabId);
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+        let searchResults = contentElement.querySelector('.tab-search-results');
+        if (!searchResults) {
+          searchResults = document.createElement('div');
+          searchResults.className = 'tab-search-results';
+          searchResults.style.display = "grid";
+          searchResults.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
+          searchResults.style.gap = "16px";
+          searchResults.style.maxHeight = "85vh";
+          searchResults.style.overflowY = "auto";
+          contentElement.innerHTML = '';
+          contentElement.appendChild(searchResults);
+        }
+        searchResults.innerHTML = '';
 
         data.items.forEach(item => {
           const videoId = item.id;
@@ -99,10 +114,20 @@
               <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span>
             </div>
           `;
-          searchResults.appendChild(card);
+          if (searchResults) searchResults.appendChild(card);
         });
       } catch (err) {
         console.error(err);
+        // Per-tab error display
+        const tab = tabs.find(t => t.id === activeTabId);
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+        let searchResults = contentElement.querySelector('.tab-search-results');
+        if (!searchResults) {
+          searchResults = document.createElement('div');
+          searchResults.className = 'tab-search-results';
+          contentElement.innerHTML = '';
+          contentElement.appendChild(searchResults);
+        }
         searchResults.innerHTML = "Failed to load popular videos.";
       }
     }
@@ -674,11 +699,26 @@ async function loadMoreSearchResults(isNewSearch = false) {
   let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video,channel&maxResults=30&key=${apiKey}`;
   if (searchNextPageToken) url += `&pageToken=${searchNextPageToken}`;
 
+  // Per-tab search results logic
+  const tab = tabs.find(t => t.id === activeTabId);
+  const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+  let searchResults = contentElement.querySelector('.tab-search-results');
+  if (!searchResults) {
+    searchResults = document.createElement('div');
+    searchResults.className = 'tab-search-results';
+    searchResults.style.display = "grid";
+    searchResults.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
+    searchResults.style.gap = "16px";
+    searchResults.style.maxHeight = "85vh";
+    searchResults.style.overflowY = "auto";
+    contentElement.innerHTML = '';
+    contentElement.appendChild(searchResults);
+  }
+  if (isNewSearch) searchResults.innerHTML = '';
+
   try {
     const res = await fetch(url);
     const data = await res.json();
-
-    if (isNewSearch) searchResults.innerHTML = '';
 
     data.items.forEach(item => {
       const snippet = item.snippet;
@@ -703,7 +743,7 @@ async function loadMoreSearchResults(isNewSearch = false) {
             <span style="color: var(--ctp-subtext0); font-size: 12px;">Channel</span>
           </div>
         `;
-        searchResults.appendChild(card);
+        if (searchResults) searchResults.appendChild(card);
       } else if (item.id.kind === 'youtube#video') {
         const videoId = item.id.videoId;
         const thumb = snippet.thumbnails.medium.url;
@@ -730,7 +770,7 @@ async function loadMoreSearchResults(isNewSearch = false) {
             <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
           </div>
         `;
-        searchResults.appendChild(card);
+        if (searchResults) searchResults.appendChild(card);
       }
     });
     searchNextPageToken = data.nextPageToken || '';
@@ -784,6 +824,21 @@ let currentChannelId = '';
 let currentChannelTitle = '';
 
 async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew = true) {
+  // Per-tab search results logic
+  const tab = tabs.find(t => t.id === activeTabId);
+  const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+  let searchResults = contentElement.querySelector('.tab-search-results');
+  if (!searchResults) {
+    searchResults = document.createElement('div');
+    searchResults.className = 'tab-search-results';
+    searchResults.style.display = "grid";
+    searchResults.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
+    searchResults.style.gap = "16px";
+    searchResults.style.maxHeight = "85vh";
+    searchResults.style.overflowY = "auto";
+    contentElement.innerHTML = '';
+    contentElement.appendChild(searchResults);
+  }
   // Initial load or new channel: clear, set state and header
   if (isNew) {
     searchResults.innerHTML = `<h2 style="color: var(--ctp-text); margin-bottom: 12px;">${channelTitle}'s Videos</h2>`;
@@ -829,7 +884,7 @@ async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew
           <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
         </div>
       `;
-      searchResults.appendChild(card);
+      if (searchResults) searchResults.appendChild(card);
     });
     channelNextPageToken = data.nextPageToken || '';
   } catch (err) {
