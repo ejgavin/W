@@ -183,7 +183,7 @@
     }
 
     async function fetchSchedule() {
-      const res = await fetch('https://tvpass.org/tv_schedules/channels_tv_schedule.json');
+      const res = await fetch('https://ejgsapis.vercel.app/api/scrape?url=https://tvpass.org/tv_schedules/channels_tv_schedule.json');
       const data = await res.json();
 
       allChannels.forEach(channel => {
