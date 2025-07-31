@@ -201,7 +201,7 @@
           <img src="${channel.logo}" alt="${channel.title}" />
           <h3>${channel.title}</h3>
           <div class="schedule" id="sched-${channel.title}">Loading schedule...</div>
-          <button class="watch-btn" onclick="openPlayer('${channel.stream}', '${channel.title}')">Watch</button>
+          <button class="watch-btn" onclick=\`openPlayer("${channel.stream}", "${channel.title}")\`>Watch</button>
         `;
         container.appendChild(card);
       });
