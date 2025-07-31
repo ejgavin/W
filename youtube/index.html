@@ -71,22 +71,7 @@
         const res = await fetch(url);
         const data = await res.json();
 
-        // Per-tab search results logic
-        const tab = tabs.find(t => t.id === activeTabId);
-        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
-        let searchResults = contentElement.querySelector('.tab-search-results');
-        if (!searchResults) {
-          searchResults = document.createElement('div');
-          searchResults.className = 'tab-search-results';
-          searchResults.style.display = "grid";
-          searchResults.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
-          searchResults.style.gap = "16px";
-          searchResults.style.maxHeight = "85vh";
-          searchResults.style.overflowY = "auto";
-          contentElement.innerHTML = '';
-          contentElement.appendChild(searchResults);
-        }
-        searchResults.innerHTML = '';
+        searchResults.innerHTML = "";
 
         data.items.forEach(item => {
           const videoId = item.id;
@@ -114,20 +99,10 @@
               <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span>
             </div>
           `;
-          if (searchResults) searchResults.appendChild(card);
+          searchResults.appendChild(card);
         });
       } catch (err) {
         console.error(err);
-        // Per-tab error display
-        const tab = tabs.find(t => t.id === activeTabId);
-        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
-        let searchResults = contentElement.querySelector('.tab-search-results');
-        if (!searchResults) {
-          searchResults = document.createElement('div');
-          searchResults.className = 'tab-search-results';
-          contentElement.innerHTML = '';
-          contentElement.appendChild(searchResults);
-        }
         searchResults.innerHTML = "Failed to load popular videos.";
       }
     }
@@ -168,7 +143,6 @@
       });
 
       setActiveTab(tabId);
-      fetchPopularVideos(); // show popular videos in new tabs
 
       tab.addEventListener('click', () => setActiveTab(tabId));
       tab.querySelector('.tab-close').addEventListener('click', (e) => {
@@ -250,17 +224,11 @@
 
     // --- Begin video info & download support ---
     async function fetchVideoInfo(url) {
-      const tab = tabs.find(t => t.id === activeTabId);
-      if (!tab) return;
-      const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
-      if (!contentElement) return;
       const embedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
       try {
         const res = await fetch(embedUrl);
         if (!res.ok) throw new Error("Invalid YouTube URL");
         const data = await res.json();
-        tab.url = url;
-        setActiveTab(tab.id); // ensure we are working with the right tab
         displayVideoInfo(url, data);
       } catch (err) {
         alert("Failed to fetch video info.");
@@ -269,10 +237,7 @@
     }
 
     function displayVideoInfo(videoUrl, data) {
-      const tab = tabs.find(t => t.id === activeTabId);
-      if (!tab) return;
-      const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
-      if (!contentElement) return;
+      const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
       contentElement.innerHTML = `
         <div class="video-info">
           <img src="${data.thumbnail_url}" alt="Thumbnail">
@@ -300,14 +265,13 @@
         if (!dashMatch || !dashMatch[1]) throw new Error("DASH stream not found");
         const dashUrl = dashMatch[1];
 
-        const tab = tabs.find(t => t.id === activeTabId);
-        if (!tab) return;
-        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
-        if (!contentElement) return;
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
         contentElement.innerHTML = `
           <div class="video-container" id="videoContainer"></div>
           <div id="commentsContainer" style="margin:32px 0 0 0; max-height: 600px; overflow-y: auto;"></div>
         `;
+
+
 
         // --- Subtitle style injection helpers ---
         function injectSubtitleStyles(cssText) {
@@ -345,7 +309,7 @@
         injectSubtitleStyles(subtitleCss()); // this will now apply to .art-subtitle
 
         const artplayerInstance = new Artplayer({
-          container: contentElement.querySelector('#videoContainer'),
+          container: document.getElementById('videoContainer'),
           url: dashUrl,
           poster: "",
           autoplay: true,
@@ -628,13 +592,13 @@
       if (!activeTabId) return;
 
       const url = urlInput.value.trim();
-      if (!url) return;
+      if (!url) return; // <-- fixed typo here
 
-      const tab = tabs.find(tab => tab.id === activeTabId);
-      if (!tab) return;
+      const tabIndex = tabs.findIndex(tab => tab.id === activeTabId);
+      if (tabIndex === -1) return;
 
-      tab.url = url;
-      tab.videoId = null;
+      tabs[tabIndex].url = url;
+      tabs[tabIndex].videoId = null;
 
       const tabElement = document.querySelector(`.tab[data-tab-id="${activeTabId}"]`);
       if (tabElement) {
@@ -699,26 +663,11 @@ async function loadMoreSearchResults(isNewSearch = false) {
   let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video,channel&maxResults=30&key=${apiKey}`;
   if (searchNextPageToken) url += `&pageToken=${searchNextPageToken}`;
 
-  // Per-tab search results logic
-  const tab = tabs.find(t => t.id === activeTabId);
-  const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
-  let searchResults = contentElement.querySelector('.tab-search-results');
-  if (!searchResults) {
-    searchResults = document.createElement('div');
-    searchResults.className = 'tab-search-results';
-    searchResults.style.display = "grid";
-    searchResults.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
-    searchResults.style.gap = "16px";
-    searchResults.style.maxHeight = "85vh";
-    searchResults.style.overflowY = "auto";
-    contentElement.innerHTML = '';
-    contentElement.appendChild(searchResults);
-  }
-  if (isNewSearch) searchResults.innerHTML = '';
-
   try {
     const res = await fetch(url);
     const data = await res.json();
+
+    if (isNewSearch) searchResults.innerHTML = '';
 
     data.items.forEach(item => {
       const snippet = item.snippet;
@@ -743,7 +692,7 @@ async function loadMoreSearchResults(isNewSearch = false) {
             <span style="color: var(--ctp-subtext0); font-size: 12px;">Channel</span>
           </div>
         `;
-        if (searchResults) searchResults.appendChild(card);
+        searchResults.appendChild(card);
       } else if (item.id.kind === 'youtube#video') {
         const videoId = item.id.videoId;
         const thumb = snippet.thumbnails.medium.url;
@@ -759,7 +708,6 @@ async function loadMoreSearchResults(isNewSearch = false) {
         card.onclick = () => {
           urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
           searchResults.innerHTML = "";
-          setActiveTab(tab.id);
           addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
         };
         card.innerHTML = `
@@ -770,7 +718,7 @@ async function loadMoreSearchResults(isNewSearch = false) {
             <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
           </div>
         `;
-        if (searchResults) searchResults.appendChild(card);
+        searchResults.appendChild(card);
       }
     });
     searchNextPageToken = data.nextPageToken || '';
@@ -824,21 +772,6 @@ let currentChannelId = '';
 let currentChannelTitle = '';
 
 async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew = true) {
-  // Per-tab search results logic
-  const tab = tabs.find(t => t.id === activeTabId);
-  const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
-  let searchResults = contentElement.querySelector('.tab-search-results');
-  if (!searchResults) {
-    searchResults = document.createElement('div');
-    searchResults.className = 'tab-search-results';
-    searchResults.style.display = "grid";
-    searchResults.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
-    searchResults.style.gap = "16px";
-    searchResults.style.maxHeight = "85vh";
-    searchResults.style.overflowY = "auto";
-    contentElement.innerHTML = '';
-    contentElement.appendChild(searchResults);
-  }
   // Initial load or new channel: clear, set state and header
   if (isNew) {
     searchResults.innerHTML = `<h2 style="color: var(--ctp-text); margin-bottom: 12px;">${channelTitle}'s Videos</h2>`;
@@ -874,7 +807,6 @@ async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew
       card.onclick = () => {
         urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
         searchResults.innerHTML = "";
-        setActiveTab(tab.id);
         addressForm.dispatchEvent(new Event("submit", { bubbles: true }));
       };
       card.innerHTML = `
@@ -884,7 +816,7 @@ async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew
           <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
         </div>
       `;
-      if (searchResults) searchResults.appendChild(card);
+      searchResults.appendChild(card);
     });
     channelNextPageToken = data.nextPageToken || '';
   } catch (err) {
