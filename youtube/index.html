@@ -265,13 +265,15 @@
         if (!dashMatch || !dashMatch[1]) throw new Error("DASH stream not found");
         const dashUrl = dashMatch[1];
 
-        const contentElement = document.querySelector(`.tab-content[data-tab-id="${activeTabId}"]`);
+        // --- Refactored: Get correct tab and content element ---
+        const tab = tabs.find(t => t.id === activeTabId);
+        if (!tab) throw new Error("No active tab");
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+        if (!contentElement) throw new Error("Tab content not found");
         contentElement.innerHTML = `
           <div class="video-container" id="videoContainer"></div>
           <div id="commentsContainer" style="margin:32px 0 0 0; max-height: 600px; overflow-y: auto;"></div>
         `;
-
-
 
         // --- Subtitle style injection helpers ---
         function injectSubtitleStyles(cssText) {
@@ -308,8 +310,9 @@
         // Initialize default subtitle style on page
         injectSubtitleStyles(subtitleCss()); // this will now apply to .art-subtitle
 
+        // --- Refactored: Attach Artplayer to the correct container in the tab ---
         const artplayerInstance = new Artplayer({
-          container: document.getElementById('videoContainer'),
+          container: contentElement.querySelector('#videoContainer'),
           url: dashUrl,
           poster: "",
           autoplay: true,
@@ -398,7 +401,7 @@
 
         // --- Comments Section ---
         // Always select the comments container freshly from DOM
-        let commentsContainer = document.getElementById('commentsContainer');
+        let commentsContainer = contentElement.querySelector('#commentsContainer');
         commentsContainer.style.background = 'var(--ctp-base)';
         commentsContainer.style.borderRadius = '10px';
         commentsContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
