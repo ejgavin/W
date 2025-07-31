@@ -227,8 +227,14 @@
     }
 
     function openPlayer(streamUrl, channelTitle) {
+      const playerContainer = document.getElementById('player');
       document.getElementById('playerModal').style.display = 'flex';
-      const art = new Artplayer({
+      playerContainer.innerHTML = '';
+      if (window.currentArt && typeof window.currentArt.destroy === 'function') {
+        window.currentArt.destroy();
+        window.currentArt = null;
+      }
+      window.currentArt = new Artplayer({
         container: '#player',
         url: streamUrl,
         isLive: true,
