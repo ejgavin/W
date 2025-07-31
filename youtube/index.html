@@ -143,6 +143,7 @@
       });
 
       setActiveTab(tabId);
+      fetchPopularVideos(); // show popular videos in new tabs
 
       tab.addEventListener('click', () => setActiveTab(tabId));
       tab.querySelector('.tab-close').addEventListener('click', (e) => {
@@ -224,11 +225,17 @@
 
     // --- Begin video info & download support ---
     async function fetchVideoInfo(url) {
+      const tab = tabs.find(t => t.id === activeTabId);
+      if (!tab) return;
+      const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+      if (!contentElement) return;
       const embedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
       try {
         const res = await fetch(embedUrl);
         if (!res.ok) throw new Error("Invalid YouTube URL");
         const data = await res.json();
+        tab.url = url;
+        setActiveTab(tab.id); // ensure we are working with the right tab
         displayVideoInfo(url, data);
       } catch (err) {
         alert("Failed to fetch video info.");
@@ -238,7 +245,9 @@
 
     function displayVideoInfo(videoUrl, data) {
       const tab = tabs.find(t => t.id === activeTabId);
+      if (!tab) return;
       const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+      if (!contentElement) return;
       contentElement.innerHTML = `
         <div class="video-info">
           <img src="${data.thumbnail_url}" alt="Thumbnail">
@@ -267,7 +276,9 @@
         const dashUrl = dashMatch[1];
 
         const tab = tabs.find(t => t.id === activeTabId);
+        if (!tab) return;
         const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
+        if (!contentElement) return;
         contentElement.innerHTML = `
           <div class="video-container" id="videoContainer"></div>
           <div id="commentsContainer" style="margin:32px 0 0 0; max-height: 600px; overflow-y: auto;"></div>
@@ -708,6 +719,7 @@ async function loadMoreSearchResults(isNewSearch = false) {
         card.onclick = () => {
           urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
           searchResults.innerHTML = "";
+          setActiveTab(tab.id);
           addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
         };
         card.innerHTML = `
@@ -807,6 +819,7 @@ async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew
       card.onclick = () => {
         urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
         searchResults.innerHTML = "";
+        setActiveTab(tab.id);
         addressForm.dispatchEvent(new Event("submit", { bubbles: true }));
       };
       card.innerHTML = `
