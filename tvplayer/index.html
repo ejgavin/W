@@ -100,6 +100,7 @@
       background: #000;
       z-index: 9999;
       flex-direction: column;
+      position: relative;
     }
     #playerHeader {
       display: flex;
@@ -116,11 +117,30 @@
       padding: 0.4rem 0.8rem;
       border-radius: 4px;
       cursor: pointer;
+      margin-left: 0.5rem;
+    }
+    #playerHeader > div {
+      display: flex;
+      align-items: center;
     }
     #player {
       flex: 1;
       width: 100vw;
       height: 100%;
+    }
+    #scheduleSidebar {
+      display:none;
+      position:absolute;
+      top:0;
+      right:0;
+      width:300px;
+      height:100%;
+      background:#161b22;
+      color:#c9d1d9;
+      overflow:auto;
+      box-shadow:-4px 0 8px rgba(0,0,0,0.4);
+      padding:1rem;
+      z-index: 10000;
     }
   </style>
 </head>
@@ -139,12 +159,17 @@
   <div id="playerModal">
     <div id="playerHeader">
       <span>Now Playing</span>
-      <button onclick="closePlayer()">Back</button>
+      <div>
+        <button onclick="toggleSchedule()">Schedule</button>
+        <button onclick="closePlayer()">Back</button>
+      </div>
     </div>
     <div id="player"></div>
+    <div id="scheduleSidebar" style="display:none; position:absolute; top:0; right:0; width:300px; height:100%; background:#161b22; color:#c9d1d9; overflow:auto; box-shadow:-4px 0 8px rgba(0,0,0,0.4); padding:1rem;"></div>
   </div>
   <script>
     let allChannels = [];
+    let currentSchedule = null;
 
     async function loadChannels() {
       const res = await fetch('https://raw.githubusercontent.com/ejgavin/m3u8file/refs/heads/main/m3u8list.m3u8');
@@ -176,7 +201,7 @@
           <img src="${channel.logo}" alt="${channel.title}" />
           <h3>${channel.title}</h3>
           <div class="schedule" id="sched-${channel.title}">Loading schedule...</div>
-          <button class="watch-btn" onclick="openPlayer('${channel.stream}')">Watch</button>
+          <button class="watch-btn" onclick="openPlayer('${channel.stream}', '${channel.title}')">Watch</button>
         `;
         container.appendChild(card);
       });
@@ -190,14 +215,18 @@
         const match = data.find(d => d.title && d.title.toLowerCase().includes(channel.title.toLowerCase()));
         if (match && match.next_programs) {
           const el = document.getElementById('sched-' + channel.title);
-          el.innerHTML = match.next_programs.slice(0, 3).map(p =>
-            `<div><strong>${p['data-showname']}</strong>: ${p['data-episodetitle']}</div>`
-          ).join('');
+          const now = new Date();
+          const current = match.next_programs.find(p => new Date(p['data-listdatetime']) <= now && new Date(now) < new Date(new Date(p['data-listdatetime']).getTime() + p['data-duration'] * 60000));
+          if (current) {
+            const end = new Date(new Date(current['data-listdatetime']).getTime() + current['data-duration'] * 60000);
+            el.innerHTML = `<strong>${current['data-showname']}</strong><br><small>Until ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>`;
+          }
         }
       });
+      window.fullScheduleData = data; // Store for later use in player
     }
 
-    function openPlayer(streamUrl) {
+    function openPlayer(streamUrl, channelTitle) {
       document.getElementById('playerModal').style.display = 'flex';
       const art = new Artplayer({
         container: '#player',
@@ -241,11 +270,42 @@
         },
         type: 'm3u8',
       });
+
+      // Find the schedule for the current channel and render sidebar
+      if (window.fullScheduleData) {
+        const match = window.fullScheduleData.find(d => d.title && d.title.toLowerCase().includes(channelTitle.toLowerCase()));
+        if (match && match.next_programs) {
+          currentSchedule = match.next_programs;
+          renderScheduleSidebar(currentSchedule);
+        } else {
+          currentSchedule = null;
+          renderScheduleSidebar([]);
+        }
+      }
+      // Hide sidebar initially
+      document.getElementById('scheduleSidebar').style.display = 'none';
     }
 
     function closePlayer() {
       document.getElementById('playerModal').style.display = 'none';
       document.getElementById('player').innerHTML = '';
+      document.getElementById('scheduleSidebar').style.display = 'none';
+    }
+
+    function toggleSchedule() {
+      const sidebar = document.getElementById('scheduleSidebar');
+      sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function renderScheduleSidebar(schedule) {
+      const sidebar = document.getElementById('scheduleSidebar');
+      if (!schedule || schedule.length === 0) {
+        sidebar.innerHTML = '<h3>Upcoming</h3><div>No schedule available.</div>';
+        return;
+      }
+      sidebar.innerHTML = '<h3>Upcoming</h3>' + schedule.map(p =>
+        `<div style="margin-bottom:1rem;"><strong>${p['data-showname']}</strong><br><small>${new Date(p['data-listdatetime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(new Date(p['data-listdatetime']).getTime() + p['data-duration'] * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small><br>${p['data-episodetitle']}</div>`
+      ).join('');
     }
 
     document.getElementById('searchBox').addEventListener('input', e => {
@@ -263,4 +323,3 @@
   </script>
 </body>
 </html>
-
