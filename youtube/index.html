@@ -1,143 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classroom</title>
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-  />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="styles.css">
   <script src="https://unpkg.com/artplayer/dist/artplayer.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.5.2/dash.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/artplayer-plugin-dash-control@1.0.0/dist/artplayer-plugin-dash-control.min.js"></script>
-  <style>
-    body {
-      background-color: var(--ctp-crust, #222);
-      color: var(--ctp-text, #eee);
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .browser-chrome {
-      background: var(--ctp-base, #333);
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-    }
-    .tab-bar {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 8px;
-      overflow-x: auto;
-    }
-    .tab {
-      background: var(--ctp-surface0, #444);
-      padding: 6px 12px;
-      border-radius: 6px 6px 0 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      user-select: none;
-      flex-shrink: 0;
-    }
-    .tab.active {
-      background: var(--ctp-blue, #1890ff);
-      color: white;
-    }
-    .tab-title {
-      max-width: 140px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .tab-close {
-      background: transparent;
-      border: none;
-      color: inherit;
-      cursor: pointer;
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
-    }
-    .new-tab-btn {
-      background: var(--ctp-surface0, #444);
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      color: var(--ctp-text, #eee);
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-    .address-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .url-container {
-      flex-grow: 1;
-      display: flex;
-      gap: 4px;
-    }
-    .url-input {
-      flex-grow: 1;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--ctp-surface0, #555);
-      background-color: var(--ctp-crust, #222);
-      color: var(--ctp-text, #eee);
-      font-size: 16px;
-    }
-    .go-btn {
-      background-color: var(--ctp-blue, #1890ff);
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-    .fullscreen-btn {
-      background: var(--ctp-surface0, #444);
-      border: none;
-      border-radius: 6px;
-      padding: 8px 12px;
-      cursor: pointer;
-      color: var(--ctp-text, #eee);
-      font-size: 18px;
-    }
-    .browser-content {
-      background: var(--ctp-base, #333);
-      flex-grow: 1;
-      padding: 16px;
-      height: 75vh;
-      overflow-y: auto;
-    }
-    .fullscreen {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 9999 !important;
-      background: black !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-    #searchResults {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-  </style>
 </head>
 <body>
   <div class="browser-chrome">
@@ -148,21 +19,12 @@
     </div>
     <form class="address-bar" id="addressForm">
       <div class="url-container">
-        <input
-          type="text"
-          class="url-input"
-          id="urlInput"
-          placeholder="Enter YouTube URL..."
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-        />
-        <button type="submit" class="go-btn" title="Play video">
+        <input type="text" class="url-input" id="urlInput" placeholder="Enter YouTube URL...">
+        <button type="submit" class="go-btn">
           <i class="bi bi-box-arrow-up-right"></i>
         </button>
       </div>
-      <button type="button" class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">
+      <button type="button" class="fullscreen-btn" id="fullscreenBtn">
         <i class="bi bi-fullscreen"></i>
       </button>
     </form>
@@ -170,110 +32,98 @@
 
   <div class="browser-content" id="browserContent">
     <div id="searchContainer" style="padding: 16px;">
-      <form
-        id="searchForm"
-        style="display: flex; gap: 8px; margin-bottom: 16px;"
-        autocomplete="off"
-      >
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search YouTube..."
-          style="
-            flex: 1;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid var(--ctp-surface0);
-            background-color: var(--ctp-crust);
-            color: var(--ctp-text);
-          "
-          autocomplete="off"
-        />
-        <button
-          type="submit"
-          style="
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: none;
-            background-color: var(--ctp-blue);
-            color: #fff;
-            cursor: pointer;
-          "
-        >
-          Search
-        </button>
+      <form id="searchForm" style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="text" id="searchInput" placeholder="Search YouTube..." style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--ctp-surface0); background-color: var(--ctp-crust); color: var(--ctp-text);">
+        <button type="submit" style="padding: 8px 12px; border-radius: 6px; border: none; background-color: var(--ctp-blue); color: #fff; cursor: pointer;">Search</button>
       </form>
       <div style="max-height: 85vh; overflow-y: auto;">
-        <div
-          id="searchResults"
-          style="
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-          "
-        ></div>
-      </div>
+        <div id="searchResults" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
     </div>
   </div>
 
   <script>
+
     let tabs = [];
     let activeTabId = null;
     let isFullscreen = false;
 
-    const tabBar = document.getElementById("tabBar");
-    const newTabBtn = document.getElementById("newTabBtn");
-    const addressForm = document.getElementById("addressForm");
-    const urlInput = document.getElementById("urlInput");
-    const browserContent = document.getElementById("browserContent");
-    const fullscreenBtn = document.getElementById("fullscreenBtn");
+    const tabBar = document.getElementById('tabBar');
+    const newTabBtn = document.getElementById('newTabBtn');
+    const addressForm = document.getElementById('addressForm');
+    const urlInput = document.getElementById('urlInput');
+    const browserContent = document.getElementById('browserContent');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenIcon = document.getElementById('fullscreenIcon');
 
-    // SEARCH ELEMENTS
-    const searchForm = document.getElementById("searchForm");
-    const searchInput = document.getElementById("searchInput");
-    const searchResults = document.getElementById("searchResults");
-
-    // State for search and channel videos
-    let currentQuery = "";
-    let searchNextPageToken = "";
-    let loadingSearch = false;
-
-    let channelNextPageToken = "";
-    let loadingChannel = false;
-    let currentChannelId = "";
-    let currentChannelTitle = "";
-
-    // To track video info players per tab
-    let artplayers = {};
-
-    // Initialize browser UI
     function initBrowser() {
       createNewTab();
       fetchPopularVideos();
 
-      newTabBtn.addEventListener("click", createNewTab);
-      addressForm.addEventListener("submit", handleUrlSubmit);
-      fullscreenBtn.addEventListener("click", toggleFullscreen);
+      newTabBtn.addEventListener('click', createNewTab);
+      addressForm.addEventListener('submit', handleUrlSubmit);
+      fullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+    // --- Fetch and display popular YouTube videos on load ---
+    async function fetchPopularVideos() {
+      const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
+      const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=US&maxResults=12&key=${apiKey}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        searchResults.innerHTML = "";
+
+        data.items.forEach(item => {
+          const videoId = item.id;
+          const snippet = item.snippet;
+          const thumb = snippet.thumbnails.medium.url;
+          const title = snippet.title;
+          const channel = snippet.channelTitle;
+
+          const card = document.createElement('div');
+          card.style.background = "var(--ctp-surface0)";
+          card.style.borderRadius = "8px";
+          card.style.overflow = "hidden";
+          card.style.cursor = "pointer";
+          card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+          card.onclick = () => {
+            urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+            searchResults.innerHTML = "";
+            addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+          };
+
+          card.innerHTML = `
+            <img src="${thumb}" alt="Thumbnail" style="width: 100%; display: block;">
+            <div style="padding: 8px;">
+              <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
+              <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span>
+            </div>
+          `;
+          searchResults.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+        searchResults.innerHTML = "Failed to load popular videos.";
+      }
     }
 
-    // Create new tab
     function createNewTab() {
       const tabId = `tab-${Date.now()}`;
 
-      const tab = document.createElement("div");
-      tab.className = "tab";
+      const tab = document.createElement('div');
+      tab.className = 'tab';
       tab.dataset.tabId = tabId;
       tab.innerHTML = `
         <div class="tab-title">New Tab</div>
-        <button class="tab-close" title="Close Tab">
+        <button class="tab-close">
           <i class="bi bi-x-lg"></i>
         </button>
       `;
 
       tabBar.insertBefore(tab, newTabBtn);
 
-      const tabContent = document.createElement("div");
-      tabContent.className = "tab-content";
+      const tabContent = document.createElement('div');
+      tabContent.className = 'tab-content';
       tabContent.dataset.tabId = tabId;
       tabContent.innerHTML = `
         <div class="empty-tab">
@@ -288,244 +138,178 @@
 
       tabs.push({
         id: tabId,
-        url: "",
-        videoId: null,
+        url: '',
+        videoId: null
       });
 
       setActiveTab(tabId);
 
-      tab.addEventListener("click", () => setActiveTab(tabId));
-      tab.querySelector(".tab-close").addEventListener("click", (e) => {
+      tab.addEventListener('click', () => setActiveTab(tabId));
+      tab.querySelector('.tab-close').addEventListener('click', (e) => {
         e.stopPropagation();
         closeTab(tabId);
       });
     }
 
-    // Set active tab
     function setActiveTab(tabId) {
-      document.querySelectorAll(".tab").forEach((tab) => {
-        tab.classList.remove("active");
+
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
       });
-      document.querySelectorAll(".tab-content").forEach((content) => {
-        content.classList.remove("active");
+
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
       });
 
       const selectedTab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
       if (selectedTab) {
-        selectedTab.classList.add("active");
+        selectedTab.classList.add('active');
       }
 
-      const selectedContent = document.querySelector(
-        `.tab-content[data-tab-id="${tabId}"]`
-      );
+      const selectedContent = document.querySelector(`.tab-content[data-tab-id="${tabId}"]`);
       if (selectedContent) {
-        selectedContent.classList.add("active");
+        selectedContent.classList.add('active');
       }
 
       activeTabId = tabId;
 
-      const tab = tabs.find((t) => t.id === tabId);
+      const tab = tabs.find(t => t.id === tabId);
       if (tab) {
         urlInput.value = tab.url;
       }
     }
 
-    // Close tab
     function closeTab(tabId) {
+
       if (tabs.length === 1) {
+
         const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
-        if (tabElement) tabElement.remove();
+        if (tabElement) {
+          tabElement.remove();
+        }
 
-        const contentElement = document.querySelector(
-          `.tab-content[data-tab-id="${tabId}"]`
-        );
-        if (contentElement) contentElement.remove();
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tabId}"]`);
+        if (contentElement) {
+          contentElement.remove();
+        }
 
-        tabs = tabs.filter((tab) => tab.id !== tabId);
+        tabs = tabs.filter(tab => tab.id !== tabId);
 
         createNewTab();
         return;
       }
 
-      const tabIndex = tabs.findIndex((tab) => tab.id === tabId);
+      const tabIndex = tabs.findIndex(tab => tab.id === tabId);
 
       const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
-      if (tabElement) tabElement.remove();
+      if (tabElement) {
+        tabElement.remove();
+      }
 
-      const contentElement = document.querySelector(
-        `.tab-content[data-tab-id="${tabId}"]`
-      );
-      if (contentElement) contentElement.remove();
+      const contentElement = document.querySelector(`.tab-content[data-tab-id="${tabId}"]`);
+      if (contentElement) {
+        contentElement.remove();
+      }
 
-      tabs = tabs.filter((tab) => tab.id !== tabId);
+      tabs = tabs.filter(tab => tab.id !== tabId);
 
       if (activeTabId === tabId) {
+
         const newActiveTabId = tabs[tabIndex - 1]?.id || tabs[0]?.id;
-        if (newActiveTabId) setActiveTab(newActiveTabId);
+        if (newActiveTabId) {
+          setActiveTab(newActiveTabId);
+        }
       }
     }
 
-    // --- Fetch and display popular YouTube videos on load ---
-    async function fetchPopularVideos() {
-      const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
-      const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=US&maxResults=12&key=${apiKey}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        searchResults.innerHTML = "";
-
-        data.items.forEach((item) => {
-          const videoId = item.id;
-          const snippet = item.snippet;
-          const thumb = snippet.thumbnails.medium.url;
-          const title = snippet.title;
-          const channel = snippet.channelTitle;
-
-          const card = document.createElement("div");
-          card.style.background = "var(--ctp-surface0)";
-          card.style.borderRadius = "8px";
-          card.style.overflow = "hidden";
-          card.style.cursor = "pointer";
-          card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-          card.onclick = () => {
-            urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
-            searchResults.innerHTML = "";
-            addressForm.dispatchEvent(
-              new Event("submit", { bubbles: true, cancelable: true })
-            );
-          };
-
-          card.innerHTML = `
-            <img src="${thumb}" alt="Thumbnail" style="width: 100%; display: block;" />
-            <div style="padding: 8px;">
-              <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br />
-              <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span>
-            </div>
-          `;
-          searchResults.appendChild(card);
-        });
-      } catch (err) {
-        console.error(err);
-        searchResults.innerHTML = "Failed to load popular videos.";
-      }
-    }
-
-    // --- Video info and playback support ---
-    async function fetchVideoInfo(url, tabId = activeTabId) {
-      const embedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(
-        url
-      )}&format=json`;
+    // --- Begin video info & download support ---
+    async function fetchVideoInfo(url) {
+      const embedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
       try {
         const res = await fetch(embedUrl);
         if (!res.ok) throw new Error("Invalid YouTube URL");
         const data = await res.json();
-        displayVideoInfo(url, data, tabId);
+        displayVideoInfo(url, data);
       } catch (err) {
-        const contentElement = document.querySelector(
-          `.tab-content[data-tab-id="${tabId}"]`
-        );
-        if (contentElement) {
-          contentElement.innerHTML = `
-          <div style="color: var(--ctp-red); padding: 24px; text-align:center;">
-            Error loading video.
-          </div>
-        `;
-        }
         alert("Failed to fetch video info.");
         console.error(err);
       }
     }
 
-    function displayVideoInfo(videoUrl, data, tabId) {
-      const contentElement = document.querySelector(
-        `.tab-content[data-tab-id="${tabId}"]`
-      );
-      if (!contentElement) return;
-
+    function displayVideoInfo(videoUrl, data) {
+      const tab = tabs.find(t => t.id === activeTabId);
+      const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
       contentElement.innerHTML = `
         <div class="video-info">
-          <img src="${data.thumbnail_url}" alt="Thumbnail" />
+          <img src="${data.thumbnail_url}" alt="Thumbnail">
           <h2>${data.title}</h2>
           <p style="margin-top:12px;">Loading video...</p>
         </div>
       `;
-      downloadVideo(videoUrl, tabId);
+      downloadVideo(videoUrl);
     }
 
-    async function downloadVideo(videoUrl, tabId) {
+    async function downloadVideo(videoUrl) {
       try {
-        const match =
-          videoUrl.match(/[?&]v=([^#&]+)/) || videoUrl.match(/youtu\.be\/([^#&]+)/);
+        const match = videoUrl.match(/[?&]v=([^#&]+)/) || videoUrl.match(/youtu\.be\/([^#&]+)/);
         const videoId = match ? match[1] : null;
         if (!videoId) throw new Error("Invalid YouTube video ID");
 
-        // Fetch captions and scrape in parallel
+        // Fetch captions and scrape in parallel for speed
         const captionsPromise = fetchAndAddCaptions(videoId);
-        const scrapePromise = fetch(
-          `https://ejgsapis.vercel.app/api/scrape?url=https://inv.nadeko.net/embed/${videoId}`
-        ).then((res) => res.text());
+        const scrapePromise = fetch(`https://ejgsapis.vercel.app/api/scrape?url=https://inv.nadeko.net/embed/${videoId}`).then(res => res.text());
 
-        const [subtitleUrl, html] = await Promise.all([
-          captionsPromise,
-          scrapePromise,
-        ]);
+        // Wait for both to finish
+        const [subtitleUrl, html] = await Promise.all([captionsPromise, scrapePromise]);
 
-        const dashMatch = html.match(
-          /<source[^>]+src="([^"]+)"[^>]+type='application\/dash\+xml'/
-        );
+        const dashMatch = html.match(/<source[^>]+src="([^"]+)"[^>]+type='application\/dash\+xml'/);
         if (!dashMatch || !dashMatch[1]) throw new Error("DASH stream not found");
         const dashUrl = dashMatch[1];
 
-        const contentElement = document.querySelector(
-          `.tab-content[data-tab-id="${tabId}"]`
-        );
-        if (!contentElement) return;
-
+        const tab = tabs.find(t => t.id === activeTabId);
+        const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
         contentElement.innerHTML = `
-          <div class="video-container" id="videoContainer-${tabId}"></div>
-          <div id="commentsContainer-${tabId}" style="margin:32px 0 0 0; max-height: 600px; overflow-y: auto;"></div>
+          <div class="video-container" id="videoContainer"></div>
+          <div id="commentsContainer" style="margin:32px 0 0 0; max-height: 600px; overflow-y: auto;"></div>
         `;
 
-        // Remove existing player if any
-        if (artplayers[tabId]) {
-          artplayers[tabId].destroy();
-          delete artplayers[tabId];
-        }
-
-        // Subtitle style injection helper
+        // --- Subtitle style injection helpers ---
         function injectSubtitleStyles(cssText) {
-          let styleEl = document.getElementById("artplayer-subtitle-style");
+          let styleEl = document.getElementById('artplayer-subtitle-style');
           if (!styleEl) {
-            styleEl = document.createElement("style");
-            styleEl.id = "artplayer-subtitle-style";
+            styleEl = document.createElement('style');
+            styleEl.id = 'artplayer-subtitle-style';
             document.head.appendChild(styleEl);
           }
           styleEl.textContent = cssText;
         }
 
+        // Default subtitle style values
         const defaultSubtitleStyle = {
-          color: "white",
-          fontSize: "18px",
-          fontFamily: "Arial, sans-serif",
-          textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
+          color: 'white',
+          fontSize: '18px',
+          fontFamily: 'Arial, sans-serif',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
         };
 
+        // Helper to produce CSS for .art-subtitle
         function subtitleCss(overrides = {}) {
           const style = Object.assign({}, defaultSubtitleStyle, subtitleCss.current || {}, overrides);
           subtitleCss.current = style;
           return `.art-subtitle {
-            color: ${style.color};
-            font-size: ${style.fontSize};
-            font-family: ${style.fontFamily};
-            text-shadow: ${style.textShadow};
-          }
-          `;
+  color: ${style.color};
+  font-size: ${style.fontSize};
+  font-family: ${style.fontFamily};
+  text-shadow: ${style.textShadow};
+}
+`;
         }
-        injectSubtitleStyles(subtitleCss());
 
-        artplayers[tabId] = new Artplayer({
-          container: document.getElementById(`videoContainer-${tabId}`),
+        // Initialize default subtitle style on page
+        injectSubtitleStyles(subtitleCss()); // this will now apply to .art-subtitle
+
+        const artplayerInstance = new Artplayer({
+          container: contentElement.querySelector('#videoContainer'),
           url: dashUrl,
           poster: "",
           autoplay: true,
@@ -548,8 +332,8 @@
           autoPlayback: true,
           autoOrientation: true,
           airplay: true,
-          lang: "en",
-          theme: "#ff4d4f",
+          lang: 'en',
+          theme: '#ff4d4f',
           volume: 0.7,
           isLive: false,
           autoSize: true,
@@ -558,32 +342,32 @@
               quality: {
                 control: true,
                 setting: true,
-                getName: (level) => level.height + "P",
-                title: "Quality",
-                auto: "Auto",
+                getName: (level) => level.height + 'P',
+                title: 'Quality',
+                auto: 'Auto',
               },
               audio: {
                 control: true,
                 setting: true,
                 getName: (track) => track.lang.toUpperCase(),
-                title: "Audio",
-                auto: "Auto",
-              },
-            }),
+                title: 'Audio',
+                auto: 'Auto',
+              }
+            })
           ],
           subtitle: {
             url: subtitleUrl,
-            type: "vtt",
-            name: "English",
-            encoding: "utf-8",
+            type: 'vtt',
+            name: 'English',
+            encoding: 'utf-8',
             escape: true,
             setting: true,
             style: {
-              fontSize: "28px",
-              bottom: "10%",
-              color: "white",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
-            },
+              fontSize: '28px',
+              bottom: '10%',
+              color: 'white',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+            }
           },
           customType: {
             mpegdash: function (video, url) {
@@ -591,18 +375,18 @@
               player.initialize(video, url, true);
               video.art = this;
               this.dash = player;
-              player.setInitialMediaSettingsFor("audio", {
-                lang: "en",
-                role: "main",
+              player.setInitialMediaSettingsFor('audio', {
+                lang: 'en',
+                role: 'main'
               });
-            },
+            }
           },
-          type: "mpegdash",
+          type: 'mpegdash',
           settings: [
             {
-              html: "Subtitles",
+              html: 'Subtitles',
               icon: '<i class="bi bi-cc-square"></i>',
-              tooltip: "Toggle subtitles",
+              tooltip: 'Toggle subtitles',
               switch: true,
               onSwitch: function (item) {
                 this.subtitle.show = !item.switch;
@@ -612,42 +396,51 @@
           ],
         });
 
-        // Comments Section
-        const commentsContainer = document.getElementById(`commentsContainer-${tabId}`);
-        if (commentsContainer) {
-          commentsContainer.style.background = "var(--ctp-base)";
-          commentsContainer.style.borderRadius = "10px";
-          commentsContainer.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)";
-          commentsContainer.style.padding = "0 0 8px 0";
-          commentsContainer.style.color = "var(--ctp-text)";
-          commentsContainer.style.fontSize = "15px";
-          commentsContainer.style.lineHeight = "1.7";
-          commentsContainer.style.maxHeight = "600px";
-          commentsContainer.style.overflowY = "auto";
-          commentsContainer.innerHTML = '<div style="color:var(--ctp-subtext1);text-align:center;padding:24px 0;">Loading comments...</div>';
+        // --- Comments Section ---
+        // Always select the comments container freshly from DOM
+        let commentsContainer = document.getElementById('commentsContainer');
+        commentsContainer.style.background = 'var(--ctp-base)';
+        commentsContainer.style.borderRadius = '10px';
+        commentsContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+        commentsContainer.style.padding = '0 0 8px 0';
+        commentsContainer.style.color = 'var(--ctp-text)';
+        commentsContainer.style.fontSize = '15px';
+        commentsContainer.style.lineHeight = '1.7';
+        commentsContainer.style.maxHeight = '600px';
+        commentsContainer.style.overflowY = 'auto';
+        commentsContainer.innerHTML = '<div style="color:var(--ctp-subtext1);text-align:center;padding:24px 0;">Loading comments...</div>';
 
-          (async () => {
-            try {
-              const commentsApi = `https://inv.nadeko.net/api/v1/comments/${videoId}?format=html&hl=en-US&thin_mode=false`;
-              const res = await fetch(commentsApi);
-              const data = await res.json();
-              let html = data.contentHtml || "";
+        // Fetch and render comments
+        (async () => {
+          try {
+            const commentsApi = `https://inv.nadeko.net/api/v1/comments/${videoId}?format=html&hl=en-US&thin_mode=false`;
+            const res = await fetch(commentsApi);
+            const data = await res.json();
+            let html = data.contentHtml || '';
 
-              html = html.replace(/<a[^>]*data-load-replies[^>]*>[\s\S]*?<\/a>/g, "");
-              html = html.replace(/src="\/ggpht\//g, 'src="https://inv.nadeko.net/ggpht/');
-              html = html.replace(/href="(\/(channel|watch)[^"]*)"/g, 'href="https://www.youtube.com$1" target="_blank" rel="noopener noreferrer"');
-              html = html.replace(/href="https:\/\/www\.youtube\.com\/watch\?v=[^"]+"/g, (m) => m + ' target="_blank" rel="noopener noreferrer"');
-              html = html.replace(/data-onclick="[^"]*"/g, "");
-              html = html.replace(/href="javascript:[^"]*"/g, 'href="#"');
-              html += `<style>
-              #commentsContainer-${tabId} {
+            // Remove "View X replies" blocks
+            html = html.replace(/<a[^>]*data-load-replies[^>]*>[\s\S]*?<\/a>/g, '');
+
+            // Patch relative image URLs to absolute
+            html = html.replace(/src="\/ggpht\//g, 'src="https://inv.nadeko.net/ggpht/');
+            // Patch channel/video links to open in new tab
+            html = html.replace(/href="(\/(channel|watch)[^"]*)"/g, 'href="https://www.youtube.com$1" target="_blank" rel="noopener noreferrer"');
+            // Patch [YT] links to open in new tab
+            html = html.replace(/href="https:\/\/www\.youtube\.com\/watch\?v=[^"]+"/g, match => match + ' target="_blank" rel="noopener noreferrer"');
+            // Remove inline JS handlers for safety
+            html = html.replace(/data-onclick="[^"]*"/g, '');
+            // Remove javascript: links
+            html = html.replace(/href="javascript:[^"]*"/g, 'href="#"');
+            // Style tweaks for better appearance
+            html += `<style>
+              #commentsContainer {
                 margin-top: 32px;
                 background: var(--ctp-base);
                 border-radius: 10px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.06);
                 padding: 0 0 8px 0;
               }
-              #commentsContainer-${tabId} h3 {
+              #commentsContainer h3 {
                 margin: 0 0 18px 0;
                 font-size: 20px;
                 color: var(--ctp-text);
@@ -655,7 +448,7 @@
                 padding: 18px 24px 0 24px;
                 letter-spacing: 0.01em;
               }
-              #commentsContainer-${tabId} .pure-g {
+              #commentsContainer .pure-g {
                 display: flex;
                 align-items: flex-start;
                 gap: 14px;
@@ -664,15 +457,16 @@
                 padding: 16px 24px 12px 24px;
                 background: none;
               }
-              #commentsContainer-${tabId} .pure-g:last-child {
+              #commentsContainer .pure-g:last-child {
                 border-bottom: none;
               }
-              #commentsContainer-${tabId} #replies {
+              #commentsContainer #replies {
+                /* Remove the vertical line for replies */
                 border-left: none !important;
                 margin-left: 0 !important;
                 padding-left: 0 !important;
               }
-              #commentsContainer-${tabId} .channel-profile {
+              #commentsContainer .channel-profile {
                 flex: 0 0 auto;
                 width: 38px !important;
                 min-width: 38px !important;
@@ -683,7 +477,7 @@
                 align-items: flex-start;
                 justify-content: center;
               }
-              #commentsContainer-${tabId} .channel-profile img {
+              #commentsContainer .channel-profile img {
                 width: 36px !important;
                 height: 36px !important;
                 min-width: 36px !important;
@@ -697,85 +491,74 @@
                 object-fit: cover;
                 display: block;
               }
-              #commentsContainer-${tabId} .pure-u-20-24, #commentsContainer-${tabId} .pure-u-md-22-24 {
+              #commentsContainer .pure-u-20-24, #commentsContainer .pure-u-md-22-24 {
                 flex: 1 1 0%;
                 min-width: 0;
                 padding: 0;
               }
-              #commentsContainer-${tabId} a {
+              #commentsContainer a {
                 color: var(--ctp-blue);
                 text-decoration: none;
                 word-break: break-all;
               }
-              #commentsContainer-${tabId} a:hover {
+              #commentsContainer a:hover {
                 text-decoration: underline;
               }
-              #commentsContainer-${tabId} p {
+              #commentsContainer p {
                 margin: 0 0 6px 0;
                 word-break: break-word;
               }
-              #commentsContainer-${tabId} b {
+              #commentsContainer b {
                 color: var(--ctp-text);
                 font-weight: 600;
               }
-              #commentsContainer-${tabId} span[title] {
+              #commentsContainer span[title] {
                 color: var(--ctp-subtext1);
                 font-size: 13px;
               }
-              #commentsContainer-${tabId} .icon {
+              #commentsContainer .icon {
                 color: var(--ctp-yellow);
                 font-size: 15px;
                 vertical-align: middle;
               }
-              #commentsContainer-${tabId} [data-load-replies] {
+              #commentsContainer [data-load-replies] {
                 color: var(--ctp-blue);
                 font-size: 13px;
                 cursor: pointer;
                 margin-top: 4px;
                 display: inline-block;
               }
-              #commentsContainer-${tabId} #replies {
+              #commentsContainer #replies {
                 margin-left: 32px;
                 margin-top: 8px;
                 border-left: 2px solid var(--ctp-surface1);
                 padding-left: 12px;
               }
             </style>`;
-              commentsContainer.innerHTML = `<h3>Comments</h3>${html}`;
-            } catch (e) {
-              commentsContainer.innerHTML = `<div style="color:var(--ctp-red);text-align:center;padding:24px 0;">Failed to load comments.</div>`;
-            }
-          })();
-        }
+            commentsContainer.innerHTML = `<h3>Comments</h3>${html}`;
+          } catch (e) {
+            commentsContainer.innerHTML = '<div style="color:var(--ctp-red);text-align:center;padding:24px 0;">Failed to load comments.</div>';
+          }
+        })();
       } catch (err) {
-        const contentElement = document.querySelector(
-          `.tab-content[data-tab-id="${tabId}"]`
-        );
-        if (contentElement) {
-          contentElement.innerHTML = `
-          <div style="color: var(--ctp-red); padding: 24px; text-align:center;">
-            Error loading video.
-          </div>
-        `;
-        }
+        alert("Error loading video.");
         console.error(err);
       }
     }
 
-    // Fetch captions and convert to VTT Blob URL
+
+    // Add fetchAndAddCaptions function
     async function fetchAndAddCaptions(videoId) {
       try {
-        const proxyUrl = `https://ejgsapis.vercel.app/api/scrape?url=${encodeURIComponent(
-          `https://youtube-caption-extractor.vercel.app/api/subtitles?videoID=${videoId}&lang=en`
-        )}`;
+        const proxyUrl = `https://ejgsapis.vercel.app/api/scrape?url=${encodeURIComponent(`https://youtube-caption-extractor.vercel.app/api/subtitles?videoID=${videoId}&lang=en`)}`;
         const res = await fetch(proxyUrl);
         if (!res.ok) throw new Error("Failed to fetch captions via proxy");
         const data = await res.json();
 
-        if (!data.subtitles || data.subtitles.length === 0) return "";
+        if (!data.subtitles || data.subtitles.length === 0) return '';
 
         let vtt = "WEBVTT\n\n";
-        data.subtitles.forEach((sub) => {
+        data.subtitles.forEach(sub => {
           const start = parseFloat(sub.start);
           const dur = parseFloat(sub.dur);
           const end = start + dur;
@@ -787,21 +570,22 @@
           const h = Math.floor(seconds / 3600);
           const m = Math.floor((seconds % 3600) / 60);
           const s = (seconds % 60).toFixed(3);
-          return `${String(h).padStart(2, "0")}:${String(m).padStart(
-            2,
-            "0"
-          )}:${s.padStart(6, "0")}`;
+          return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${s.padStart(6,'0')}`;
         }
 
         const blob = new Blob([vtt], { type: "text/vtt" });
         const url = URL.createObjectURL(blob);
+        // Return the URL for use as initial subtitle
         return url;
       } catch (err) {
-        return "";
+        // silently fail
+        return '';
       }
     }
 
-    // Handle URL submit (play video in active tab)
+    // pollProgress function and oceansaver/vatis logic removed as per instructions.
+
+    // Update handleUrlSubmit to use fetchVideoInfo
     function handleUrlSubmit(e) {
       e.preventDefault();
 
@@ -810,375 +594,260 @@
       const url = urlInput.value.trim();
       if (!url) return;
 
-      const tabIndex = tabs.findIndex((tab) => tab.id === activeTabId);
-      if (tabIndex === -1) return;
+      const tab = tabs.find(tab => tab.id === activeTabId);
+      if (!tab) return;
 
-      tabs[tabIndex].url = url;
-      tabs[tabIndex].videoId = null;
+      tab.url = url;
+      tab.videoId = null;
 
       const tabElement = document.querySelector(`.tab[data-tab-id="${activeTabId}"]`);
       if (tabElement) {
-        const tabTitle = tabElement.querySelector(".tab-title");
+        const tabTitle = tabElement.querySelector('.tab-title');
         if (tabTitle) {
-          tabTitle.textContent = `YouTube - ${
-            url.length > 30 ? url.substring(0, 30) + "..." : url
-          }`;
+          tabTitle.textContent = `YouTube - ${url.length > 30 ? url.substring(0, 30) + '...' : url}`;
         }
       }
 
-      fetchVideoInfo(url, activeTabId);
+      fetchVideoInfo(url);
     }
+    // --- End video info & download support ---
 
-    // Extract YouTube video ID
     function extractYouTubeId(url) {
       if (!url) return null;
+
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
       const match = url.match(regExp);
-      return match && match[2].length === 11 ? match[2] : null;
+
+      return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    // Toggle fullscreen
     function toggleFullscreen() {
       isFullscreen = !isFullscreen;
 
       if (isFullscreen) {
-        browserContent.classList.add("fullscreen");
-      } else {
-        browserContent.classList.remove("fullscreen");
-      }
-    }
-
-    // Format date YYYY-MM-DD
-    function formatDate(dateStr) {
-      if (!dateStr) return "";
-      const d = new Date(dateStr);
-      if (isNaN(d)) return "";
-      return d.toISOString().slice(0, 10);
-    }
-
-    // Get channel subscriber count and append to card
-    async function getChannelStats(channelId, cardElement) {
-      const statsUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI`;
-      try {
-        const res = await fetch(statsUrl);
-        const data = await res.json();
-        if (data.items && data.items[0]) {
-          const subs = data.items[0].statistics.subscriberCount;
-          const formattedSubs = Intl.NumberFormat().format(subs);
-          const subEl = document.createElement("div");
-          subEl.innerHTML = `<span style="color: var(--ctp-subtext1); font-size: 12px;">${formattedSubs} subscribers</span>`;
-          cardElement.querySelector('div[style*="padding"]').appendChild(subEl);
-        }
-      } catch (e) {
-        console.error("Could not load subscriber count:", e);
-      }
-    }
-
-    // Load more search results with infinite scroll support
-    async function loadMoreSearchResults(isNewSearch = false) {
-      if (loadingSearch) return;
-      loadingSearch = true;
-
-      const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
-      let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
-        currentQuery
-      )}&type=video,channel&maxResults=30&key=${apiKey}`;
-      if (searchNextPageToken) url += `&pageToken=${searchNextPageToken}`;
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (isNewSearch) searchResults.innerHTML = "";
-
-        data.items.forEach((item) => {
-          const snippet = item.snippet;
-
-          if (item.id.kind === "youtube#channel") {
-            const channelId = item.id.channelId;
-            const thumbOriginal = snippet.thumbnails.medium.url;
-            const thumb = thumbOriginal.includes("inv.nadeko.net")
-              ? `https://wsrv.nl/?url=${thumbOriginal}`
-              : thumbOriginal;
-            const title = snippet.channelTitle;
-            const card = document.createElement("div");
-            card.style.background = "var(--ctp-surface0)";
-            card.style.borderRadius = "8px";
-            card.style.overflow = "hidden";
-            card.style.cursor = "pointer";
-            card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-            card.onclick = () => fetchChannelVideos(channelId, title);
-            getChannelStats(channelId, card);
-            card.innerHTML = `
-              <img src="${thumb}" alt="Channel" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;" />
-              <div style="padding: 8px;">
-                <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br />
-                <span style="color: var(--ctp-subtext0); font-size: 12px;">Channel</span>
-              </div>
-            `;
-            searchResults.appendChild(card);
-          } else if (item.id.kind === "youtube#video") {
-            const videoId = item.id.videoId;
-            const thumbOriginal = snippet.thumbnails.medium.url;
-            const thumb = thumbOriginal.includes("inv.nadeko.net")
-              ? `https://wsrv.nl/?url=${thumbOriginal}`
-              : thumbOriginal;
-            const title = snippet.title;
-            const channel = snippet.channelTitle;
-            const publishedAt = snippet.publishedAt ? formatDate(snippet.publishedAt) : "";
-            const card = document.createElement("div");
-            card.style.background = "var(--ctp-surface0)";
-            card.style.borderRadius = "8px";
-            card.style.overflow = "hidden";
-            card.style.cursor = "pointer";
-            card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-            card.onclick = () => {
-              urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
-              searchResults.innerHTML = "";
-              addressForm.dispatchEvent(
-                new Event("submit", { bubbles: true, cancelable: true })
-              );
-            };
-            card.innerHTML = `
-              <img src="${thumb}" alt="Thumbnail" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;" />
-              <div style="padding: 8px;">
-                <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br />
-                <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span><br />
-                <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
-              </div>
-            `;
-            searchResults.appendChild(card);
-          }
-        });
-        searchNextPageToken = data.nextPageToken || "";
-      } catch (err) {
-        console.error(err);
-        if (isNewSearch) searchResults.innerHTML = "Failed to load search results.";
-      } finally {
-        loadingSearch = false;
-      }
-    }
-
-    // Fetch channel videos with infinite scroll, subscribe button, search in channel
-    async function fetchChannelVideos(
-      channelId,
-      channelTitle,
-      pageToken = "",
-      isNew = true,
-      searchQuery = ""
-    ) {
-      if (loadingChannel) return;
-
-      if (isNew) {
-        searchResults.innerHTML = `
-          <h2 style="color: var(--ctp-text); margin-bottom: 12px;">${channelTitle}'s Videos</h2>
-          <form id="channelSearchForm" style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <input
-              type="text"
-              id="channelSearchInput"
-              placeholder="Search in this channel..."
-              style="flex: 1; padding: 8px"
-              autocomplete="off"
-            />
-            <button type="submit" style="padding: 8px 12px;">Search</button>
-          </form>
-          <button id="subscribeBtn" style="margin-bottom: 12px;">Subscribe</button>
-          <div id="channelVideosGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+        browserContent.classList.add('fullscreen');
+        fullscreenIcon.innerHTML = `
+          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         `;
-        currentChannelId = channelId;
-        currentChannelTitle = channelTitle;
-        channelNextPageToken = "";
-
-        document
-          .getElementById("channelSearchForm")
-          ?.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const query = document
-              .getElementById("channelSearchInput")
-              ?.value.trim();
-            if (query) fetchChannelVideos(channelId, channelTitle, "", true, query);
-          });
-
-        document.getElementById("subscribeBtn")?.addEventListener("click", () => {
-          const subs = JSON.parse(
-            localStorage.getItem("subscribedChannels") || "[]"
-          );
-          if (!subs.find((c) => c.id === channelId)) {
-            subs.push({ id: channelId, title: channelTitle });
-            localStorage.setItem("subscribedChannels", JSON.stringify(subs));
-            alert("Subscribed!");
-          }
-        });
-
-        document.getElementById("channelVideosGrid").innerHTML = "";
-      }
-
-      loadingChannel = true;
-
-      const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
-      let url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=30&type=video`;
-      if (pageToken) url += `&pageToken=${pageToken}`;
-      if (searchQuery) url += `&q=${encodeURIComponent(searchQuery)}`;
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const videosGrid = document.getElementById("channelVideosGrid");
-        if (!videosGrid) return;
-
-        // Append videos
-        for (const item of data.items) {
-          if (!item.id.videoId) continue;
-          const videoId = item.id.videoId;
-          const title = item.snippet.title;
-          const publishedAt = item.snippet.publishedAt
-            ? formatDate(item.snippet.publishedAt)
-            : "";
-
-          try {
-            const nadekoRes = await fetch(
-              `https://ejgsapis.vercel.app/api/scrape?url=https://inv.nadeko.net/embed/${videoId}`
-            );
-            const nadekoHtml = await nadekoRes.text();
-
-            const playerDataMatch = nadekoHtml.match(
-              /<script id="player_data" type="application\/json">([\s\S]*?)<\/script>/
-            );
-            let playerData = {};
-            if (playerDataMatch) {
-              playerData = JSON.parse(playerDataMatch[1]);
-            }
-
-            let viewsText = "";
-            const viewsMatch = nadekoHtml.match(/(\d[\d,\.]*)( views| views?)/i);
-            if (viewsMatch) {
-              viewsText = viewsMatch[1];
-            }
-
-            const channelName = item.snippet.channelTitle || "";
-
-            const thumbUrl = playerData.thumbnail
-              ? `https://wsrv.nl/?url=https://inv.nadeko.net${playerData.thumbnail}`
-              : item.snippet.thumbnails.medium.url;
-
-            const card = document.createElement("div");
-            card.style.background = "var(--ctp-surface0)";
-            card.style.borderRadius = "8px";
-            card.style.overflow = "hidden";
-            card.style.cursor = "pointer";
-            card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-            card.style.display = "flex";
-            card.style.flexDirection = "column";
-
-            const subs = JSON.parse(
-              localStorage.getItem("subscribedChannels") || "[]"
-            );
-            const isSubscribed = subs.some((c) => c.id === channelId);
-
-            const subscribeButtonHTML = `
-              <button style="
-                margin-top: auto;
-                background-color: ${isSubscribed ? "#888" : "#ff4d4f"};
-                border: none;
-                border-radius: 4px;
-                color: white;
-                padding: 6px 10px;
-                cursor: ${isSubscribed ? "default" : "pointer"};
-                font-size: 12px;
-              " ${isSubscribed ? "disabled" : ""} title="Subscribe to channel">
-                ${isSubscribed ? "Subscribed" : "Subscribe"}
-              </button>
-            `;
-
-            card.innerHTML = `
-              <img src="${thumbUrl}" alt="Video Thumbnail" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;" />
-              <div style="padding: 8px; flex-grow: 1; display: flex; flex-direction: column;">
-                <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong>
-                <small style="color: var(--ctp-subtext0); font-size: 12px; margin-top: 4px;">Channel: ${channelName}</small>
-                <small style="color: var(--ctp-subtext1); font-size: 12px;">Views: ${viewsText || "N/A"}</small>
-                <small style="color: var(--ctp-subtext1); font-size: 12px;">Published: ${publishedAt}</small>
-                ${subscribeButtonHTML}
-              </div>
-            `;
-
-            const subscribeBtn = card.querySelector("button");
-            if (subscribeBtn && !subscribeBtn.disabled) {
-              subscribeBtn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const subs = JSON.parse(
-                  localStorage.getItem("subscribedChannels") || "[]"
-                );
-                if (!subs.find((c) => c.id === channelId)) {
-                  subs.push({ id: channelId, title: channelTitle });
-                  localStorage.setItem("subscribedChannels", JSON.stringify(subs));
-                  subscribeBtn.textContent = "Subscribed";
-                  subscribeBtn.style.backgroundColor = "#888";
-                  subscribeBtn.disabled = true;
-                  alert("Subscribed to channel!");
-                }
-              });
-            }
-
-            card.onclick = () => {
-              urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
-              searchResults.innerHTML = "";
-              addressForm.dispatchEvent(
-                new Event("submit", { bubbles: true, cancelable: true })
-              );
-            };
-
-            videosGrid.appendChild(card);
-          } catch (e) {
-            console.error("Failed to load video metadata for", videoId, e);
-          }
-        }
-
-        channelNextPageToken = data.nextPageToken || "";
-      } catch (err) {
-        console.error(err);
-        if (isNew) searchResults.innerHTML +=
-          "<div>Failed to load channel videos.</div>";
-      } finally {
-        loadingChannel = false;
+      } else {
+        browserContent.classList.remove('fullscreen');
+        fullscreenIcon.innerHTML = `
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        `;
       }
     }
 
-    // Infinite scroll for search results and channel videos
-    searchResults.addEventListener("scroll", () => {
-      const nearBottom =
-        searchResults.scrollTop + searchResults.clientHeight >=
-        searchResults.scrollHeight - 100;
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
 
-      if (!nearBottom) return;
+// --- Search and infinite scroll logic ---
+let currentQuery = '';
+let searchNextPageToken = '';
+let loadingSearch = false;
 
-      if (currentChannelId) {
-        if (channelNextPageToken && !loadingChannel) {
-          fetchChannelVideos(
-            currentChannelId,
-            currentChannelTitle,
-            channelNextPageToken,
-            false
-          );
-        }
-      } else {
-        if (searchNextPageToken && !loadingSearch) {
-          loadMoreSearchResults();
-        }
+searchForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  currentQuery = searchInput.value.trim();
+  if (!currentQuery) return;
+  searchNextPageToken = '';
+  searchResults.innerHTML = 'Searching...';
+  await loadMoreSearchResults(true);
+});
+
+async function loadMoreSearchResults(isNewSearch = false) {
+  if (loadingSearch) return;
+  loadingSearch = true;
+
+  const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
+  let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video,channel&maxResults=30&key=${apiKey}`;
+  if (searchNextPageToken) url += `&pageToken=${searchNextPageToken}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (isNewSearch) searchResults.innerHTML = '';
+
+    data.items.forEach(item => {
+      const snippet = item.snippet;
+
+      if (item.id.kind === 'youtube#channel') {
+        const channelId = item.id.channelId;
+        const thumb = snippet.thumbnails.medium.url;
+        const title = snippet.channelTitle;
+        // Channel card styled like video card
+        const card = document.createElement('div');
+        card.style.background = "var(--ctp-surface0)";
+        card.style.borderRadius = "8px";
+        card.style.overflow = "hidden";
+        card.style.cursor = "pointer";
+        card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+        card.onclick = () => fetchChannelVideos(channelId, title);
+        getChannelStats(channelId, card);
+        card.innerHTML = `
+          <img src="${thumb}" alt="Channel" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+          <div style="padding: 8px;">
+            <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
+            <span style="color: var(--ctp-subtext0); font-size: 12px;">Channel</span>
+          </div>
+        `;
+        searchResults.appendChild(card);
+      } else if (item.id.kind === 'youtube#video') {
+        const videoId = item.id.videoId;
+        const thumb = snippet.thumbnails.medium.url;
+        const title = snippet.title;
+        const channel = snippet.channelTitle;
+        const publishedAt = snippet.publishedAt ? formatDate(snippet.publishedAt) : '';
+        const card = document.createElement('div');
+        card.style.background = "var(--ctp-surface0)";
+        card.style.borderRadius = "8px";
+        card.style.overflow = "hidden";
+        card.style.cursor = "pointer";
+        card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+        card.onclick = () => {
+          urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+          searchResults.innerHTML = "";
+          addressForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        };
+        card.innerHTML = `
+          <img src="${thumb}" alt="Thumbnail" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+          <div style="padding: 8px;">
+            <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
+            <span style="color: var(--ctp-subtext0); font-size: 12px;">${channel}</span><br>
+            <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
+          </div>
+        `;
+        searchResults.appendChild(card);
       }
     });
+    searchNextPageToken = data.nextPageToken || '';
+  } catch (err) {
+    console.error(err);
+    if (isNewSearch) searchResults.innerHTML = "Failed to load search results.";
+  } finally {
+    loadingSearch = false;
+  }
+}
 
-    // Search form submit
-    searchForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      currentQuery = searchInput.value.trim();
-      if (!currentQuery) return;
-      searchNextPageToken = "";
-      searchResults.innerHTML = "Searching...";
-      await loadMoreSearchResults(true);
+// Infinite scroll for search results
+searchResults.addEventListener('scroll', () => {
+  if (
+    searchResults.scrollTop + searchResults.clientHeight >= searchResults.scrollHeight - 100
+  ) {
+    if (searchNextPageToken && !loadingSearch) loadMoreSearchResults();
+  }
+});
+
+function formatDate(dateStr) {
+  // YYYY-MM-DD only
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '';
+  return d.toISOString().slice(0, 10);
+}
+      
+      async function getChannelStats(channelId, cardElement) {
+        const statsUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI`;
+        try {
+          const res = await fetch(statsUrl);
+          const data = await res.json();
+          if (data.items && data.items[0]) {
+            const subs = data.items[0].statistics.subscriberCount;
+            const formattedSubs = Intl.NumberFormat().format(subs);
+            const subEl = document.createElement('div');
+            subEl.innerHTML = `<span style="color: var(--ctp-subtext1); font-size: 12px;">${formattedSubs} subscribers</span>`;
+            cardElement.querySelector('div[style*="padding"]').appendChild(subEl);
+          }
+        } catch (e) {
+          console.error("Could not load subscriber count:", e);
+        }
+      }
+
+
+// --- Channel videos with infinite scroll ---
+let channelNextPageToken = '';
+let loadingChannel = false;
+let currentChannelId = '';
+let currentChannelTitle = '';
+
+async function fetchChannelVideos(channelId, channelTitle, pageToken = '', isNew = true) {
+  // Initial load or new channel: clear, set state and header
+  if (isNew) {
+    searchResults.innerHTML = `<h2 style="color: var(--ctp-text); margin-bottom: 12px;">${channelTitle}'s Videos</h2>`;
+    currentChannelId = channelId;
+    currentChannelTitle = channelTitle;
+    channelNextPageToken = '';
+  }
+  if (loadingChannel) return;
+  loadingChannel = true;
+
+  const apiKey = "AIzaSyDhsnZFgIr1IBIJd9uTWRv-SZPDPt4yVqI";
+  let url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=30&type=video`;
+  if (pageToken) url += `&pageToken=${pageToken}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    // If isNew, header is already set; else, do not overwrite.
+    // Render videos (append to grid)
+    data.items.forEach(item => {
+      if (!item.id.videoId) return;
+      const videoId = item.id.videoId;
+      const thumb = item.snippet.thumbnails.medium.url;
+      const title = item.snippet.title;
+      const publishedAt = item.snippet.publishedAt ? formatDate(item.snippet.publishedAt) : '';
+      const card = document.createElement('div');
+      card.style.background = "var(--ctp-surface0)";
+      card.style.borderRadius = "8px";
+      card.style.overflow = "hidden";
+      card.style.cursor = "pointer";
+      card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+      card.onclick = () => {
+        urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+        searchResults.innerHTML = "";
+        addressForm.dispatchEvent(new Event("submit", { bubbles: true }));
+      };
+      card.innerHTML = `
+        <img src="${thumb}" alt="Video" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+        <div style="padding: 8px;">
+          <strong style="color: var(--ctp-text); font-size: 14px;">${title}</strong><br>
+          <span style="color: var(--ctp-subtext1); font-size: 12px;">${publishedAt}</span>
+        </div>
+      `;
+      searchResults.appendChild(card);
     });
+    channelNextPageToken = data.nextPageToken || '';
+  } catch (err) {
+    console.error(err);
+    if (isNew) searchResults.innerHTML += "<div>Failed to load channel videos.</div>";
+  } finally {
+    loadingChannel = false;
+  }
+}
 
-    document.addEventListener("DOMContentLoaded", initBrowser);
+// Infinite scroll for channel videos
+searchResults.addEventListener('scroll', () => {
+  // If current view is channel, and scrolled near bottom, load more
+  if (
+    currentChannelId &&
+    searchResults.scrollTop + searchResults.clientHeight >= searchResults.scrollHeight - 100
+  ) {
+    if (channelNextPageToken && !loadingChannel) {
+      fetchChannelVideos(currentChannelId, currentChannelTitle, channelNextPageToken, false);
+    }
+  }
+});
+
+    document.addEventListener('DOMContentLoaded', initBrowser);
   </script>
 </body>
 </html>
+</body>
+</html>
+  </script>
+</body>
+</html>
+
+
