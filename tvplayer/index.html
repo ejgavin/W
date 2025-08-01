@@ -166,18 +166,20 @@
   </style>
 </head>
 <body>
-  <header>
-    Live TV Portal
-    <div class="controls">
-      <input type="text" id="searchBox" placeholder="Search channels...">
-      <select id="viewToggle">
-        <option value="grid">Grid View</option>
-        <option value="list">List View</option>
-      </select>
-    </div>
-  </header>
-  <div class="grid" id="channelGrid"></div>
-  <div id="playerModal">
+  <div id="mainPage">
+    <header>
+      Live TV Portal
+      <div class="controls">
+        <input type="text" id="searchBox" placeholder="Search channels...">
+        <select id="viewToggle">
+          <option value="grid">Grid View</option>
+          <option value="list">List View</option>
+        </select>
+      </div>
+    </header>
+    <div class="grid" id="channelGrid"></div>
+  </div>
+  <div id="playerModal" style="display:none;">
     <div id="playerHeader">
       <span id="playerTitle">Now Playing</span><button id="goLiveBtn" onclick="goLive()">Go Live</button>
       <div>
@@ -254,9 +256,10 @@
     }
 
     function openPlayer(streamUrl, channelTitle) {
-      const playerContainer = document.getElementById('player');
+      // Hide main page and show player modal
+      document.getElementById('mainPage').style.display = 'none';
       document.getElementById('playerModal').style.display = 'flex';
-      document.body.style.overflow = 'hidden';
+      const playerContainer = document.getElementById('player');
       playerContainer.innerHTML = '';
       if (window.currentArt && typeof window.currentArt.destroy === 'function') {
         window.currentArt.destroy();
@@ -333,8 +336,8 @@
     }
 
     function closePlayer() {
-      document.body.style.overflow = '';
       document.getElementById('playerModal').style.display = 'none';
+      document.getElementById('mainPage').style.display = 'block';
       document.getElementById('player').innerHTML = '';
       document.getElementById('scheduleSidebar').style.display = 'none';
     }
