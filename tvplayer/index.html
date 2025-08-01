@@ -153,6 +153,16 @@
       float: right;
       margin-bottom: 0.5rem;
     }
+    #goLiveBtn {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 1rem;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -169,7 +179,7 @@
   <div class="grid" id="channelGrid"></div>
   <div id="playerModal">
     <div id="playerHeader">
-      <span id="playerTitle">Now Playing</span>
+      <span id="playerTitle">Now Playing</span><button id="goLiveBtn" onclick="goLive()">Go Live</button>
       <div>
         <button onclick="toggleSchedule()">Schedule</button>
         <button onclick="closePlayer()">Back</button>
@@ -310,6 +320,14 @@
       }
       // Hide sidebar initially
       document.getElementById('scheduleSidebar').style.display = 'none';
+
+      // Monitor delay and toggle Go Live button
+      setInterval(() => {
+        if (window.currentArt && window.currentArt.video && !isNaN(window.currentArt.video.duration)) {
+          const diff = window.currentArt.video.duration - window.currentArt.video.currentTime;
+          document.getElementById('goLiveBtn').style.display = (diff > 30) ? 'inline-block' : 'none';
+        }
+      }, 5000);
     }
 
     function closePlayer() {
@@ -337,6 +355,16 @@
       content.innerHTML = '<h3>Upcoming</h3>' + schedule.map(p =>
         `<div style="margin-bottom:1rem;"><strong>${p['data-showname']}</strong><br><small>${new Date(p['data-listdatetime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(new Date(p['data-listdatetime']).getTime() + p['data-duration'] * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small><br>${p['data-episodetitle']}</div>`
       ).join('');
+    }
+
+    function goLive() {
+      if (window.currentArt && window.currentArt.video && !isNaN(window.currentArt.video.duration)) {
+        const liveTime = window.currentArt.video.duration - 10;
+        if (liveTime > 0) {
+          window.currentArt.video.currentTime = liveTime;
+          document.getElementById('goLiveBtn').style.display = 'none';
+        }
+      }
     }
 
     document.getElementById('searchBox').addEventListener('input', e => {
