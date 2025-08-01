@@ -232,7 +232,20 @@
         container.appendChild(card);
 
         const btn = card.querySelector('.watch-btn');
-        btn.addEventListener('click', () => openPlayer(channel.stream, channel.title));
+        btn.addEventListener('click', () => openPlayer(channel.stream, channel.title, channel.logo));
+
+        const schedData = window.fullScheduleData?.find(d => d.title && d.title.toLowerCase().includes(channel.title.toLowerCase()));
+        if (schedData && schedData.next_programs) {
+          const el = card.querySelector(`#sched-${channel.title}`);
+          const now = new Date();
+          const current = schedData.next_programs.find(p => new Date(p['data-listdatetime']) <= now && now < new Date(new Date(p['data-listdatetime']).getTime() + p['data-duration'] * 60000));
+          if (current) {
+            const end = new Date(new Date(current['data-listdatetime']).getTime() + current['data-duration'] * 60000);
+            el.innerHTML = `<strong>${current['data-showname']}</strong><br><small>Until ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>`;
+          } else {
+            el.innerHTML = '<em>No schedule available</em>';
+          }
+        }
       });
     }
 
@@ -253,9 +266,16 @@
         }
       });
       window.fullScheduleData = data; // Store for later use in player
+
+      allChannels.forEach(channel => {
+        const el = document.getElementById('sched-' + channel.title);
+        if (el && el.innerHTML === 'Loading schedule...') {
+          el.innerHTML = '<em>No schedule available</em>';
+        }
+      });
     }
 
-    function openPlayer(streamUrl, channelTitle) {
+    function openPlayer(streamUrl, channelTitle, logoUrl) {
       // Hide main page and show player modal
       document.getElementById('mainPage').style.display = 'none';
       document.getElementById('playerModal').style.display = 'flex';
@@ -273,6 +293,7 @@
         fullscreenWeb: true,
         volume: 1.0,
         setting: true,
+        poster: logoUrl,
         plugins: [
           artplayerPluginHlsControl({
             defaultQuality: 'auto',
@@ -311,6 +332,15 @@
         },
         type: 'm3u8',
       });
+
+      const video = window.currentArt.video;
+      const seekToLive = () => {
+        if (!isNaN(video.duration)) {
+          video.currentTime = Math.max(video.duration - 8, 0);
+          video.removeEventListener('play', seekToLive);
+        }
+      };
+      video.addEventListener('play', seekToLive, { once: true });
 
       document.getElementById('playerTitle').textContent = 'Now Playing - ' + channelTitle;
 
