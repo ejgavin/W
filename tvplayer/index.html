@@ -359,9 +359,10 @@
 
     function goLive() {
       if (window.currentArt && window.currentArt.video && !isNaN(window.currentArt.video.duration)) {
-        const liveTime = window.currentArt.video.duration - 10;
+        const liveTime = window.currentArt.video.duration - 8;
         if (liveTime > 0) {
           window.currentArt.video.currentTime = liveTime;
+          window.currentArt.video.play();
           document.getElementById('goLiveBtn').style.display = 'none';
         }
       }
