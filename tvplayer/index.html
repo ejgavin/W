@@ -144,6 +144,15 @@
       padding:1rem;
       z-index: 10000;
     }
+    #scheduleCloseBtn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      float: right;
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -160,14 +169,17 @@
   <div class="grid" id="channelGrid"></div>
   <div id="playerModal">
     <div id="playerHeader">
-      <span>Now Playing</span>
+      <span id="playerTitle">Now Playing</span>
       <div>
         <button onclick="toggleSchedule()">Schedule</button>
         <button onclick="closePlayer()">Back</button>
       </div>
     </div>
     <div id="player"></div>
-    <div id="scheduleSidebar" style="display:none; position:absolute; top:0; right:0; width:300px; height:100%; background:#161b22; color:#c9d1d9; overflow:auto; box-shadow:-4px 0 8px rgba(0,0,0,0.4); padding:1rem;"></div>
+    <div id="scheduleSidebar" style="display:none; position:absolute; top:0; right:0; width:300px; height:100%; background:#161b22; color:#c9d1d9; overflow:auto; box-shadow:-4px 0 8px rgba(0,0,0,0.4); padding:1rem;">
+      <button id="scheduleCloseBtn" style="background:none; border:none; color:#c9d1d9; font-size:1.2rem; cursor:pointer; float:right; margin-bottom:0.5rem;">×</button>
+      <div id="scheduleContent"></div>
+    </div>
   </div>
   <script>
     let allChannels = [];
@@ -243,6 +255,7 @@
         container: '#player',
         url: streamUrl,
         isLive: true,
+        autoplay: true,
         fullscreenWeb: true,
         setting: true,
         plugins: [
@@ -282,6 +295,8 @@
         type: 'm3u8',
       });
 
+      document.getElementById('playerTitle').textContent = 'Now Playing - ' + channelTitle;
+
       // Find the schedule for the current channel and render sidebar
       if (window.fullScheduleData) {
         const match = window.fullScheduleData.find(d => d.title && d.title.toLowerCase().includes(channelTitle.toLowerCase()));
@@ -308,13 +323,18 @@
       sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
     }
 
+    function closeSchedule() {
+      document.getElementById('scheduleSidebar').style.display = 'none';
+    }
+
     function renderScheduleSidebar(schedule) {
       const sidebar = document.getElementById('scheduleSidebar');
+      const content = document.getElementById('scheduleContent');
       if (!schedule || schedule.length === 0) {
-        sidebar.innerHTML = '<h3>Upcoming</h3><div>No schedule available.</div>';
+        content.innerHTML = '<h3>Upcoming</h3><div>No schedule available.</div>';
         return;
       }
-      sidebar.innerHTML = '<h3>Upcoming</h3>' + schedule.map(p =>
+      content.innerHTML = '<h3>Upcoming</h3>' + schedule.map(p =>
         `<div style="margin-bottom:1rem;"><strong>${p['data-showname']}</strong><br><small>${new Date(p['data-listdatetime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(new Date(p['data-listdatetime']).getTime() + p['data-duration'] * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small><br>${p['data-episodetitle']}</div>`
       ).join('');
     }
@@ -334,6 +354,8 @@
 
     // Ensure the player modal is hidden on page load
     document.getElementById('playerModal').style.display = 'none';
+
+    document.getElementById('scheduleCloseBtn').addEventListener('click', closeSchedule);
   </script>
 </body>
 </html>
