@@ -184,8 +184,23 @@
       <span id="playerTitle">Now Playing</span><button id="goLiveBtn" onclick="goLive()">Go Live</button>
       <div>
         <button onclick="toggleSchedule()">Schedule</button>
+        <button onclick="toggleSettings()">Settings</button>
         <button onclick="closePlayer()">Back</button>
       </div>
+    </div>
+    <div id="playerSettings" style="display:none; background:var(--card); padding:1rem; color:var(--text); border-top:1px solid var(--accent);">
+      <h3 style="margin-top:0;">Player Settings</h3>
+      <label style="display:block; margin-bottom:1rem;">
+        <input type="checkbox" id="bufferFixToggle"> Fix Buffering<br>
+        <small style="color:var(--text-light);">Enable this if the stream is buffering while playing.</small>
+      </label>
+      <label style="display:block;">
+        Theme:
+        <select id="themeToggle" style="margin-left:0.5rem; background:#21262d; color:var(--text); border:1px solid #30363d; padding:0.2rem 0.5rem; border-radius:6px;">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </label>
     </div>
     <div id="player"></div>
     <div id="scheduleSidebar" style="display:none; position:absolute; top:0; right:0; width:300px; height:100%; background:#161b22; color:#c9d1d9; overflow:auto; box-shadow:-4px 0 8px rgba(0,0,0,0.4); padding:1rem;">
@@ -233,19 +248,6 @@
 
         const btn = card.querySelector('.watch-btn');
         btn.addEventListener('click', () => openPlayer(channel.stream, channel.title, channel.logo));
-
-        const schedData = window.fullScheduleData?.find(d => d.title && d.title.toLowerCase().includes(channel.title.toLowerCase()));
-        if (schedData && schedData.next_programs) {
-          const el = card.querySelector(`#sched-${channel.title}`);
-          const now = new Date();
-          const current = schedData.next_programs.find(p => new Date(p['data-listdatetime']) <= now && now < new Date(new Date(p['data-listdatetime']).getTime() + p['data-duration'] * 60000));
-          if (current) {
-            const end = new Date(new Date(current['data-listdatetime']).getTime() + current['data-duration'] * 60000);
-            el.innerHTML = `<strong>${current['data-showname']}</strong><br><small>Until ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>`;
-          } else {
-            el.innerHTML = '<em>No schedule available</em>';
-          }
-        }
       });
     }
 
@@ -266,13 +268,6 @@
         }
       });
       window.fullScheduleData = data; // Store for later use in player
-
-      allChannels.forEach(channel => {
-        const el = document.getElementById('sched-' + channel.title);
-        if (el && el.innerHTML === 'Loading schedule...') {
-          el.innerHTML = '<em>No schedule available</em>';
-        }
-      });
     }
 
     function openPlayer(streamUrl, channelTitle, logoUrl) {
@@ -285,6 +280,9 @@
         window.currentArt.destroy();
         window.currentArt = null;
       }
+      const bufferingFixEnabled = document.getElementById('bufferFixToggle').checked;
+      const offset = bufferingFixEnabled ? 15 : 8;
+
       window.currentArt = new Artplayer({
         container: '#player',
         url: streamUrl,
@@ -293,7 +291,6 @@
         fullscreenWeb: true,
         volume: 1.0,
         setting: true,
-        poster: logoUrl,
         plugins: [
           artplayerPluginHlsControl({
             defaultQuality: 'auto',
@@ -323,6 +320,14 @@
               hls.attachMedia(video);
               art.hls = hls;
               art.on('destroy', () => hls.destroy());
+
+              const seekToLive = () => {
+                if (!isNaN(video.duration)) {
+                  video.currentTime = Math.max(video.duration - offset, 0);
+                  video.removeEventListener('play', seekToLive);
+                }
+              };
+              video.addEventListener('play', seekToLive);
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
               video.src = url;
             } else {
@@ -332,15 +337,6 @@
         },
         type: 'm3u8',
       });
-
-      const video = window.currentArt.video;
-      const seekToLive = () => {
-        if (!isNaN(video.duration)) {
-          video.currentTime = Math.max(video.duration - 8, 0);
-          video.removeEventListener('play', seekToLive);
-        }
-      };
-      video.addEventListener('play', seekToLive, { once: true });
 
       document.getElementById('playerTitle').textContent = 'Now Playing - ' + channelTitle;
 
@@ -372,6 +368,7 @@
       document.getElementById('mainPage').style.display = 'block';
       document.getElementById('player').innerHTML = '';
       document.getElementById('scheduleSidebar').style.display = 'none';
+      document.getElementById('playerSettings').style.display = 'none';
     }
 
     function toggleSchedule() {
@@ -397,12 +394,35 @@
 
     function goLive() {
       if (window.currentArt && window.currentArt.video && !isNaN(window.currentArt.video.duration)) {
-        const liveTime = window.currentArt.video.duration - 8;
+        const offset = document.getElementById('bufferFixToggle').checked ? 15 : 8;
+        const liveTime = window.currentArt.video.duration - offset;
         if (liveTime > 0) {
           window.currentArt.video.currentTime = liveTime;
           window.currentArt.video.play();
           document.getElementById('goLiveBtn').style.display = 'none';
         }
+      }
+    }
+
+    function toggleSettings() {
+      const settings = document.getElementById('playerSettings');
+      settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function applyTheme(theme) {
+      const root = document.documentElement.style;
+      if (theme === 'light') {
+        root.setProperty('--bg', '#f1f1f1');
+        root.setProperty('--card', '#ffffff');
+        root.setProperty('--accent', '#2f81f7');
+        root.setProperty('--text', '#0d1117');
+        root.setProperty('--text-light', '#555');
+      } else {
+        root.setProperty('--bg', '#0d1117');
+        root.setProperty('--card', '#161b22');
+        root.setProperty('--accent', '#2f81f7');
+        root.setProperty('--text', '#c9d1d9');
+        root.setProperty('--text-light', '#8b949e');
       }
     }
 
@@ -417,6 +437,10 @@
       grid.style.display = e.target.value === 'list' ? 'block' : 'grid';
     });
 
+    document.getElementById('themeToggle').addEventListener('change', (e) => {
+      applyTheme(e.target.value);
+    });
+
     loadChannels();
 
     // Ensure the player modal is hidden on page load
@@ -426,5 +450,3 @@
   </script>
 </body>
 </html>
-
-
