@@ -291,6 +291,7 @@
         fullscreenWeb: true,
         volume: 1.0,
         setting: true,
+        poster: logoUrl,
         plugins: [
           artplayerPluginHlsControl({
             defaultQuality: 'auto',
@@ -321,13 +322,16 @@
               art.hls = hls;
               art.on('destroy', () => hls.destroy());
 
+              // Live offset logic (restored)
+              const bufferingFixEnabled = document.getElementById('bufferFixToggle')?.checked;
+              const offset = bufferingFixEnabled ? 15 : 8;
               const seekToLive = () => {
                 if (!isNaN(video.duration)) {
                   video.currentTime = Math.max(video.duration - offset, 0);
                   video.removeEventListener('play', seekToLive);
                 }
               };
-              video.addEventListener('play', seekToLive);
+              video.addEventListener('play', seekToLive, { once: true });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
               video.src = url;
             } else {
