@@ -213,7 +213,7 @@
     let currentSchedule = null;
 
     async function loadChannels() {
-      const res = await fetch('https://ejgsapis.vercel.app/api/m3u8list');
+      const res = await fetch('https://m3u8list.ejgavin11.workers.dev/m3u8list');
       const text = await res.text();
       const lines = text.split('\n');
 
