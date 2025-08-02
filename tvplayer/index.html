@@ -175,6 +175,7 @@
           <option value="grid">Grid View</option>
           <option value="list">List View</option>
         </select>
+        <button onclick="openSettings()" style="margin-left:1rem;">⚙️ Settings</button>
       </div>
     </header>
     <div class="grid" id="channelGrid"></div>
@@ -193,9 +194,105 @@
       <div id="scheduleContent"></div>
     </div>
   </div>
+  <div id="settingsPage" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#0d1117; color:#c9d1d9; z-index:10000; padding:2rem; overflow:auto;">
+    <h2>Settings</h2>
+    <label>Start Offset (Seconds Behind Live):
+      <select id="offsetSetting">
+        <option value="0">0 (Live)</option>
+        <option value="5">5</option>
+        <option value="8" selected>8</option>
+        <option value="15">15</option>
+        <option value="30">30</option>
+      </select>
+    </label><br/><br/>
+    <label>Low Latency Mode:
+      <select id="lowLatencySetting">
+        <option value="true">Enabled</option>
+        <option value="false" selected>Disabled</option>
+      </select>
+    </label><br/><br/>
+    <label>Preferred Quality:
+      <select id="qualitySetting">
+        <option value="auto" selected>Auto</option>
+        <option value="1080">1080p</option>
+        <option value="720">720p</option>
+        <option value="480">480p</option>
+      </select>
+    </label><br/><br/>
+    <label>Dark Mode:
+      <select id="themeSetting">
+        <option value="dark" selected>Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </label><br/><br/>
+    <label>Font Color:
+      <input type="color" id="fontColorPicker" value="#c9d1d9" />
+    </label><br/><br/>
+    <label>Remember Volume:
+      <select id="volumeMemorySetting">
+        <option value="true" selected>Yes</option>
+        <option value="false">No</option>
+      </select>
+    </label><br/><br/>
+    <button onclick="closeSettings()">Close Settings</button>
+  </div>
   <script>
     let allChannels = [];
     let currentSchedule = null;
+
+    // Settings logic
+    let userSettings = {
+      offset: 8,
+      lowLatency: false,
+      quality: 'auto',
+      theme: 'dark',
+      fontColor: '#c9d1d9',
+      volumeMemory: true,
+    };
+
+    function loadSettings() {
+      const stored = JSON.parse(localStorage.getItem('tvUserSettings'));
+      if (stored) Object.assign(userSettings, stored);
+      document.getElementById('offsetSetting').value = userSettings.offset;
+      document.getElementById('lowLatencySetting').value = userSettings.lowLatency;
+      document.getElementById('qualitySetting').value = userSettings.quality;
+      document.getElementById('themeSetting').value = userSettings.theme;
+      document.getElementById('fontColorPicker').value = userSettings.fontColor;
+      document.getElementById('volumeMemorySetting').value = userSettings.volumeMemory;
+      applyTheme(userSettings.theme, userSettings.fontColor);
+    }
+
+    function saveSettings() {
+      userSettings.offset = parseInt(document.getElementById('offsetSetting').value);
+      userSettings.lowLatency = document.getElementById('lowLatencySetting').value === 'true';
+      userSettings.quality = document.getElementById('qualitySetting').value;
+      userSettings.theme = document.getElementById('themeSetting').value;
+      userSettings.fontColor = document.getElementById('fontColorPicker').value;
+      userSettings.volumeMemory = document.getElementById('volumeMemorySetting').value === 'true';
+      localStorage.setItem('tvUserSettings', JSON.stringify(userSettings));
+      applyTheme(userSettings.theme, userSettings.fontColor);
+    }
+
+    function applyTheme(theme, color) {
+      document.documentElement.style.setProperty('--text', color);
+      if (theme === 'light') {
+        document.documentElement.style.setProperty('--bg', '#ffffff');
+        document.documentElement.style.setProperty('--card', '#e0e0e0');
+      } else {
+        document.documentElement.style.setProperty('--bg', '#0d1117');
+        document.documentElement.style.setProperty('--card', '#161b22');
+      }
+    }
+
+    function openSettings() {
+      loadSettings();
+      document.getElementById('settingsPage').style.display = 'block';
+    }
+
+    function closeSettings() {
+      saveSettings();
+      document.getElementById('settingsPage').style.display = 'none';
+    }
 
     async function loadChannels() {
       const res = await fetch('https://raw.githubusercontent.com/ejgavin/m3u8file/refs/heads/main/m3u8list.m3u8');
@@ -334,9 +431,19 @@
       });
 
       const video = window.currentArt.video;
+      // Restore volume if enabled
+      let savedVol = localStorage.getItem('tvSavedVolume');
+      if (savedVol && userSettings.volumeMemory) {
+        video.volume = parseFloat(savedVol);
+      }
+      video.addEventListener('volumechange', () => {
+        if (userSettings.volumeMemory) {
+          localStorage.setItem('tvSavedVolume', video.volume);
+        }
+      });
       const seekToLive = () => {
         if (!isNaN(video.duration)) {
-          video.currentTime = Math.max(video.duration - 8, 0);
+          video.currentTime = Math.max(video.duration - userSettings.offset, 0);
           video.removeEventListener('play', seekToLive);
         }
       };
@@ -397,7 +504,7 @@
 
     function goLive() {
       if (window.currentArt && window.currentArt.video && !isNaN(window.currentArt.video.duration)) {
-        const liveTime = window.currentArt.video.duration - 8;
+        const liveTime = window.currentArt.video.duration - userSettings.offset;
         if (liveTime > 0) {
           window.currentArt.video.currentTime = liveTime;
           window.currentArt.video.play();
@@ -417,6 +524,8 @@
       grid.style.display = e.target.value === 'list' ? 'block' : 'grid';
     });
 
+    // On page load, load settings before channels
+    loadSettings();
     loadChannels();
 
     // Ensure the player modal is hidden on page load
