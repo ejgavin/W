@@ -424,6 +424,16 @@
         root.setProperty('--text', '#c9d1d9');
         root.setProperty('--text-light', '#8b949e');
       }
+      localStorage.setItem('theme', theme);
+    }
+
+    function loadSettings() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.getElementById('themeToggle').value = theme;
+      applyTheme(theme);
+
+      const buffering = localStorage.getItem('bufferFix') === 'true';
+      document.getElementById('bufferFixToggle').checked = buffering;
     }
 
     document.getElementById('searchBox').addEventListener('input', e => {
@@ -439,8 +449,14 @@
 
     document.getElementById('themeToggle').addEventListener('change', (e) => {
       applyTheme(e.target.value);
+      localStorage.setItem('theme', e.target.value);
     });
 
+    document.getElementById('bufferFixToggle').addEventListener('change', (e) => {
+      localStorage.setItem('bufferFix', e.target.checked);
+    });
+
+    loadSettings();
     loadChannels();
 
     // Ensure the player modal is hidden on page load
@@ -450,3 +466,5 @@
   </script>
 </body>
 </html>
+
+
