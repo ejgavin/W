@@ -342,6 +342,60 @@
         type: 'm3u8',
       });
 
+      // --- Subtitle selector logic inserted here ---
+      const video = window.currentArt.video;
+      const subtitleSelector = document.createElement('div');
+      subtitleSelector.style.cssText = 'position:absolute;top:12px;left:60px;z-index:10000;color:white;background:#21262d;border:1px solid #444;border-radius:4px;padding:4px;';
+      const subtitleSelect = document.createElement('select');
+      subtitleSelect.style.cssText = 'background:#21262d;color:white;border:none;';
+      subtitleSelector.appendChild(subtitleSelect);
+      document.getElementById('player').appendChild(subtitleSelector);
+
+      const subtitleOptions = [{ label: 'Off', value: 'off' }];
+
+      for (let i = 0; i < video.textTracks.length; i++) {
+        const track = video.textTracks[i];
+        if (track.kind === 'subtitles' || track.kind === 'captions') {
+          subtitleOptions.push({ label: track.label || `Subtitle ${i + 1}`, index: i, value: `native-${i}` });
+          track.mode = 'disabled';
+        }
+      }
+
+      if (window.currentArt.hls && window.currentArt.hls.subtitleTracks) {
+        window.currentArt.hls.subtitleTracks.forEach((track, i) => {
+          subtitleOptions.push({ label: track.name || `HLS Subtitle ${i + 1}`, url: track.url, value: `hls-${i}` });
+        });
+      }
+
+      subtitleOptions.forEach(opt => {
+        const optionEl = document.createElement('option');
+        optionEl.value = opt.value;
+        optionEl.textContent = opt.label;
+        subtitleSelect.appendChild(optionEl);
+      });
+
+      subtitleSelect.addEventListener('change', e => {
+        const value = e.target.value;
+        for (let i = 0; i < video.textTracks.length; i++) video.textTracks[i].mode = 'disabled';
+        if (window.currentArt.subtitle) {
+          try {
+            window.currentArt.subtitle.remove();
+          } catch (err) {
+            console.warn('Subtitle remove failed', err);
+          }
+        }
+
+        const selected = subtitleOptions.find(o => o.value === value);
+        if (selected) {
+          if (selected.value.startsWith('native')) {
+            video.textTracks[selected.index].mode = 'showing';
+          } else if (selected.value.startsWith('hls') && selected.url) {
+            window.currentArt.subtitle.add({ url: selected.url, label: selected.label });
+          }
+        }
+      });
+      // --- End subtitle selector logic ---
+
       document.getElementById('playerTitle').textContent = 'Now Playing - ' + channelTitle;
 
       // Find the schedule for the current channel and render sidebar
