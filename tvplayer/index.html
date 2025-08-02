@@ -382,6 +382,38 @@
           });
         }
 
+        // Integrate subtitle selection directly into ArtPlayer's built-in settings menu
+        const subtitleOptions = [{
+          default: true,
+          html: 'Off',
+          url: null,
+          index: null,
+          source: 'off',
+        }];
+
+        for (let i = 0; i < video.textTracks.length; i++) {
+          const track = video.textTracks[i];
+          if (track.kind === 'subtitles' || track.kind === 'captions') {
+            subtitleOptions.push({
+              html: track.label || `Subtitle ${i + 1}`,
+              url: null,
+              index: i,
+              source: 'native',
+            });
+          }
+        }
+
+        if (window.currentArt.hls && window.currentArt.hls.subtitleTracks && window.currentArt.hls.subtitleTracks.length > 0) {
+          window.currentArt.hls.subtitleTracks.forEach((track, i) => {
+            subtitleOptions.push({
+              html: track.name || `HLS Subtitle ${i + 1}`,
+              url: track.url,
+              index: i,
+              source: 'hls',
+            });
+          });
+        }
+
         window.currentArt.setting.add({
           html: 'Subtitles',
           width: 250,
