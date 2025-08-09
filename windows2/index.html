@@ -35,21 +35,10 @@
 
     <div id="root"></div>
     
-
     <script>
-      const allowedAgents = [
-        "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-      ];
-
-      const ua = navigator.userAgent;
-
+      // Always hide the blocker — no user agent checks anymore
       window.onload = () => {
-        if (allowedAgents.includes(ua)) {
-          document.getElementById("blocker").style.display = "none"; // Hide blocker
-        } else {
-          document.getElementById("blocker").style.display = "flex"; // Show blocker
-        }
+        document.getElementById("blocker").style.display = "none";
       };
     </script>
   </body>
