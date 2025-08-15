@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Private Cloud Browser</title>
+  <title>Roblox Player</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap");
-    @import url("/_a/fa/css/all.min.css");
 
     :root {
-      --bg-gradient: linear-gradient(120deg, #23243a 0%, #2b384d 100%);
+      --bg-gradient: linear-gradient(120deg, #23243a 0%, #4c75f2 100%);
       --glass-bg: rgba(34, 39, 54, 0.85);
       --accent: #4c75f2;
       --accent2: #34d399;
@@ -263,14 +262,14 @@
 <body>
   <div class="centered-container" id="introContainer">
     <div class="glass-card">
-      <div class="title">Private Cloud Browser</div>
+      <div class="title">Roblox Player</div>
       <div class="desc">
-        Instantly launch a secure browser in the cloud.<br>
+        Instantly launch Roblox in the cloud.<br>
         No downloads, no hassle.<br>
         <span style="color:var(--accent2);font-weight:600;">Your session is private and temporary.</span>
       </div>
       <button id="createSession" class="action-btn">
-        <i class="fa-regular fa-desktop"></i> Create Session
+        <span>Start Session</span>
       </button>
     </div>
   </div>
@@ -282,10 +281,10 @@
       </div>
       <div style="margin-top:14px;display:flex;gap:12px;justify-content:center;">
         <button id="shareSession" class="action-btn" style="background:var(--accent2);color:#181c2b;">
-          <i class="fa-solid fa-share"></i> Share Session
+          <span>Share Session</span>
         </button>
         <button id="deleteSession" class="action-btn" style="background:var(--danger);">
-          <i class="fa-solid fa-trash"></i> End Session
+          <span>End Session</span>
         </button>
       </div>
     </div>
@@ -295,19 +294,15 @@
   <div id="status" class="status"></div>
   <div id="shareModalOverlay" class="share-modal-overlay">
     <div class="share-modal">
-      <h3><i class="fa-solid fa-share" style="margin-right: 8px"></i>Share Session</h3>
+      <h3>Share Session</h3>
       <p>Give this code to your friend so they can join this session:</p>
       <div class="share-code-container">
         <div id="shareCode" class="share-code">--</div>
         <div id="copyStatus" class="copy-status">Copied!</div>
       </div>
       <div class="share-modal-buttons">
-        <button id="copyCodeBtn">
-          <i class="fa-solid fa-copy" style="margin-right: 6px"></i>Copy
-        </button>
-        <button id="closeModalBtn">
-          <i class="fa-solid fa-times" style="margin-right: 6px"></i>Close
-        </button>
+        <button id="copyCodeBtn">Copy</button>
+        <button id="closeModalBtn">Close</button>
       </div>
     </div>
   </div>
@@ -393,7 +388,7 @@
 
     async function endSession() {
       if (!currentSessionId) return;
-      status.innerHTML = '<i class="fas fa-spinner loading-icon"></i> Ending session...';
+      status.innerHTML = 'Ending session...';
       status.style.display = "block";
       if (hyperbeamInstance) {
         try {
@@ -405,10 +400,10 @@
       }
       try {
         await fetch(`https://vmapi.vercel.app/api/api?delete=1&sessionid=${currentSessionId}`);
-        status.innerHTML = '<i class="fas fa-check-circle"></i> Session ended';
+        status.innerHTML = 'Session ended';
         setTimeout(() => { status.style.display = "none"; }, 2000);
       } catch (error) {
-        status.innerHTML = '<i class="fas fa-times-circle"></i> Session ended (cleanup may be delayed)';
+        status.innerHTML = 'Session ended (cleanup may be delayed)';
         setTimeout(() => { status.style.display = "none"; }, 2000);
       }
       resetSessionUI();
@@ -436,31 +431,36 @@
               delegateKeyboard: true,
               onConnectionStateChange: ({ state }) => {},
               onDisconnect: ({ type }) => {
-                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Connection lost';
+                status.innerHTML = 'Connection lost';
                 status.style.display = "block";
                 setTimeout(() => { endSession(); }, 2000);
               }
             });
           } catch (hyperbeamError) {
-            status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Failed to connect to browser';
+            status.innerHTML = 'Failed to connect to browser';
             status.style.display = "block";
             resetSessionUI();
             setTimeout(() => { status.style.display = "none"; }, 5000);
           }
         } else {
-          status.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (data.error || "Unknown error");
+          status.innerHTML = (data.error || "Unknown error");
           status.style.display = "block";
           resetSessionUI();
           setTimeout(() => { status.style.display = "none"; }, 5000);
         }
       } catch (error) {
-        status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> No sessions available';
+        status.innerHTML = 'No sessions available';
         status.style.display = "block";
         resetSessionUI();
         setTimeout(() => { status.style.display = "none"; }, 5000);
       }
     });
 
+    // Reset UI on page load
+    resetSessionUI();
+  </script>
+</body>
+</html>
     // Reset UI on page load
     resetSessionUI();
   </script>
