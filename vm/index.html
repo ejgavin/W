@@ -299,7 +299,8 @@
   </div>
 
   <div id="vmSessionContainer" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-gradient); z-index:10;">
-    <div style="position:absolute;top:24px;right:32px;display:flex;gap:10px;z-index:20;">
+    <!-- MOVED: Controls to top left -->
+    <div id="vm-controls-bar" style="position:absolute;top:24px;left:32px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;z-index:20;">
       <button id="shareSession" class="action-btn" style="background:var(--accent2);color:#181c2b;min-width:90px;width:auto;padding:8px 18px;">
         <span>Share</span>
       </button>
@@ -313,14 +314,25 @@
         <span>Done Signing In</span>
       </button>
     </div>
-    <div id="currentUrlDisplay" style="position:absolute;top:70px;right:32px;z-index:20;background:var(--glass-bg);color:var(--accent);padding:8px 16px;border-radius:8px;font-size:1rem;max-width:60vw;word-break:break-all;">
+    <div id="currentUrlDisplay" style="position:absolute;top:24px;left:320px;z-index:20;background:var(--glass-bg);color:var(--accent);padding:8px 16px;border-radius:8px;font-size:1rem;max-width:60vw;word-break:break-all;">
       Loading current URL...
     </div>
-    <div id="signInPopup" style="display:none;position:absolute;top:120px;right:32px;z-index:21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
+    <!-- ADDED: Popup for sign in instructions and arrow -->
+    <div id="signInPopup" style="display:none;position:absolute;top:120px;left:32px;z-index:21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
       <strong>To play, you must sign in or create an account.<br>
       Otherwise, you are limited to 30 minutes.</strong>
       <br><br>
       You have <span id="signInTimer" style="font-weight:bold;">60</span> seconds to sign in before being redirected.
+      <br>
+      <button id="extendSignInBtn" class="action-btn" style="background:var(--accent);color:#fff;margin-top:10px;min-width:90px;width:auto;padding:6px 14px;">
+        Extend Time (+30s)
+      </button>
+      <div id="arrowPointer" style="margin-top:18px;display:flex;align-items:center;">
+        <svg width="48" height="48" style="transform:rotate(-45deg);margin-right:8px;">
+          <polygon points="0,48 48,0 48,48" style="fill:var(--accent2);" />
+        </svg>
+        <span style="font-size:0.98rem;color:var(--accent2);font-weight:600;">Sign in here!</span>
+      </div>
     </div>
     <div id="hyperbeamContainer" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;margin:0;border-radius:0;box-shadow:none;"></div>
   </div>
@@ -363,6 +375,7 @@
     const doneSignInBtn = document.getElementById("doneSignInBtn");
     const signInPopup = document.getElementById("signInPopup");
     const signInTimer = document.getElementById("signInTimer");
+    const extendSignInBtn = document.getElementById("extendSignInBtn");
 
     let currentSessionId = null;
     let currentEmbedUrl = null;
@@ -370,6 +383,9 @@
     let isJoined = false;
     let signInCountdown = null;
     let signInTimeout = null;
+    let signInSeconds = 60;
+    let extendClicks = 0;
+    let extendMax = 2; // Only allow 2 extensions
     let originalUrl = "https://www.easyfun.gg/embed/roblox.html";
     let signInUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
 
@@ -406,14 +422,16 @@
 
     function showSignInPopup() {
       signInPopup.style.display = "block";
-      let seconds = 60;
-      signInTimer.textContent = seconds;
+      signInSeconds = 60;
+      signInTimer.textContent = signInSeconds;
+      extendClicks = 0;
+      extendSignInBtn.disabled = false;
       clearInterval(signInCountdown);
       clearTimeout(signInTimeout);
       signInCountdown = setInterval(() => {
-        seconds--;
-        signInTimer.textContent = seconds;
-        if (seconds <= 0) {
+        signInSeconds--;
+        signInTimer.textContent = signInSeconds;
+        if (signInSeconds <= 0) {
           clearInterval(signInCountdown);
         }
       }, 1000);
@@ -424,7 +442,7 @@
         if (hyperbeamInstance && hyperbeamInstance.tabs) {
           hyperbeamInstance.tabs.update({ url: originalUrl });
         }
-      }, 60000);
+      }, signInSeconds * 1000);
     }
 
     function hideSignInPopup() {
@@ -432,6 +450,26 @@
       clearInterval(signInCountdown);
       clearTimeout(signInTimeout);
     }
+
+    extendSignInBtn.addEventListener("click", () => {
+      if (extendClicks < extendMax) {
+        signInSeconds += 30;
+        signInTimer.textContent = signInSeconds;
+        extendClicks++;
+        // Reset timeout to new time
+        clearTimeout(signInTimeout);
+        signInTimeout = setTimeout(() => {
+          signInPopup.style.display = "none";
+          doneSignInBtn.style.display = "none";
+          if (hyperbeamInstance && hyperbeamInstance.tabs) {
+            hyperbeamInstance.tabs.update({ url: originalUrl });
+          }
+        }, signInSeconds * 1000);
+        if (extendClicks >= extendMax) {
+          extendSignInBtn.disabled = true;
+        }
+      }
+    });
 
     copyCodeBtn.addEventListener("click", async () => {
       const shareCode = shareCodeElement.textContent;
