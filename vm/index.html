@@ -422,16 +422,26 @@
     }
 
     async function updateCurrentUrlDisplay() {
-      // FIX: Wait for browser property to be ready
-      if (hyperbeamInstance && typeof hyperbeamInstance.browser?.url === 'function') {
+      if (hyperbeamInstance && hyperbeamInstance.tabs && typeof hyperbeamInstance.tabs.onUpdated?.addListener === 'function') {
+        // Only add listener once
+        if (!hyperbeamInstance._urlListenerAdded) {
+          hyperbeamInstance.tabs.onUpdated.addListener((tabId, changeInfo) => {
+            if (changeInfo.title) {
+              currentUrlDisplay.textContent = changeInfo.title;
+            }
+          });
+          hyperbeamInstance._urlListenerAdded = true;
+        }
+        // Try to get the current tab's title immediately if available
         try {
-          const url = await hyperbeamInstance.browser.url();
-          currentUrlDisplay.textContent = url || "No URL";
+          const tabs = await hyperbeamInstance.tabs.query({});
+          if (tabs && tabs.length > 0 && tabs[0].title) {
+            currentUrlDisplay.textContent = tabs[0].title;
+          }
         } catch {
-          currentUrlDisplay.textContent = "Unable to fetch URL";
+          currentUrlDisplay.textContent = "Unable to fetch tab info";
         }
       } else if (hyperbeamInstance) {
-        // Browser property may not be ready yet, try again soon
         currentUrlDisplay.textContent = "Loading browser session...";
       } else {
         currentUrlDisplay.textContent = "No browser session";
