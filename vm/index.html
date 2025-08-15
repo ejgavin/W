@@ -299,7 +299,6 @@
   </div>
 
   <div id="vmSessionContainer" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-gradient); z-index:10;">
-    <!-- MOVED: Controls to top left -->
     <div id="vm-controls-bar" style="position:absolute;top:24px;left:32px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;z-index:20;">
       <button id="shareSession" class="action-btn" style="background:var(--accent2);color:#181c2b;min-width:90px;width:auto;padding:8px 18px;">
         <span>Share</span>
@@ -314,10 +313,6 @@
         <span>Done Signing In</span>
       </button>
     </div>
-    <div id="currentUrlDisplay" style="position:absolute;top:24px;left:320px;z-index:20;background:var(--glass-bg);color:var(--accent);padding:8px 16px;border-radius:8px;font-size:1rem;max-width:60vw;word-break:break-all;">
-      Loading current URL...
-    </div>
-    <!-- ADDED: Popup for sign in instructions and arrow -->
     <div id="signInPopup" style="display:none;position:absolute;top:120px;left:32px;z-index:21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
       <strong>To play, you must sign in or create an account.<br>
       Otherwise, you are limited to 30 minutes.</strong>
@@ -327,12 +322,6 @@
       <button id="extendSignInBtn" class="action-btn" style="background:var(--accent);color:#fff;margin-top:10px;min-width:90px;width:auto;padding:6px 14px;">
         Extend Time (+30s)
       </button>
-      <div id="arrowPointer" style="margin-top:18px;display:flex;align-items:center;">
-        <svg width="48" height="48" style="transform:rotate(-45deg);margin-right:8px;">
-          <polygon points="0,48 48,0 48,48" style="fill:var(--accent2);" />
-        </svg>
-        <span style="font-size:0.98rem;color:var(--accent2);font-weight:600;">Sign in here!</span>
-      </div>
     </div>
     <div id="hyperbeamContainer" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;margin:0;border-radius:0;box-shadow:none;"></div>
   </div>
@@ -370,7 +359,6 @@
     const copyCodeBtn = document.getElementById("copyCodeBtn");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const copyStatus = document.getElementById("copyStatus");
-    const currentUrlDisplay = document.getElementById("currentUrlDisplay");
     const signInBtn = document.getElementById("signInBtn");
     const doneSignInBtn = document.getElementById("doneSignInBtn");
     const signInPopup = document.getElementById("signInPopup");
@@ -541,35 +529,6 @@
       isJoined = false;
     }
 
-    async function updateCurrentUrlDisplay() {
-      if (hyperbeamInstance && hyperbeamInstance.tabs && typeof hyperbeamInstance.tabs.onUpdated?.addListener === 'function') {
-        // Only add listener once
-        if (!hyperbeamInstance._urlListenerAdded) {
-          hyperbeamInstance.tabs.onUpdated.addListener((tabId, changeInfo) => {
-            if (changeInfo.title) {
-              currentUrlDisplay.textContent = changeInfo.title;
-            }
-          });
-          hyperbeamInstance._urlListenerAdded = true;
-        }
-        // Try to get the current tab's title immediately if available
-        try {
-          const tabs = await hyperbeamInstance.tabs.query({});
-          if (tabs && tabs.length > 0 && tabs[0].title) {
-            currentUrlDisplay.textContent = tabs[0].title;
-          }
-        } catch {
-          currentUrlDisplay.textContent = "Unable to fetch tab info";
-        }
-        // Monitor sign in url for popup logic
-        monitorSignInUrl();
-      } else if (hyperbeamInstance) {
-        currentUrlDisplay.textContent = "Loading browser session...";
-      } else {
-        currentUrlDisplay.textContent = "No browser session";
-      }
-    }
-
     async function endSession() {
       if (!currentSessionId) return;
       status.innerHTML = 'Ending session...';
@@ -651,6 +610,47 @@
       if (!embedUrl) {
         status.innerHTML = 'Invalid code';
         status.style.display = "block";
+        resetSessionUI();
+        setTimeout(() => { status.style.display = "none"; }, 3000);
+        return;
+      }
+      try {
+        currentEmbedUrl = embedUrl;
+        hyperbeamContainer.innerHTML = '';
+        vmSessionContainer.style.display = "block";
+        isJoined = true;
+        try {
+          hyperbeamInstance = await Hyperbeam(hyperbeamContainer, embedUrl, {
+            volume: 0.8,
+            videoPaused: false,
+            delegateKeyboard: true,
+            onConnectionStateChange: ({ state }) => {},
+            onDisconnect: ({ type }) => {
+              status.innerHTML = 'Connection lost';
+              status.style.display = "block";
+              setTimeout(() => { resetSessionUI(); }, 2000);
+            }
+          });
+          updateCurrentUrlDisplay();
+        } catch (hyperbeamError) {
+          status.innerHTML = 'Failed to connect to browser';
+          status.style.display = "block";
+          resetSessionUI();
+          setTimeout(() => { status.style.display = "none"; }, 5000);
+        }
+      } catch (error) {
+        status.innerHTML = 'Failed to join session';
+        status.style.display = "block";
+        resetSessionUI();
+        setTimeout(() => { status.style.display = "none"; }, 5000);
+      }
+    });
+
+    // Reset UI on page load
+    resetSessionUI();
+  </script>
+</body>
+</html>
         resetSessionUI();
         setTimeout(() => { status.style.display = "none"; }, 3000);
         return;
