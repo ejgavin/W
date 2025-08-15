@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VM API Frontend</title>
+  <style>
+    body { font-family: sans-serif; }
+    #virtualComputerDiv { height: 720px; width: 1280px; margin-top: 20px; }
+    .input-row { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h2>VM API Frontend</h2>
+  <div class="input-row">
+    <button id="createVmBtn">Create VM</button>
+    <span id="createVmResult"></span>
+  </div>
+  <div class="input-row">
+    <input id="joinSessionId" placeholder="Session ID to join">
+    <button id="joinVmBtn">Join VM</button>
+    <span id="joinVmResult"></span>
+  </div>
+  <div class="input-row">
+    <input id="deleteSessionId" placeholder="Session ID to delete">
+    <button id="deleteVmBtn">Delete VM</button>
+    <span id="deleteVmResult"></span>
+  </div>
+  <div class="input-row">
+    <button id="listAllBtn">List All VMs</button>
+    <pre id="listAllResult"></pre>
+  </div>
+  <div id="virtualComputerDiv"></div>
+  <script type="module">
+    import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js"
+
+    let hb = null;
+
+    async function showEmbed(embed_url) {
+      document.getElementById("virtualComputerDiv").innerHTML = "";
+      hb = await Hyperbeam(virtualComputerDiv, embed_url);
+      hb.tabs.onUpdated.addListener((tabId, changeInfo) => {
+        if (changeInfo.title)
+          document.getElementById("createVmResult").innerText = "Current site: " + changeInfo.title;
+      });
+    }
+
+    document.getElementById("createVmBtn").onclick = async () => {
+      document.getElementById("createVmResult").innerText = "Creating...";
+      const resp = await fetch("https://vmapi.vercel.app/api/api?add");
+      const data = await resp.json();
+      if (data.embed_url && data.session_id) {
+        document.getElementById("createVmResult").innerText = `Created! Session ID: ${data.session_id}`;
+        showEmbed(data.embed_url);
+      } else {
+        document.getElementById("createVmResult").innerText = "Error: " + (data.error || "Unknown error");
+      }
+    };
+
+    document.getElementById("joinVmBtn").onclick = async () => {
+      const sessionId = document.getElementById("joinSessionId").value.trim();
+      if (!sessionId) return;
+      document.getElementById("joinVmResult").innerText = "Joining...";
+      const resp = await fetch(`https://vmapi.vercel.app/api/api?join=${sessionId}`);
+      const data = await resp.json();
+      if (data.embed_url) {
+        document.getElementById("joinVmResult").innerText = `Joined! Session ID: ${data.session_id}`;
+        showEmbed(data.embed_url);
+      } else {
+        document.getElementById("joinVmResult").innerText = "Error: " + (data.error || "Unknown error");
+      }
+    };
+
+    document.getElementById("deleteVmBtn").onclick = async () => {
+      const sessionId = document.getElementById("deleteSessionId").value.trim();
+      if (!sessionId) return;
+      document.getElementById("deleteVmResult").innerText = "Deleting...";
+      const resp = await fetch(`https://vmapi.vercel.app/api/api?delete=1&sessionid=${sessionId}`);
+      const data = await resp.json();
+      if (data.success) {
+        document.getElementById("deleteVmResult").innerText = `Deleted session ${sessionId}`;
+      } else {
+        document.getElementById("deleteVmResult").innerText = "Error: " + (data.error || "Unknown error");
+      }
+    };
+
+    document.getElementById("listAllBtn").onclick = async () => {
+      document.getElementById("listAllResult").innerText = "Loading...";
+      const resp = await fetch("https://vmapi.vercel.app/api/api?listall=1");
+      const data = await resp.json();
+      if (data.sessions) {
+        document.getElementById("listAllResult").innerText = JSON.stringify(data.sessions, null, 2);
+      } else {
+        document.getElementById("listAllResult").innerText = "Error: " + (data.error || "Unknown error");
+      }
+    };
+  </script>
+</body>
+</html>
+
