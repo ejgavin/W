@@ -298,18 +298,16 @@
     </div>
   </div>
 
-  <div id="vmSessionContainer" style="display:none;">
-    <div class="glass-card" style="margin-bottom:0;">
-      <div class="vm-controls">
-        <button id="shareSession" class="action-btn" style="background:var(--accent2);color:#181c2b;">
-          <span>Share</span>
-        </button>
-        <button id="deleteSession" class="action-btn" style="background:var(--danger);">
-          <span>End</span>
-        </button>
-      </div>
+  <div id="vmSessionContainer" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-gradient); z-index:10;">
+    <div style="position:absolute;top:24px;right:32px;display:flex;gap:10px;z-index:20;">
+      <button id="shareSession" class="action-btn" style="background:var(--accent2);color:#181c2b;min-width:90px;width:auto;padding:8px 18px;">
+        <span>Share</span>
+      </button>
+      <button id="deleteSession" class="action-btn" style="background:var(--danger);min-width:90px;width:auto;padding:8px 18px;">
+        <span>End</span>
+      </button>
     </div>
-    <div id="hyperbeamContainer" class="hyperbeam-container"></div>
+    <div id="hyperbeamContainer" class="hyperbeam-container" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;margin:0;border-radius:0;box-shadow:none;"></div>
   </div>
 
   <div id="status" class="status"></div>
@@ -537,6 +535,8 @@
     // Reset UI on page load
     resetSessionUI();
   </script>
+</body>
+</html>
 </body>
 </html>
 
