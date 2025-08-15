@@ -307,6 +307,9 @@
         <span>End</span>
       </button>
     </div>
+    <div id="currentUrlDisplay" style="position:absolute;top:70px;right:32px;z-index:20;background:var(--glass-bg);color:var(--accent);padding:8px 16px;border-radius:8px;font-size:1rem;max-width:60vw;word-break:break-all;">
+      Loading current URL...
+    </div>
     <div id="hyperbeamContainer" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;margin:0;border-radius:0;box-shadow:none;"></div>
   </div>
 
@@ -343,6 +346,7 @@
     const copyCodeBtn = document.getElementById("copyCodeBtn");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const copyStatus = document.getElementById("copyStatus");
+    const currentUrlDisplay = document.getElementById("currentUrlDisplay");
 
     let currentSessionId = null;
     let currentEmbedUrl = null;
@@ -417,10 +421,35 @@
       isJoined = false;
     }
 
+    async function updateCurrentUrlDisplay() {
+      if (hyperbeamInstance && hyperbeamInstance.browser) {
+        try {
+          const url = await hyperbeamInstance.browser.url();
+          currentUrlDisplay.textContent = url || "No URL";
+        } catch {
+          currentUrlDisplay.textContent = "Unable to fetch URL";
+        }
+      } else {
+        currentUrlDisplay.textContent = "No browser session";
+      }
+    }
+
+    // Update the URL display every 2 seconds while session is active
+    let urlInterval = null;
+    function startUrlInterval() {
+      if (urlInterval) clearInterval(urlInterval);
+      urlInterval = setInterval(updateCurrentUrlDisplay, 2000);
+    }
+    function stopUrlInterval() {
+      if (urlInterval) clearInterval(urlInterval);
+      urlInterval = null;
+    }
+
     async function endSession() {
       if (!currentSessionId) return;
       status.innerHTML = 'Ending session...';
       status.style.display = "block";
+      stopUrlInterval();
       if (hyperbeamInstance) {
         try {
           await hyperbeamInstance.destroy();
@@ -467,6 +496,8 @@
                 setTimeout(() => { endSession(); }, 2000);
               }
             });
+            updateCurrentUrlDisplay();
+            startUrlInterval();
           } catch (hyperbeamError) {
             status.innerHTML = 'Failed to connect to browser';
             status.style.display = "block";
@@ -518,6 +549,8 @@
               setTimeout(() => { resetSessionUI(); }, 2000);
             }
           });
+          updateCurrentUrlDisplay();
+          startUrlInterval();
         } catch (hyperbeamError) {
           status.innerHTML = 'Failed to connect to browser';
           status.style.display = "block";
@@ -535,8 +568,6 @@
     // Reset UI on page load
     resetSessionUI();
   </script>
-</body>
-</html>
 </body>
 </html>
 
