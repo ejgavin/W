@@ -1,98 +1,502 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>VM API Frontend</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VAPOR Private VMs</title>
   <style>
-    body { font-family: sans-serif; }
-    #virtualComputerDiv { height: 720px; width: 1280px; margin-top: 20px; }
-    .input-row { margin-bottom: 10px; }
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap");
+    @import url("/_a/fa/css/all.min.css");
+
+    :root {
+      --bg-gradient: linear-gradient(135deg, #23243a 0%, #2b384d 100%);
+      --glass-bg: rgba(34, 39, 54, 0.85);
+      --accent: #4c75f2;
+      --accent2: #34d399;
+      --danger: #ff6b6b;
+      --text: #e3e9f7;
+      --subtext: #a4b8db;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .centered-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 32px;
+      animation: fadeIn 0.8s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 36px 32px 32px 32px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      border: 1.5px solid var(--border);
+      backdrop-filter: blur(12px);
+      animation: fadeIn 1.2s;
+    }
+
+    .title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .desc {
+      font-size: 1.08rem;
+      color: var(--subtext);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 0;
+      margin-bottom: 12px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(76,117,242,0.08);
+      transition: background 0.2s, transform 0.2s;
+    }
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+    .action-btn:disabled {
+      background: #444f60;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .info-row {
+      margin-top: 18px;
+      font-size: 1rem;
+      color: var(--subtext);
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .timer {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.1rem;
+      background: rgba(76,117,242,0.08);
+      border-radius: 8px;
+      padding: 6px 14px;
+      margin-left: 8px;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .timer.low { color: var(--danger); background: rgba(255,107,107,0.08); }
+
+    .session-id {
+      font-size: 0.98rem;
+      background: rgba(52,211,153,0.08);
+      color: var(--accent2);
+      border-radius: 8px;
+      padding: 6px 14px;
+      letter-spacing: 1px;
+      font-weight: 600;
+      user-select: all;
+    }
+
+    .hyperbeam-container {
+      width: 100vw;
+      height: 70vh;
+      background: #181c2b;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      margin-top: 18px;
+      overflow: hidden;
+      animation: fadeIn 1.2s;
+    }
+
+    .status {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 18px 24px;
+      color: var(--text);
+      background: var(--glass-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      font-size: 1.1rem;
+      z-index: 100;
+      display: none;
+      animation: fadeIn 0.4s;
+    }
+
+    .share-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(34,39,54,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      animation: fadeIn 0.3s;
+    }
+    .share-modal {
+      background: var(--glass-bg);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 32px 28px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      border: 1.5px solid var(--border);
+      animation: fadeIn 0.5s;
+    }
+    .share-modal h3 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      color: var(--accent2);
+      font-weight: 700;
+    }
+    .share-modal p {
+      color: var(--subtext);
+      font-size: 1rem;
+      margin-bottom: 18px;
+    }
+    .share-code-container {
+      background: #181c2b;
+      padding: 12px 18px;
+      border-radius: 8px;
+      color: var(--accent);
+      font-family: monospace;
+      font-size: 1rem;
+      margin-bottom: 18px;
+      word-break: break-all;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+    .copy-status {
+      position: absolute;
+      top: -18px;
+      right: 12px;
+      background: var(--accent2);
+      color: #181c2b;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      display: none;
+    }
+    .copy-status.show {
+      opacity: 1;
+      transform: translateY(0);
+      display: block;
+    }
+    .share-modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 0;
+      width: 100%;
+    }
+    .share-modal button {
+      padding: 0.62rem 1.35rem;
+      border: none;
+      font-weight: 600;
+      font-size: 1.15rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      width: auto;
+      background: var(--accent);
+      color: #fff;
+    }
+    .share-modal button:hover {
+      background: var(--accent2);
+      color: #181c2b;
+    }
+    @media (max-width: 900px) {
+      .glass-card { max-width: 98vw; padding: 18px 8px; }
+      .hyperbeam-container { height: 50vh; }
+    }
+    @media (max-width: 600px) {
+      .glass-card { padding: 8px 2px; }
+      .hyperbeam-container { height: 38vh; }
+    }
   </style>
 </head>
 <body>
-  <h2>VM API Frontend</h2>
-  <div class="input-row">
-    <button id="createVmBtn">Create VM</button>
-    <span id="createVmResult"></span>
+  <div class="centered-container" id="introContainer">
+    <div class="glass-card">
+      <div class="title">VAPOR Private VMs</div>
+      <div class="desc">
+        Launch a secure, personal browser in the cloud.<br>
+        <span style="color:var(--accent2);font-weight:600;">18 minutes</span> of uninterrupted browsing.<br>
+        Need a new session? Just click "Start Session" again!
+      </div>
+      <button id="createSession" class="action-btn">
+        <i class="fa-regular fa-desktop"></i> Start Session
+      </button>
+    </div>
   </div>
-  <div class="input-row">
-    <input id="joinSessionId" placeholder="Session ID to join">
-    <button id="joinVmBtn">Join VM</button>
-    <span id="joinVmResult"></span>
+
+  <div id="vmSessionContainer" style="display:none;">
+    <div class="glass-card" style="margin-bottom:0;">
+      <div class="info-row">
+        <span id="sessionIdDisplay" class="session-id"></span>
+        <span id="timer" class="timer">18:00</span>
+      </div>
+      <div style="margin-top:18px;display:flex;gap:12px;justify-content:center;">
+        <button id="shareSession" class="action-btn" style="background:var(--accent2);color:#181c2b;">
+          <i class="fa-solid fa-share"></i> Share Session
+        </button>
+        <button id="deleteSession" class="action-btn" style="background:var(--danger);">
+          <i class="fa-solid fa-trash"></i> End Session
+        </button>
+      </div>
+    </div>
+    <div id="hyperbeamContainer" class="hyperbeam-container"></div>
   </div>
-  <div class="input-row">
-    <input id="deleteSessionId" placeholder="Session ID to delete">
-    <button id="deleteVmBtn">Delete VM</button>
-    <span id="deleteVmResult"></span>
+
+  <div id="status" class="status"></div>
+  <div id="shareModalOverlay" class="share-modal-overlay">
+    <div class="share-modal">
+      <h3><i class="fa-solid fa-share" style="margin-right: 8px"></i>Share Session</h3>
+      <p>Give this code to your friend so they can join this VM:</p>
+      <div class="share-code-container">
+        <div id="shareCode" class="share-code">--</div>
+        <div id="copyStatus" class="copy-status">Copied!</div>
+      </div>
+      <div class="share-modal-buttons">
+        <button id="copyCodeBtn">
+          <i class="fa-solid fa-copy" style="margin-right: 6px"></i>Copy
+        </button>
+        <button id="closeModalBtn">
+          <i class="fa-solid fa-times" style="margin-right: 6px"></i>Close
+        </button>
+      </div>
+    </div>
   </div>
-  <div class="input-row">
-    <button id="listAllBtn">List All VMs</button>
-    <pre id="listAllResult"></pre>
-  </div>
-  <div id="virtualComputerDiv"></div>
+
   <script type="module">
     import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js"
 
-    let hb = null;
+    const createSessionBtn = document.getElementById("createSession");
+    const deleteSessionBtn = document.getElementById("deleteSession");
+    const shareSessionBtn = document.getElementById("shareSession");
+    const introContainer = document.getElementById("introContainer");
+    const vmSessionContainer = document.getElementById("vmSessionContainer");
+    const hyperbeamContainer = document.getElementById("hyperbeamContainer");
+    const timer = document.getElementById("timer");
+    const sessionIdDisplay = document.getElementById("sessionIdDisplay");
+    const status = document.getElementById("status");
+    const shareModalOverlay = document.getElementById("shareModalOverlay");
+    const shareCodeElement = document.getElementById("shareCode");
+    const copyCodeBtn = document.getElementById("copyCodeBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const copyStatus = document.getElementById("copyStatus");
 
-    async function showEmbed(embed_url) {
-      document.getElementById("virtualComputerDiv").innerHTML = "";
-      hb = await Hyperbeam(virtualComputerDiv, embed_url);
-      hb.tabs.onUpdated.addListener((tabId, changeInfo) => {
-        if (changeInfo.title)
-          document.getElementById("createVmResult").innerText = "Current site: " + changeInfo.title;
-      });
+    let countdownInterval;
+    let currentSessionId = null;
+    let currentEmbedUrl = null;
+    let hyperbeamInstance = null;
+    let timeLeft = 1080; // 18 minutes
+
+    function updateCountdownDisplay(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      timer.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+      if (seconds <= 60) {
+        timer.classList.add("low");
+      } else {
+        timer.classList.remove("low");
+      }
     }
 
-    document.getElementById("createVmBtn").onclick = async () => {
-      document.getElementById("createVmResult").innerText = "Creating...";
-      const resp = await fetch("https://vmapi.vercel.app/api/api?add");
-      const data = await resp.json();
-      if (data.embed_url && data.session_id) {
-        document.getElementById("createVmResult").innerText = `Created! Session ID: ${data.session_id}`;
-        showEmbed(data.embed_url);
-      } else {
-        document.getElementById("createVmResult").innerText = "Error: " + (data.error || "Unknown error");
+    function generateShareCode(embedUrl) {
+      const urlParts = embedUrl.match(/https:\/\/([^.]+)\.hyperbeam\.com\/([^?]+)\?token=(.+)/);
+      if (urlParts && urlParts.length === 4) {
+        return `${urlParts[1]}|${urlParts[2]}|${urlParts[3]}`;
       }
-    };
+      return null;
+    }
 
-    document.getElementById("joinVmBtn").onclick = async () => {
-      const sessionId = document.getElementById("joinSessionId").value.trim();
-      if (!sessionId) return;
-      document.getElementById("joinVmResult").innerText = "Joining...";
-      const resp = await fetch(`https://vmapi.vercel.app/api/api?join=${sessionId}`);
-      const data = await resp.json();
-      if (data.embed_url) {
-        document.getElementById("joinVmResult").innerText = `Joined! Session ID: ${data.session_id}`;
-        showEmbed(data.embed_url);
-      } else {
-        document.getElementById("joinVmResult").innerText = "Error: " + (data.error || "Unknown error");
-      }
-    };
+    function showCopyStatus() {
+      copyStatus.style.display = "block";
+      copyStatus.classList.add("show");
+      setTimeout(() => {
+        copyStatus.classList.remove("show");
+        setTimeout(() => {
+          copyStatus.style.display = "none";
+        }, 200);
+      }, 2000);
+    }
 
-    document.getElementById("deleteVmBtn").onclick = async () => {
-      const sessionId = document.getElementById("deleteSessionId").value.trim();
-      if (!sessionId) return;
-      document.getElementById("deleteVmResult").innerText = "Deleting...";
-      const resp = await fetch(`https://vmapi.vercel.app/api/api?delete=1&sessionid=${sessionId}`);
-      const data = await resp.json();
-      if (data.success) {
-        document.getElementById("deleteVmResult").innerText = `Deleted session ${sessionId}`;
-      } else {
-        document.getElementById("deleteVmResult").innerText = "Error: " + (data.error || "Unknown error");
-      }
-    };
+    function hideShareModal() {
+      shareModalOverlay.style.display = "none";
+    }
 
-    document.getElementById("listAllBtn").onclick = async () => {
-      document.getElementById("listAllResult").innerText = "Loading...";
-      const resp = await fetch("https://vmapi.vercel.app/api/api?listall=1");
-      const data = await resp.json();
-      if (data.sessions) {
-        document.getElementById("listAllResult").innerText = JSON.stringify(data.sessions, null, 2);
-      } else {
-        document.getElementById("listAllResult").innerText = "Error: " + (data.error || "Unknown error");
+    copyCodeBtn.addEventListener("click", async () => {
+      const shareCode = shareCodeElement.textContent;
+      try {
+        await navigator.clipboard.writeText(shareCode);
+        showCopyStatus();
+      } catch (error) {
+        console.error("Failed to copy ", error);
       }
-    };
+    });
+
+    closeModalBtn.addEventListener("click", hideShareModal);
+    shareModalOverlay.addEventListener("click", (e) => {
+      if (e.target === shareModalOverlay) hideShareModal();
+    });
+
+    shareSessionBtn.addEventListener("click", () => {
+      if (currentEmbedUrl) {
+        const shareCode = generateShareCode(currentEmbedUrl);
+        if (shareCode) {
+          shareCodeElement.textContent = shareCode;
+          shareModalOverlay.style.display = "flex";
+        }
+      }
+    });
+
+    function resetSessionUI() {
+      currentSessionId = null;
+      currentEmbedUrl = null;
+      hyperbeamContainer.innerHTML = '';
+      vmSessionContainer.style.display = "none";
+      introContainer.style.display = "flex";
+      createSessionBtn.disabled = false;
+      timer.textContent = "18:00";
+      sessionIdDisplay.textContent = "";
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+    }
+
+    async function endSession() {
+      if (!currentSessionId) return;
+      status.innerHTML = '<i class="fas fa-spinner loading-icon"></i> Ending session...';
+      status.style.display = "block";
+      if (hyperbeamInstance) {
+        try {
+          await hyperbeamInstance.destroy();
+          hyperbeamInstance = null;
+        } catch (error) {
+          console.error("Error destroying Hyperbeam instance:", error);
+        }
+      }
+      try {
+        await fetch(`https://vmapi.vercel.app/api/api?delete=1&sessionid=${currentSessionId}`);
+        status.innerHTML = '<i class="fas fa-check-circle"></i> Session ended';
+        setTimeout(() => { status.style.display = "none"; }, 2000);
+      } catch (error) {
+        status.innerHTML = '<i class="fas fa-times-circle"></i> Session ended (cleanup may be delayed)';
+        setTimeout(() => { status.style.display = "none"; }, 2000);
+      }
+      resetSessionUI();
+    }
+
+    deleteSessionBtn.addEventListener("click", endSession);
+
+    createSessionBtn.addEventListener("click", async () => {
+      createSessionBtn.disabled = true;
+      status.style.display = "none";
+      introContainer.style.display = "none";
+      try {
+        const resp = await fetch("https://vmapi.vercel.app/api/api?add");
+        const data = await resp.json();
+        if (data.embed_url && data.session_id) {
+          currentSessionId = data.session_id;
+          currentEmbedUrl = data.embed_url;
+          hyperbeamContainer.innerHTML = '';
+          vmSessionContainer.style.display = "block";
+          sessionIdDisplay.textContent = `Session ID: ${currentSessionId}`;
+          timeLeft = 1080;
+          updateCountdownDisplay(timeLeft);
+          countdownInterval = setInterval(() => {
+            timeLeft--;
+            updateCountdownDisplay(timeLeft);
+            if (timeLeft <= 0) {
+              clearInterval(countdownInterval);
+              endSession();
+            }
+          }, 1000);
+          try {
+            hyperbeamInstance = await Hyperbeam(hyperbeamContainer, data.embed_url, {
+              volume: 0.8,
+              videoPaused: false,
+              delegateKeyboard: true,
+              onConnectionStateChange: ({ state }) => {},
+              onDisconnect: ({ type }) => {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Connection lost';
+                status.style.display = "block";
+                setTimeout(() => { endSession(); }, 2000);
+              }
+            });
+          } catch (hyperbeamError) {
+            status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Failed to connect to browser';
+            status.style.display = "block";
+            resetSessionUI();
+            setTimeout(() => { status.style.display = "none"; }, 5000);
+          }
+        } else {
+          status.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (data.error || "Unknown error");
+          status.style.display = "block";
+          resetSessionUI();
+          setTimeout(() => { status.style.display = "none"; }, 5000);
+        }
+      } catch (error) {
+        status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> No sessions available';
+        status.style.display = "block";
+        resetSessionUI();
+        setTimeout(() => { status.style.display = "none"; }, 5000);
+      }
+    });
+
+    // Reset UI on page load
+    resetSessionUI();
   </script>
 </body>
 </html>
