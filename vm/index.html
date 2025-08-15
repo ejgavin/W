@@ -306,9 +306,21 @@
       <button id="deleteSession" class="action-btn" style="background:var(--danger);min-width:90px;width:auto;padding:8px 18px;">
         <span>End</span>
       </button>
+      <button id="signInBtn" class="action-btn" style="background:var(--accent);color:#fff;min-width:90px;width:auto;padding:8px 18px;">
+        <span>Sign In</span>
+      </button>
+      <button id="doneSignInBtn" class="action-btn" style="background:var(--accent2);color:#181c2b;min-width:90px;width:auto;padding:8px 18px;display:none;">
+        <span>Done Signing In</span>
+      </button>
     </div>
     <div id="currentUrlDisplay" style="position:absolute;top:70px;right:32px;z-index:20;background:var(--glass-bg);color:var(--accent);padding:8px 16px;border-radius:8px;font-size:1rem;max-width:60vw;word-break:break-all;">
       Loading current URL...
+    </div>
+    <div id="signInPopup" style="display:none;position:absolute;top:120px;right:32px;z-index:21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
+      <strong>To play, you must sign in or create an account.<br>
+      Otherwise, you are limited to 30 minutes.</strong>
+      <br><br>
+      You have <span id="signInTimer" style="font-weight:bold;">60</span> seconds to sign in before being redirected.
     </div>
     <div id="hyperbeamContainer" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;margin:0;border-radius:0;box-shadow:none;"></div>
   </div>
@@ -347,11 +359,19 @@
     const closeModalBtn = document.getElementById("closeModalBtn");
     const copyStatus = document.getElementById("copyStatus");
     const currentUrlDisplay = document.getElementById("currentUrlDisplay");
+    const signInBtn = document.getElementById("signInBtn");
+    const doneSignInBtn = document.getElementById("doneSignInBtn");
+    const signInPopup = document.getElementById("signInPopup");
+    const signInTimer = document.getElementById("signInTimer");
 
     let currentSessionId = null;
     let currentEmbedUrl = null;
     let hyperbeamInstance = null;
     let isJoined = false;
+    let signInCountdown = null;
+    let signInTimeout = null;
+    let originalUrl = "https://www.easyfun.gg/embed/roblox.html";
+    let signInUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
 
     function generateShareCode(embedUrl) {
       const urlParts = embedUrl.match(/https:\/\/([^.]+)\.hyperbeam\.com\/([^?]+)\?token=(.+)/);
@@ -384,6 +404,35 @@
       shareModalOverlay.style.display = "none";
     }
 
+    function showSignInPopup() {
+      signInPopup.style.display = "block";
+      let seconds = 60;
+      signInTimer.textContent = seconds;
+      clearInterval(signInCountdown);
+      clearTimeout(signInTimeout);
+      signInCountdown = setInterval(() => {
+        seconds--;
+        signInTimer.textContent = seconds;
+        if (seconds <= 0) {
+          clearInterval(signInCountdown);
+        }
+      }, 1000);
+      signInTimeout = setTimeout(() => {
+        signInPopup.style.display = "none";
+        doneSignInBtn.style.display = "none";
+        // Navigate back to original site
+        if (hyperbeamInstance && hyperbeamInstance.tabs) {
+          hyperbeamInstance.tabs.update({ url: originalUrl });
+        }
+      }, 60000);
+    }
+
+    function hideSignInPopup() {
+      signInPopup.style.display = "none";
+      clearInterval(signInCountdown);
+      clearTimeout(signInTimeout);
+    }
+
     copyCodeBtn.addEventListener("click", async () => {
       const shareCode = shareCodeElement.textContent;
       try {
@@ -408,6 +457,39 @@
         }
       }
     });
+
+    signInBtn.addEventListener("click", () => {
+      // Navigate to sign in page
+      if (hyperbeamInstance && hyperbeamInstance.tabs) {
+        hyperbeamInstance.tabs.update({ url: signInUrl });
+        showSignInPopup();
+        doneSignInBtn.style.display = "inline-block";
+      }
+    });
+
+    doneSignInBtn.addEventListener("click", () => {
+      // Navigate back to original site
+      if (hyperbeamInstance && hyperbeamInstance.tabs) {
+        hyperbeamInstance.tabs.update({ url: originalUrl });
+        hideSignInPopup();
+        doneSignInBtn.style.display = "none";
+      }
+    });
+
+    // Hide popup and button if user navigates away from signInUrl
+    async function monitorSignInUrl() {
+      if (hyperbeamInstance && hyperbeamInstance.tabs && typeof hyperbeamInstance.tabs.onUpdated?.addListener === 'function') {
+        if (!hyperbeamInstance._signInMonitorAdded) {
+          hyperbeamInstance.tabs.onUpdated.addListener((tabId, changeInfo) => {
+            if (changeInfo.url && changeInfo.url !== signInUrl) {
+              hideSignInPopup();
+              doneSignInBtn.style.display = "none";
+            }
+          });
+          hyperbeamInstance._signInMonitorAdded = true;
+        }
+      }
+    }
 
     function resetSessionUI() {
       currentSessionId = null;
@@ -441,6 +523,8 @@
         } catch {
           currentUrlDisplay.textContent = "Unable to fetch tab info";
         }
+        // Monitor sign in url for popup logic
+        monitorSignInUrl();
       } else if (hyperbeamInstance) {
         currentUrlDisplay.textContent = "Loading browser session...";
       } else {
@@ -448,22 +532,10 @@
       }
     }
 
-    // Update the URL display every 2 seconds while session is active
-    let urlInterval = null;
-    function startUrlInterval() {
-      if (urlInterval) clearInterval(urlInterval);
-      urlInterval = setInterval(updateCurrentUrlDisplay, 2000);
-    }
-    function stopUrlInterval() {
-      if (urlInterval) clearInterval(urlInterval);
-      urlInterval = null;
-    }
-
     async function endSession() {
       if (!currentSessionId) return;
       status.innerHTML = 'Ending session...';
       status.style.display = "block";
-      stopUrlInterval();
       if (hyperbeamInstance) {
         try {
           await hyperbeamInstance.destroy();
@@ -511,7 +583,6 @@
               }
             });
             updateCurrentUrlDisplay();
-            startUrlInterval();
           } catch (hyperbeamError) {
             status.innerHTML = 'Failed to connect to browser';
             status.style.display = "block";
@@ -564,7 +635,6 @@
             }
           });
           updateCurrentUrlDisplay();
-          startUrlInterval();
         } catch (hyperbeamError) {
           status.innerHTML = 'Failed to connect to browser';
           status.style.display = "block";
