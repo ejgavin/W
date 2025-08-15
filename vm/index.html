@@ -422,13 +422,17 @@
     }
 
     async function updateCurrentUrlDisplay() {
-      if (hyperbeamInstance && hyperbeamInstance.browser) {
+      // FIX: Wait for browser property to be ready
+      if (hyperbeamInstance && typeof hyperbeamInstance.browser?.url === 'function') {
         try {
           const url = await hyperbeamInstance.browser.url();
           currentUrlDisplay.textContent = url || "No URL";
         } catch {
           currentUrlDisplay.textContent = "Unable to fetch URL";
         }
+      } else if (hyperbeamInstance) {
+        // Browser property may not be ready yet, try again soon
+        currentUrlDisplay.textContent = "Loading browser session...";
       } else {
         currentUrlDisplay.textContent = "No browser session";
       }
