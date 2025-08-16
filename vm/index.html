@@ -579,7 +579,7 @@
                 setTimeout(() => { endSession(); }, 2000);
               }
             });
-            updateCurrentUrlDisplay();
+            monitorSignInUrl();
           } catch (hyperbeamError) {
             status.innerHTML = 'Failed to connect to browser';
             status.style.display = "block";
@@ -631,7 +631,7 @@
               setTimeout(() => { resetSessionUI(); }, 2000);
             }
           });
-          updateCurrentUrlDisplay();
+          monitorSignInUrl();
         } catch (hyperbeamError) {
           status.innerHTML = 'Failed to connect to browser';
           status.style.display = "block";
