@@ -289,39 +289,30 @@
       <button id="createSession" class="action-btn">
         <span>Start Session</span>
       </button>
-      <div class="input-row">
-        <input id="joinCodeInput" placeholder="Enter share code to join" />
-        <button id="joinSessionBtn" class="action-btn" style="background:var(--accent2);color:#181c2b;">
-          <span>Join Session</span>
-        </button>
-      </div>
+      <button id="joinSessionBtn" class="action-btn" style="background:var(--accent2);color:#181c2b;">
+        <span>Join Session</span>
+      </button>
+    </div>
+    <!-- ADDED: Active Sessions Section -->
+    <div id="sessionsContainer" style="margin-top: 20px; padding: 20px; background: var(--glass-bg); border-radius: 12px; box-shadow: var(--shadow); color: var(--text); max-width: 600px; width: 90%; display: none;">
+      <h3 style="margin-bottom: 10px; color: var(--accent2);">Active Sessions</h3>
+      <div id="sessionsList"></div>
     </div>
   </div>
 
   <div id="vmSessionContainer" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-gradient); z-index:10;">
     <div id="vm-controls-bar" style="position:absolute;top:24px;left:32px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;z-index:20;">
-      <button id="shareSession" class="action-btn" style="background:var(--accent2);color:#181c2b;min-width:90px;width:auto;padding:8px 18px;">
+      <!-- UPDATED: Modernized Share and End buttons -->
+      <button id="shareSession" class="action-btn" style="background:linear-gradient(90deg, #4caf50, #81c784);color:#fff;min-width:90px;width:auto;padding:10px 20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.2);">
         <span>Share</span>
       </button>
-      <button id="deleteSession" class="action-btn" style="background:var(--danger);min-width:90px;width:auto;padding:8px 18px;">
+      <button id="deleteSession" class="action-btn" style="background:linear-gradient(90deg, #e53935, #ef5350);color:#fff;min-width:90px;width:auto;padding:10px 20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.2);">
         <span>End</span>
       </button>
-      <button id="signInBtn" class="action-btn" style="background:var(--accent);color:#fff;min-width:90px;width:auto;padding:8px 18px;">
-        <span>Sign In</span>
-      </button>
-      <button id="doneSignInBtn" class="action-btn" style="background:var(--accent2);color:#181c2b;min-width:90px;width:auto;padding:8px 18px;display:none;">
-        <span>Done Signing In</span>
-      </button>
     </div>
-    <div id="signInPopup" style="display:none;position:absolute;top:120px;left:32px;z-index=21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
-      <strong>To play, you must sign in or create an account.<br>
-      Otherwise, you are limited to 30 minutes.</strong>
-      <br><br>
-      You have <span id="signInTimer" style="font-weight:bold;">60</span> seconds to sign in before being redirected.
-      <br>
-      <button id="extendSignInBtn" class="action-btn" style="background:var(--accent);color:#fff;margin-top:10px;min-width:90px;width:auto;padding:6px 14px;">
-        Extend Time (+30s)
-      </button>
+    <!-- ADDED: Timer for session termination -->
+    <div id="sessionTimer" style="position:absolute;top:24px;right:32px;background:var(--glass-bg);color:var(--accent);padding:10px 20px;border-radius:12px;box-shadow:var(--shadow);font-size:1rem;">
+      Time Left: <span id="sessionTimeLeft">30:00</span>
     </div>
     <div id="hyperbeamContainer" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;margin:0;border-radius:0;box-shadow:none;"></div>
   </div>
@@ -341,8 +332,6 @@
       </div>
     </div>
   </div>
-
-  <div id="sessionsContainer" style="display:none; margin-top: 20px; padding: 20px; background: var(--glass-bg); border-radius: 12px; box-shadow: var(--shadow); color: var(--text); max-width: 600px; width: 90%;"></div>
 
   <div id="joinPopup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--glass-bg); padding:20px; border-radius:12px; box-shadow:var(--shadow); z-index:200; max-width:400px; width:90%;">
     <h3 style="margin-bottom: 10px; color: var(--accent2);">Join Session</h3>
@@ -376,10 +365,7 @@
     const signInTimer = document.getElementById("signInTimer");
     const extendSignInBtn = document.getElementById("extendSignInBtn");
     const sessionsContainer = document.getElementById("sessionsContainer");
-    const joinPopup = document.getElementById("joinPopup");
-    const joinCodePopupInput = document.getElementById("joinCodePopupInput");
-    const joinPopupConfirmBtn = document.getElementById("joinPopupConfirmBtn");
-    const joinPopupCancelBtn = document.getElementById("joinPopupCancelBtn");
+    const sessionsList = document.getElementById("sessionsList");
 
     // Parse preset and url from window.location.search
     const urlParams = new URLSearchParams(window.location.search);
@@ -562,6 +548,8 @@
       if (!currentSessionId) return;
       status.innerHTML = 'Ending session...';
       status.style.display = "block";
+      clearInterval(sessionCountdown); // Stop the session timer
+      sessionTimer.style.display = "none"; // Hide the timer
       if (hyperbeamInstance) {
         try {
           await hyperbeamInstance.destroy();
@@ -588,13 +576,7 @@
       status.style.display = "none";
       introContainer.style.display = "none";
       try {
-        let fetchUrl = "https://vmapi.vercel.app/api/api?add";
-        if (presetParam === "roblox") {
-          fetchUrl = "https://vmapi.vercel.app/api/api?add&preset=roblox";
-        } else if (customUrlParam) {
-          fetchUrl = "https://vmapi.vercel.app/api/api?add&url=" + encodeURIComponent(customUrlParam);
-        }
-        const resp = await fetch(fetchUrl);
+        const resp = await fetch("https://vmapi.vercel.app/api/api?add");
         const data = await resp.json();
         if (data.embed_url && data.session_id) {
           currentSessionId = data.session_id;
@@ -622,6 +604,7 @@
                 setTimeout(() => { endSession(); }, 2000);
               }
             });
+            startSessionTimer(1800); // Start 30-minute timer
             monitorSignInUrl();
           } catch (hyperbeamError) {
             status.innerHTML = 'Failed to connect to browser';
@@ -698,6 +681,85 @@
         setTimeout(() => { status.style.display = "none"; }, 5000);
       }
     });
+
+    let sessionCountdown = null;
+
+    // Function to start the session timer
+    function startSessionTimer(durationInSeconds) {
+      let remainingTime = durationInSeconds;
+      sessionTimer.style.display = "block";
+
+      function updateTimerDisplay() {
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        sessionTimeLeft.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
+
+      updateTimerDisplay();
+
+      sessionCountdown = setInterval(() => {
+        remainingTime--;
+        updateTimerDisplay();
+
+        if (remainingTime <= 0) {
+          clearInterval(sessionCountdown);
+          endSession();
+        }
+      }, 1000);
+    }
+
+    // Function to fetch and display active sessions with live countdown
+    async function fetchAndDisplaySessions() {
+      sessionsContainer.style.display = "block";
+      sessionsList.innerHTML = ""; // Clear previous sessions
+
+      try {
+        const response = await fetch("https://vmapi.vercel.app/api/api?listall");
+        const data = await response.json();
+        const sessions = data.sessions;
+
+        if (sessions && Object.keys(sessions).length > 0) {
+          for (const sessionId in sessions) {
+            const session = sessions[sessionId];
+            const sessionElement = document.createElement("div");
+            sessionElement.style = "margin: 10px 0; padding: 10px; background: var(--glass-bg); border-radius: 8px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center;";
+
+            const sessionName = document.createElement("span");
+            sessionName.textContent = `Session: ${session.sessionName}`;
+            sessionName.style = "font-size: 1rem;";
+
+            const sessionTime = document.createElement("span");
+            sessionTime.textContent = "Loading...";
+            sessionTime.style = "font-size: 1rem; color: var(--accent);";
+            sessionElement.appendChild(sessionName);
+            sessionElement.appendChild(sessionTime);
+
+            sessionsList.appendChild(sessionElement);
+
+            // Start live countdown for each session
+            let remainingTime = session.timeLeft; // Assume `timeLeft` is in seconds
+            function updateSessionTime() {
+              const minutes = Math.floor(remainingTime / 60);
+              const seconds = remainingTime % 60;
+              sessionTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+              if (remainingTime > 0) {
+                remainingTime--;
+              }
+            }
+            updateSessionTime();
+            setInterval(updateSessionTime, 1000);
+          }
+        } else {
+          sessionsList.innerHTML = "<p>No active sessions found.</p>";
+        }
+      } catch (error) {
+        console.error("Failed to fetch sessions:", error);
+        sessionsList.innerHTML = "<p>Failed to load active sessions.</p>";
+      }
+    }
+
+    // Call the function to fetch and display sessions on page load
+    fetchAndDisplaySessions();
 
     // Reset UI on page load
     resetSessionUI();
