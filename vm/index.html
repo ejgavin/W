@@ -342,6 +342,17 @@
     </div>
   </div>
 
+  <div id="sessionsContainer" style="display:none; margin-top: 20px; padding: 20px; background: var(--glass-bg); border-radius: 12px; box-shadow: var(--shadow); color: var(--text); max-width: 600px; width: 90%;"></div>
+
+  <div id="joinPopup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--glass-bg); padding:20px; border-radius:12px; box-shadow:var(--shadow); z-index:200; max-width:400px; width:90%;">
+    <h3 style="margin-bottom: 10px; color: var(--accent2);">Join Session</h3>
+    <input id="joinCodePopupInput" placeholder="Enter share code" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid var(--border); background:#23243a; color:var(--text); font-size:1rem;" />
+    <div style="display:flex; justify-content:space-between;">
+      <button id="joinPopupConfirmBtn" class="action-btn" style="width:48%;">Join</button>
+      <button id="joinPopupCancelBtn" class="action-btn" style="width:48%; background:var(--danger);">Cancel</button>
+    </div>
+  </div>
+
   <script type="module">
     import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
@@ -364,6 +375,11 @@
     const signInPopup = document.getElementById("signInPopup");
     const signInTimer = document.getElementById("signInTimer");
     const extendSignInBtn = document.getElementById("extendSignInBtn");
+    const sessionsContainer = document.getElementById("sessionsContainer");
+    const joinPopup = document.getElementById("joinPopup");
+    const joinCodePopupInput = document.getElementById("joinCodePopupInput");
+    const joinPopupConfirmBtn = document.getElementById("joinPopupConfirmBtn");
+    const joinPopupCancelBtn = document.getElementById("joinPopupCancelBtn");
 
     // Parse preset and url from window.location.search
     const urlParams = new URLSearchParams(window.location.search);
@@ -627,10 +643,20 @@
       }
     });
 
-    joinSessionBtn.addEventListener("click", async () => {
-      const code = joinCodeInput.value.trim();
+    joinSessionBtn.addEventListener("click", () => {
+      joinPopup.style.display = "block";
+    });
+
+    joinPopupCancelBtn.addEventListener("click", () => {
+      joinPopup.style.display = "none";
+      joinCodePopupInput.value = "";
+    });
+
+    joinPopupConfirmBtn.addEventListener("click", async () => {
+      const code = joinCodePopupInput.value.trim();
       if (!code) return;
-      joinSessionBtn.disabled = true;
+      joinPopup.style.display = "none";
+      joinCodePopupInput.value = "";
       status.style.display = "none";
       introContainer.style.display = "none";
       const embedUrl = reconstructEmbedUrl(code);
@@ -658,62 +684,13 @@
               setTimeout(() => { resetSessionUI(); }, 2000);
             }
           });
-          updateCurrentUrlDisplay();
+          if (presetParam === "roblox") monitorSignInUrl();
         } catch (hyperbeamError) {
           status.innerHTML = 'Failed to connect to browser';
           status.style.display = "block";
           resetSessionUI();
           setTimeout(() => { status.style.display = "none"; }, 5000);
         }
-      } catch (error) {
-        status.innerHTML = 'Failed to join session';
-        status.style.display = "block";
-        resetSessionUI();
-        setTimeout(() => { status.style.display = "none"; }, 5000);
-      }
-    });
-
-    // ADDED: Function to fetch and display active sessions
-    async function fetchAndDisplaySessions() {
-      const sessionsContainer = document.createElement("div");
-      sessionsContainer.id = "sessionsContainer";
-      sessionsContainer.style = "margin-top: 20px; padding: 20px; background: var(--glass-bg); border-radius: 12px; box-shadow: var(--shadow); color: var(--text); max-width: 600px; width: 90%;";
-      sessionsContainer.innerHTML = "<h3 style='margin-bottom: 10px; color: var(--accent2);'>Active Sessions</h3>";
-
-      try {
-        const response = await fetch("https://vmapi.vercel.app/api/api?listall");
-        const data = await response.json();
-        const sessions = data.sessions;
-
-        if (sessions && Object.keys(sessions).length > 0) {
-          let sessionIndex = 1;
-          for (const sessionId in sessions) {
-            const session = sessions[sessionId];
-            const sessionElement = document.createElement("p");
-            sessionElement.textContent = `Session ${sessionIndex}: ${session.sessionName}`;
-            sessionElement.style = "margin: 5px 0; font-size: 1rem;";
-            sessionsContainer.appendChild(sessionElement);
-            sessionIndex++;
-          }
-        } else {
-          sessionsContainer.innerHTML += "<p>No active sessions found.</p>";
-        }
-      } catch (error) {
-        console.error("Failed to fetch sessions:", error);
-        sessionsContainer.innerHTML += "<p>Failed to load active sessions.</p>";
-      }
-
-      document.body.appendChild(sessionsContainer);
-    }
-
-    // Call the function to fetch and display sessions on page load
-    fetchAndDisplaySessions();
-
-    // Reset UI on page load
-    resetSessionUI();
-  </script>
-</body>
-</html>
       } catch (error) {
         status.innerHTML = 'Failed to join session';
         status.style.display = "block";
