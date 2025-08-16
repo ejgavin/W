@@ -280,9 +280,9 @@
 <body>
   <div class="centered-container" id="introContainer">
     <div class="glass-card">
-      <div class="title">Roblx Player</div>
+      <div class="title">Player</div>
       <div class="desc">
-        Instantly launch Roblx in the cloud.<br>
+        <span id="playerDesc"></span><br>
         No downloads, no hassle.<br>
         <span style="color:var(--accent2);font-weight:600;">Your session is private and temporary.</span>
       </div>
@@ -310,10 +310,6 @@
       <button id="deleteSession" class="action-btn" style="background:linear-gradient(90deg,#ff6b6b,#ff4c4c);color:#fff;min-width:90px;width:auto;padding:10px 22px;font-size:1.08rem;border-radius:12px;box-shadow:0 2px 12px rgba(255,107,107,0.12);border:none;">
         <svg width="20" height="20" style="margin-right:7px;vertical-align:middle;" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M9 10v4M13 10v4"/><path d="M5 6V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
         End
-      </button>
-      <button id="reloadSessionBtn" class="action-btn" style="background:linear-gradient(90deg,#f2b84c,#f2d34c);color:#181c2b;min-width:90px;width:auto;padding:10px 22px;font-size:1.08rem;border-radius:12px;box-shadow:0 2px 12px rgba(242,184,76,0.12);border:none;">
-        <svg width="20" height="20" style="margin-right:7px;vertical-align:middle;" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
-        Reload
       </button>
       <button id="signInBtn" class="action-btn" style="background:var(--accent);color:#fff;min-width:90px;width:auto;padding:8px 18px;">
         <span>Sign In</span>
@@ -378,7 +374,6 @@
     const createSessionBtn = document.getElementById("createSession");
     const deleteSessionBtn = document.getElementById("deleteSession");
     const shareSessionBtn = document.getElementById("shareSession");
-    const reloadSessionBtn = document.getElementById("reloadSessionBtn");
     const joinSessionBtn = document.getElementById("joinSessionBtn");
     const joinCodeInput = document.getElementById("joinCodeInput");
     const introContainer = document.getElementById("introContainer");
@@ -401,6 +396,9 @@
     const sessionTimerValue = document.getElementById("sessionTimerValue");
     const signInInfoPopup = document.getElementById("signInInfoPopup");
     const signInInfoTimer = document.getElementById("signInInfoTimer");
+    const playerDesc = document.getElementById("playerDesc");
+    // Update playerDesc with dynamic name
+    playerDesc.textContent = `Play ${nameParam || 'Roblox'} in the cloud.`;
     let currentSessionId = null;
     let currentEmbedUrl = null;
     let hyperbeamInstance = null;
@@ -910,24 +908,15 @@
     // Call the function to fetch and display sessions on page load
     fetchAndDisplaySessions();
 
+    // Periodically refresh active sessions every 30 seconds, only if introContainer is visible
+    setInterval(() => {
+      if (introContainer.style.display !== "none") {
+        fetchAndDisplaySessions();
+      }
+    }, 30000);
+
     // Reset UI on page load
     resetSessionUI();
-    // Reload session button logic using Hyperbeam's tabs.update API with dummy query param to force reload
-    reloadSessionBtn.addEventListener("click", async () => {
-      if (hyperbeamInstance && hyperbeamInstance.tabs) {
-        try {
-          const activeTab = await hyperbeamInstance.tabs.getCurrent();
-          if (activeTab) {
-            // Force reload by adding a dummy query param to bypass cache
-            const url = new URL(activeTab.url);
-            url.searchParams.set("_reload", Date.now());
-            await hyperbeamInstance.tabs.update({ url: url.toString(), tabId: activeTab.id });
-          }
-        } catch (error) {
-          console.error("Failed to reload tab:", error);
-        }
-      }
-    });
   </script>
 </body>
 </html>
