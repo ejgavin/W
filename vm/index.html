@@ -412,10 +412,11 @@
     let signInInfoInterval = null;
     let signInInfoSeconds = 120;
 
-    // Parse preset and url from window.location.search
+    // Parse preset, url, and name from window.location.search
     const urlParams = new URLSearchParams(window.location.search);
     const presetParam = urlParams.get("preset");
     const customUrlParam = urlParams.get("url");
+    const nameParam = urlParams.get("name");
 
     function generateShareCode(embedUrl) {
       const urlParts = embedUrl.match(/https:\/\/([^.]+)\.hyperbeam\.com\/([^?]+)\?token=(.+)/);
@@ -672,9 +673,12 @@
       try {
         let fetchUrl = "https://vmapi.vercel.app/api/api?add";
         if (presetParam === "roblox") {
-          fetchUrl = "https://vmapi.vercel.app/api/api?add&preset=roblox";
+          fetchUrl += "&preset=roblox";
         } else if (customUrlParam) {
-          fetchUrl = "https://vmapi.vercel.app/api/api?add&url=" + encodeURIComponent(customUrlParam);
+          fetchUrl += "&url=" + encodeURIComponent(customUrlParam);
+        }
+        if (nameParam) {
+          fetchUrl += "&name=" + encodeURIComponent(nameParam);
         }
         const resp = await fetch(fetchUrl);
         const data = await resp.json();
