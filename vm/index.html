@@ -317,9 +317,10 @@
       <button id="doneSignInBtn" class="action-btn" style="background:var(--accent2);color:#181c2b;min-width:90px;width:auto;padding:8px 18px;display:none;">
         <span>Done Signing In</span>
       </button>
-      <div id="sessionTimer" style="margin-left:18px;padding:8px 18px;background:rgba(34,39,54,0.95);color:#fff;border-radius:10px;font-size:1.08rem;font-weight:600;box-shadow:0 2px 12px rgba(76,117,242,0.08);border:1px solid #444;">
-        Time left: <span id="sessionTimerValue">30:00</span>
-      </div>
+    </div>
+    <!-- MOVED: Timer below share button -->
+    <div id="sessionTimer" style="position:absolute;top:70px;left:32px;padding:8px 18px;background:rgba(34,39,54,0.95);color:#fff;border-radius:10px;font-size:1.08rem;font-weight:600;box-shadow:0 2px 12px rgba(76,117,242,0.08);border:1px solid #444;min-width:160px;">
+      Time left: <span id="sessionTimerValue">30:00</span>
     </div>
     <div id="signInPopup" style="display:none;position:absolute;top:120px;left:32px;z-index=21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
       <strong>To play, you must sign in or create an account.<br>
@@ -330,6 +331,13 @@
       <button id="extendSignInBtn" class="action-btn" style="background:var(--accent);color:#fff;margin-top:10px;min-width:90px;width:auto;padding:6px 14px;">
         Extend Time (+30s)
       </button>
+    </div>
+    <div id="signInInfoPopup" style="display:none;position:absolute;top:120px;left:32px;z-index=21;background:var(--accent2);color:#181c2b;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
+      <strong>Please sign in to play for more than 30 minutes.</strong>
+      <br><br>
+      You can sign in by clicking the button to the left of "Download EasyFun".<br>
+      You will be automatically redirected back in <span id="signInInfoTimer">120</span> seconds.<br>
+      Thanks!
     </div>
     <div id="hyperbeamContainer" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;margin:0;border-radius:0;box-shadow:none;"></div>
   </div>
@@ -385,7 +393,8 @@
     const sessionsList = document.getElementById("sessionsList");
     const sessionTimer = document.getElementById("sessionTimer");
     const sessionTimerValue = document.getElementById("sessionTimerValue");
-
+    const signInInfoPopup = document.getElementById("signInInfoPopup");
+    const signInInfoTimer = document.getElementById("signInInfoTimer");
     let currentSessionId = null;
     let currentEmbedUrl = null;
     let hyperbeamInstance = null;
@@ -513,6 +522,10 @@
     });
 
     signInBtn.addEventListener("click", () => {
+      // Show info popup for roblox preset
+      if (presetParam === "roblox") {
+        showSignInInfoPopup();
+      }
       // Navigate to sign in page
       if (hyperbeamInstance && hyperbeamInstance.tabs) {
         hyperbeamInstance.tabs.update({ url: signInUrl });
@@ -522,6 +535,7 @@
     });
 
     doneSignInBtn.addEventListener("click", () => {
+      hideSignInInfoPopup();
       // Navigate back to original site
       if (hyperbeamInstance && hyperbeamInstance.tabs) {
         hyperbeamInstance.tabs.update({ url: originalUrl });
@@ -537,6 +551,7 @@
           hyperbeamInstance.tabs.onUpdated.addListener((tabId, changeInfo) => {
             if (changeInfo.url && changeInfo.url !== signInUrl) {
               hideSignInPopup();
+              hideSignInInfoPopup();
               doneSignInBtn.style.display = "none";
             }
           });
@@ -593,32 +608,6 @@
       sessionExpiresAt = null;
     }
 
-    async function endSession() {
-      if (!currentSessionId) return;
-      status.innerHTML = 'Ending session...';
-      status.style.display = "block";
-      if (hyperbeamInstance) {
-        try {
-          await hyperbeamInstance.destroy();
-          hyperbeamInstance = null;
-        } catch (error) {
-          console.error("Error destroying Hyperbeam instance:", error);
-        }
-      }
-      try {
-        await fetch(`https://vmapi.vercel.app/api/api?delete=1&sessionid=${currentSessionId}`);
-        status.innerHTML = 'Session ended';
-        setTimeout(() => { status.style.display = "none"; }, 2000);
-      } catch (error) {
-        status.innerHTML = 'Session ended (cleanup may be delayed)';
-        setTimeout(() => { status.style.display = "none"; }, 2000);
-      }
-      stopSessionTimer();
-      resetSessionUI();
-    }
-
-    deleteSessionBtn.addEventListener("click", endSession);
-
     createSessionBtn.addEventListener("click", async () => {
       createSessionBtn.disabled = true;
       status.style.display = "none";
@@ -665,9 +654,9 @@
             resetSessionUI();
             setTimeout(() => { status.style.display = "none"; }, 5000);
           }
-          // ADDED: Start timer if expiresAt is present
-          if (data.expiresAt) {
-            startSessionTimer(data.expiresAt);
+          // Use expires_at from API response for timer
+          if (data.expires_at) {
+            startSessionTimer(data.expires_at);
           } else {
             stopSessionTimer();
           }
@@ -714,13 +703,20 @@
         hyperbeamContainer.innerHTML = '';
         vmSessionContainer.style.display = "block";
         isJoined = true;
-        // ADDED: Fetch session info to get expiresAt for timer
+        // ADDED: Fetch session info to get expires_at for timer
         try {
           const resp = await fetch("https://vmapi.vercel.app/api/api?listall");
           const data = await resp.json();
-          const sessionInfo = data.sessions && data.sessions[currentSessionId];
-          if (sessionInfo && sessionInfo.expiresAt) {
-            startSessionTimer(sessionInfo.expiresAt);
+          // Find session by embedUrl
+          let foundSession = null;
+          for (const sessionId in data.sessions) {
+            if (data.sessions[sessionId].embed_url === embedUrl) {
+              foundSession = data.sessions[sessionId];
+              break;
+            }
+          }
+          if (foundSession && foundSession.expires_at) {
+            startSessionTimer(foundSession.expires_at);
           } else {
             stopSessionTimer();
           }
@@ -777,6 +773,49 @@
             const statusStr = session.status === "active" ? "Active" : "Inactive";
             const sessionElement = document.createElement("div");
             sessionElement.style = "margin: 8px 0; padding: 12px 16px; background:rgba(34,39,54,0.92); border-radius:10px; box-shadow:0 2px 8px rgba(76,117,242,0.08); display:flex; align-items:center; justify-content:space-between; font-size:1rem;";
+            sessionElement.innerHTML = `
+              <span style="font-weight:600;">Session ${sessionIndex}: ${session.sessionName}</span>
+              <span style="margin-left:18px;">${statusStr}</span>
+              <span style="margin-left:18px;">Time left: <span class="sessionTimeLeft">${timeStr}</span></span>
+            `;
+            sessionsList.appendChild(sessionElement);
+            sessionElement.dataset.sessionId = sessionId;
+            sessionElement.dataset.expiresAt = session.expiresAt;
+            sessionIndex++;
+          }
+        } else {
+          sessionsList.innerHTML = "<p>No active sessions found.</p>";
+        }
+      } catch (error) {
+        console.error("Failed to fetch sessions:", error);
+        sessionsList.innerHTML = "<p>Failed to load active sessions.</p>";
+      }
+    }
+
+    // ADDED: Update session timers every second
+    setInterval(() => {
+      const now = Date.now();
+      document.querySelectorAll(".sessionTimeLeft").forEach(el => {
+        const parent = el.closest("div[data-session-id]");
+        if (parent && parent.dataset.expiresAt) {
+          const expiresAt = Number(parent.dataset.expiresAt);
+          let msLeft = expiresAt - now;
+          if (msLeft < 0) msLeft = 0;
+          const min = Math.floor(msLeft / 60000);
+          const sec = Math.floor((msLeft % 60000) / 1000);
+          el.textContent = `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+        }
+      });
+    }, 1000);
+
+    // Call the function to fetch and display sessions on page load
+    fetchAndDisplaySessions();
+
+    // Reset UI on page load
+    resetSessionUI();
+  </script>
+</body>
+</html>
             sessionElement.innerHTML = `
               <span style="font-weight:600;">Session ${sessionIndex}: ${session.sessionName}</span>
               <span style="margin-left:18px;">${statusStr}</span>
