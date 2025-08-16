@@ -920,9 +920,11 @@
     reloadSessionBtn.addEventListener("click", async () => {
       if (hyperbeamInstance && hyperbeamInstance.tabs) {
         try {
-          const activeTab = await hyperbeamInstance.tabs.getCurrent();
-          if (activeTab) {
-            await hyperbeamInstance.tabs.reload(activeTab.id);
+          const tabs = await hyperbeamInstance.tabs.query({ active: true });
+          if (tabs && tabs.length > 0) {
+            await hyperbeamInstance.tabs.reload(tabs[0].id);
+          } else {
+            console.warn("No active tab found to reload.");
           }
         } catch (error) {
           console.error("Failed to reload tab:", error);
