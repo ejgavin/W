@@ -365,6 +365,11 @@
     const signInTimer = document.getElementById("signInTimer");
     const extendSignInBtn = document.getElementById("extendSignInBtn");
 
+    // Parse preset and url from window.location.search
+    const urlParams = new URLSearchParams(window.location.search);
+    const presetParam = urlParams.get("preset");
+    const customUrlParam = urlParams.get("url");
+
     let currentSessionId = null;
     let currentEmbedUrl = null;
     let hyperbeamInstance = null;
@@ -527,6 +532,14 @@
       joinSessionBtn.disabled = false;
       joinCodeInput.value = "";
       isJoined = false;
+      // Only show sign in buttons if presetParam is "roblox"
+      if (presetParam === "roblox") {
+        if (signInBtn) signInBtn.style.display = "";
+        if (doneSignInBtn) doneSignInBtn.style.display = "none";
+      } else {
+        if (signInBtn) signInBtn.style.display = "none";
+        if (doneSignInBtn) doneSignInBtn.style.display = "none";
+      }
     }
 
     async function endSession() {
@@ -559,7 +572,13 @@
       status.style.display = "none";
       introContainer.style.display = "none";
       try {
-        const resp = await fetch("https://vmapi.vercel.app/api/api?add");
+        let fetchUrl = "https://vmapi.vercel.app/api/api?add";
+        if (presetParam === "roblox") {
+          fetchUrl = "https://vmapi.vercel.app/api/api?add&preset=roblox";
+        } else if (customUrlParam) {
+          fetchUrl = "https://vmapi.vercel.app/api/api?add&url=" + encodeURIComponent(customUrlParam);
+        }
+        const resp = await fetch(fetchUrl);
         const data = await resp.json();
         if (data.embed_url && data.session_id) {
           currentSessionId = data.session_id;
@@ -567,6 +586,14 @@
           hyperbeamContainer.innerHTML = '';
           vmSessionContainer.style.display = "block";
           isJoined = false;
+          // Only show sign in buttons if presetParam is "roblox"
+          if (presetParam === "roblox") {
+            if (signInBtn) signInBtn.style.display = "";
+            if (doneSignInBtn) doneSignInBtn.style.display = "none";
+          } else {
+            if (signInBtn) signInBtn.style.display = "none";
+            if (doneSignInBtn) doneSignInBtn.style.display = "none";
+          }
           try {
             hyperbeamInstance = await Hyperbeam(hyperbeamContainer, data.embed_url, {
               volume: 0.8,
@@ -619,6 +646,14 @@
         hyperbeamContainer.innerHTML = '';
         vmSessionContainer.style.display = "block";
         isJoined = true;
+        // Only show sign in buttons if presetParam is "roblox"
+        if (presetParam === "roblox") {
+          if (signInBtn) signInBtn.style.display = "";
+          if (doneSignInBtn) doneSignInBtn.style.display = "none";
+        } else {
+          if (signInBtn) signInBtn.style.display = "none";
+          if (doneSignInBtn) doneSignInBtn.style.display = "none";
+        }
         try {
           hyperbeamInstance = await Hyperbeam(hyperbeamContainer, embedUrl, {
             volume: 0.8,
