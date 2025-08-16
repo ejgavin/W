@@ -313,7 +313,7 @@
         <span>Done Signing In</span>
       </button>
     </div>
-    <div id="signInPopup" style="display:none;position:absolute;top:120px;left:32px;z-index:21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
+    <div id="signInPopup" style="display:none;position:absolute;top:120px;left:32px;z-index=21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
       <strong>To play, you must sign in or create an account.<br>
       Otherwise, you are limited to 30 minutes.</strong>
       <br><br>
@@ -343,7 +343,7 @@
   </div>
 
   <script type="module">
-    import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js"
+    import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js";
 
     const createSessionBtn = document.getElementById("createSession");
     const deleteSessionBtn = document.getElementById("deleteSession");
@@ -646,55 +646,6 @@
         hyperbeamContainer.innerHTML = '';
         vmSessionContainer.style.display = "block";
         isJoined = true;
-        // Only show sign in buttons if presetParam is "roblox"
-        if (presetParam === "roblox") {
-          if (signInBtn) signInBtn.style.display = "";
-          if (doneSignInBtn) doneSignInBtn.style.display = "none";
-        } else {
-          if (signInBtn) signInBtn.style.display = "none";
-          if (doneSignInBtn) doneSignInBtn.style.display = "none";
-        }
-        try {
-          hyperbeamInstance = await Hyperbeam(hyperbeamContainer, embedUrl, {
-            volume: 0.8,
-            videoPaused: false,
-            delegateKeyboard: true,
-            onConnectionStateChange: ({ state }) => {},
-            onDisconnect: ({ type }) => {
-              status.innerHTML = 'Connection lost';
-              status.style.display = "block";
-              setTimeout(() => { resetSessionUI(); }, 2000);
-            }
-          });
-          monitorSignInUrl();
-        } catch (hyperbeamError) {
-          status.innerHTML = 'Failed to connect to browser';
-          status.style.display = "block";
-          resetSessionUI();
-          setTimeout(() => { status.style.display = "none"; }, 5000);
-        }
-      } catch (error) {
-        status.innerHTML = 'Failed to join session';
-        status.style.display = "block";
-        resetSessionUI();
-        setTimeout(() => { status.style.display = "none"; }, 5000);
-      }
-    });
-
-    // Reset UI on page load
-    resetSessionUI();
-  </script>
-</body>
-</html>
-        resetSessionUI();
-        setTimeout(() => { status.style.display = "none"; }, 3000);
-        return;
-      }
-      try {
-        currentEmbedUrl = embedUrl;
-        hyperbeamContainer.innerHTML = '';
-        vmSessionContainer.style.display = "block";
-        isJoined = true;
         try {
           hyperbeamInstance = await Hyperbeam(hyperbeamContainer, embedUrl, {
             volume: 0.8,
@@ -714,6 +665,55 @@
           resetSessionUI();
           setTimeout(() => { status.style.display = "none"; }, 5000);
         }
+      } catch (error) {
+        status.innerHTML = 'Failed to join session';
+        status.style.display = "block";
+        resetSessionUI();
+        setTimeout(() => { status.style.display = "none"; }, 5000);
+      }
+    });
+
+    // ADDED: Function to fetch and display active sessions
+    async function fetchAndDisplaySessions() {
+      const sessionsContainer = document.createElement("div");
+      sessionsContainer.id = "sessionsContainer";
+      sessionsContainer.style = "margin-top: 20px; padding: 20px; background: var(--glass-bg); border-radius: 12px; box-shadow: var(--shadow); color: var(--text); max-width: 600px; width: 90%;";
+      sessionsContainer.innerHTML = "<h3 style='margin-bottom: 10px; color: var(--accent2);'>Active Sessions</h3>";
+
+      try {
+        const response = await fetch("https://vmapi.vercel.app/api/api?listall");
+        const data = await response.json();
+        const sessions = data.sessions;
+
+        if (sessions && Object.keys(sessions).length > 0) {
+          let sessionIndex = 1;
+          for (const sessionId in sessions) {
+            const session = sessions[sessionId];
+            const sessionElement = document.createElement("p");
+            sessionElement.textContent = `Session ${sessionIndex}: ${session.sessionName}`;
+            sessionElement.style = "margin: 5px 0; font-size: 1rem;";
+            sessionsContainer.appendChild(sessionElement);
+            sessionIndex++;
+          }
+        } else {
+          sessionsContainer.innerHTML += "<p>No active sessions found.</p>";
+        }
+      } catch (error) {
+        console.error("Failed to fetch sessions:", error);
+        sessionsContainer.innerHTML += "<p>Failed to load active sessions.</p>";
+      }
+
+      document.body.appendChild(sessionsContainer);
+    }
+
+    // Call the function to fetch and display sessions on page load
+    fetchAndDisplaySessions();
+
+    // Reset UI on page load
+    resetSessionUI();
+  </script>
+</body>
+</html>
       } catch (error) {
         status.innerHTML = 'Failed to join session';
         status.style.display = "block";
