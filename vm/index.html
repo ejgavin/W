@@ -311,6 +311,10 @@
         <svg width="20" height="20" style="margin-right:7px;vertical-align:middle;" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M9 10v4M13 10v4"/><path d="M5 6V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
         End
       </button>
+      <button id="reloadSessionBtn" class="action-btn" style="background:linear-gradient(90deg,#f2b84c,#f2d34c);color:#181c2b;min-width:90px;width:auto;padding:10px 22px;font-size:1.08rem;border-radius:12px;box-shadow:0 2px 12px rgba(242,184,76,0.12);border:none;">
+        <svg width="20" height="20" style="margin-right:7px;vertical-align:middle;" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
+        Reload
+      </button>
       <button id="signInBtn" class="action-btn" style="background:var(--accent);color:#fff;min-width:90px;width:auto;padding:8px 18px;">
         <span>Sign In</span>
       </button>
@@ -374,6 +378,7 @@
     const createSessionBtn = document.getElementById("createSession");
     const deleteSessionBtn = document.getElementById("deleteSession");
     const shareSessionBtn = document.getElementById("shareSession");
+    const reloadSessionBtn = document.getElementById("reloadSessionBtn");
     const joinSessionBtn = document.getElementById("joinSessionBtn");
     const joinCodeInput = document.getElementById("joinCodeInput");
     const introContainer = document.getElementById("introContainer");
@@ -417,6 +422,20 @@
     const presetParam = urlParams.get("preset");
     const customUrlParam = urlParams.get("url");
     const nameParam = urlParams.get("name");
+    const screenLock = urlParams.get("screenlock") === "true";
+    // Update screenLock logic to use customUrlParam (decoded) if present
+    if (screenLock) {
+      if (customUrlParam) {
+        try {
+          originalUrl = atob(customUrlParam);
+        } catch (e) {
+          console.error("Failed to decode custom URL for screenLock", e);
+          originalUrl = "https://www.easyfun.gg/cloud-games/roblox.html"; // fallback
+        }
+      } else if (presetParam === "roblox") {
+        originalUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
+      }
+    }
 
     function generateShareCode(embedUrl) {
       const urlParts = embedUrl.match(/https:\/\/([^.]+)\.hyperbeam\.com\/([^?]+)\?token=(.+)/);
@@ -525,18 +544,18 @@
       }
     });
 
-    signInBtn.addEventListener("click", () => {
-      // Show info popup for roblox preset
-      if (presetParam === "roblox") {
-        showSignInInfoPopup();
-      }
-      // Navigate to sign in page
-      if (hyperbeamInstance && hyperbeamInstance.tabs) {
-        hyperbeamInstance.tabs.update({ url: signInUrl });
-        showSignInPopup();
-        doneSignInBtn.style.display = "inline-block";
-      }
-    });
+    // signInBtn.addEventListener("click", () => {
+    //   // Show info popup for roblox preset
+    //   if (presetParam === "roblox") {
+    //     showSignInInfoPopup();
+    //   }
+    //   // Navigate to sign in page
+    //   if (hyperbeamInstance && hyperbeamInstance.tabs) {
+    //     hyperbeamInstance.tabs.update({ url: signInUrl });
+    //     showSignInPopup();
+    //     doneSignInBtn.style.display = "inline-block";
+    //   }
+    // });
 
     doneSignInBtn.addEventListener("click", () => {
       hideSignInInfoPopup();
@@ -564,6 +583,20 @@
       }
     }
 
+    // --- Screen Lock monitor ---
+    function monitorScreenLock() {
+      if (!screenLock || !hyperbeamInstance || !hyperbeamInstance.tabs || typeof hyperbeamInstance.tabs.onUpdated?.addListener !== 'function') return;
+
+      if (!hyperbeamInstance._screenLockAdded) {
+        hyperbeamInstance.tabs.onUpdated.addListener((tabId, changeInfo) => {
+          if (changeInfo.url && changeInfo.url !== originalUrl) {
+            hyperbeamInstance.tabs.update({ url: originalUrl });
+          }
+        });
+        hyperbeamInstance._screenLockAdded = true;
+      }
+    }
+
     function resetSessionUI() {
       currentSessionId = null;
       currentEmbedUrl = null;
@@ -576,7 +609,7 @@
       isJoined = false;
       // Only show sign in buttons if presetParam is "roblox"
       if (presetParam === "roblox") {
-        if (signInBtn) signInBtn.style.display = "";
+        if (signInBtn) signInBtn.style.display = "none";
         if (doneSignInBtn) doneSignInBtn.style.display = "none";
         // Move timer after signInBtn (default for roblox)
         const controlsBar = document.getElementById("vm-controls-bar");
@@ -691,7 +724,7 @@
           // Only show sign in buttons if presetParam is "roblox"
           const controlsBar = document.getElementById("vm-controls-bar");
           if (presetParam === "roblox") {
-            if (signInBtn) signInBtn.style.display = "";
+            if (signInBtn) signInBtn.style.display = "none";
             if (doneSignInBtn) doneSignInBtn.style.display = "none";
             // Move timer after signInBtn
             controlsBar.insertBefore(sessionTimer, signInBtn.nextSibling);
@@ -714,6 +747,7 @@
               }
             });
             monitorSignInUrl();
+            monitorScreenLock();
           } catch (hyperbeamError) {
             status.innerHTML = 'Failed to connect to browser';
             status.style.display = "block";
@@ -798,6 +832,7 @@
             }
           });
           if (presetParam === "roblox") monitorSignInUrl();
+          monitorScreenLock();
         } catch (hyperbeamError) {
           status.innerHTML = 'Failed to connect to browser';
           status.style.display = "block";
@@ -877,7 +912,22 @@
 
     // Reset UI on page load
     resetSessionUI();
+    // Reload session button logic using Hyperbeam's tabs.update API with dummy query param to force reload
+    reloadSessionBtn.addEventListener("click", async () => {
+      if (hyperbeamInstance && hyperbeamInstance.tabs) {
+        try {
+          const activeTab = await hyperbeamInstance.tabs.getCurrent();
+          if (activeTab) {
+            // Force reload by adding a dummy query param to bypass cache
+            const url = new URL(activeTab.url);
+            url.searchParams.set("_reload", Date.now());
+            await hyperbeamInstance.tabs.update({ url: url.toString(), tabId: activeTab.id });
+          }
+        } catch (error) {
+          console.error("Failed to reload tab:", error);
+        }
+      }
+    });
   </script>
 </body>
 </html>
-
