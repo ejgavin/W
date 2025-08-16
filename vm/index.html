@@ -281,11 +281,7 @@
   <div class="centered-container" id="introContainer">
     <div class="glass-card">
       <div class="title">Player</div>
-      <div class="desc">
-        <span id="playerDesc"></span><br>
-        No downloads, no hassle.<br>
-        <span style="color:var(--accent2);font-weight:600;">Your session is private and temporary.</span>
-      </div>
+      <div class="desc"></div>
       <button id="createSession" class="action-btn">
         <span>Start Session</span>
       </button>
@@ -396,9 +392,6 @@
     const sessionTimerValue = document.getElementById("sessionTimerValue");
     const signInInfoPopup = document.getElementById("signInInfoPopup");
     const signInInfoTimer = document.getElementById("signInInfoTimer");
-    const playerDesc = document.getElementById("playerDesc");
-    // Update playerDesc with dynamic name
-    playerDesc.textContent = `Play ${nameParam || 'Roblox'} in the cloud.`;
     let currentSessionId = null;
     let currentEmbedUrl = null;
     let hyperbeamInstance = null;
@@ -433,6 +426,12 @@
       } else if (presetParam === "roblox") {
         originalUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
       }
+    }
+
+    // Dynamically set .desc text based on nameParam
+    const descEl = document.querySelector(".desc");
+    if (descEl) {
+      descEl.innerHTML = `Instantly launch ${nameParam || "Roblox"} in the cloud.<br>No downloads, no hassle.<br><span style="color:var(--accent2);font-weight:600;">Your session is private and temporary.</span>`;
     }
 
     function generateShareCode(embedUrl) {
@@ -907,13 +906,8 @@
 
     // Call the function to fetch and display sessions on page load
     fetchAndDisplaySessions();
-
-    // Periodically refresh active sessions every 30 seconds, only if introContainer is visible
-    setInterval(() => {
-      if (introContainer.style.display !== "none") {
-        fetchAndDisplaySessions();
-      }
-    }, 30000);
+    // Auto-refresh sessions list every 30 seconds
+    setInterval(fetchAndDisplaySessions, 30000);
 
     // Reset UI on page load
     resetSessionUI();
