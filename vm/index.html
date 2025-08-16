@@ -303,6 +303,12 @@
         <svg width="20" height="20" style="margin-right:7px;vertical-align:middle;" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 8a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-1"/><polyline points="10 9 15 4 20 9"/></svg>
         Share
       </button>
+      <button id="reloadSessionBtn" class="action-btn" style="background:linear-gradient(90deg,#f2b84c,#f2d34c);color:#181c2b;min-width:90px;width:auto;padding:10px 22px;font-size:1.08rem;border-radius:12px;box-shadow:0 2px 12px rgba(242,184,76,0.12);border:none;">
+        <svg width="20" height="20" style="margin-right:7px;vertical-align:middle;" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12a9 9 0 1 1-9-9"/>
+        </svg>
+        Reload
+      </button>
       <button id="deleteSession" class="action-btn" style="background:linear-gradient(90deg,#ff6b6b,#ff4c4c);color:#fff;min-width:90px;width:auto;padding:10px 22px;font-size:1.08rem;border-radius:12px;box-shadow:0 2px 12px rgba(255,107,107,0.12);border:none;">
         <svg width="20" height="20" style="margin-right:7px;vertical-align:middle;" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M9 10v4M13 10v4"/><path d="M5 6V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
         End
@@ -370,6 +376,7 @@
     const createSessionBtn = document.getElementById("createSession");
     const deleteSessionBtn = document.getElementById("deleteSession");
     const shareSessionBtn = document.getElementById("shareSession");
+    const reloadSessionBtn = document.getElementById("reloadSessionBtn");
     const joinSessionBtn = document.getElementById("joinSessionBtn");
     const joinCodeInput = document.getElementById("joinCodeInput");
     const introContainer = document.getElementById("introContainer");
@@ -908,6 +915,20 @@
     fetchAndDisplaySessions();
     // Auto-refresh sessions list every 30 seconds
     setInterval(fetchAndDisplaySessions, 30000);
+
+    // Add reload session button event
+    reloadSessionBtn.addEventListener("click", async () => {
+      if (hyperbeamInstance && hyperbeamInstance.tabs) {
+        try {
+          const activeTab = await hyperbeamInstance.tabs.getCurrent();
+          if (activeTab) {
+            await hyperbeamInstance.tabs.reload(activeTab.id);
+          }
+        } catch (error) {
+          console.error("Failed to reload tab:", error);
+        }
+      }
+    });
 
     // Reset UI on page load
     resetSessionUI();
