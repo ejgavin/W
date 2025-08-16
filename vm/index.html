@@ -318,8 +318,9 @@
         <span>Done Signing In</span>
       </button>
     </div>
-    <!-- MOVED: Timer below share button -->
-    <div id="sessionTimer" style="position:absolute;top:70px;left:32px;padding:8px 18px;background:rgba(34,39,54,0.95);color:#fff;border-radius:10px;font-size:1.08rem;font-weight:600;box-shadow:0 2px 12px rgba(76,117,242,0.08);border:1px solid #444;min-width:160px;">
+    <!-- MOVED: Timer inside controls bar, after delete button -->
+    <!-- Timer element is now moved dynamically, but default is after delete button -->
+    <div id="sessionTimer" class="session-timer" style="padding:8px 18px;background:#ff6b2c;color:#fff;border-radius:10px;font-size:1.08rem;font-weight:600;box-shadow:0 2px 12px rgba(76,117,242,0.08);border:1px solid #444;min-width:160px;">
       Time left: <span id="sessionTimerValue">30:00</span>
     </div>
     <div id="signInPopup" style="display:none;position:absolute;top:120px;left:32px;z-index=21;background:var(--danger);color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
@@ -332,7 +333,7 @@
         Extend Time (+30s)
       </button>
     </div>
-    <div id="signInInfoPopup" style="display:none;position:absolute;top:120px;left:32px;z-index=21;background:var(--accent2);color:#181c2b;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
+    <div id="signInInfoPopup" style="display:none;position:absolute;top:120px;left:32px;z-index:21;background:var(--accent2);color:#181c2b;padding:16px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(76,117,242,0.18);font-size:1rem;max-width:340px;">
       <strong>Please sign in to play for more than 30 minutes.</strong>
       <br><br>
       You can sign in by clicking the button to the left of "Download EasyFun".<br>
@@ -408,6 +409,8 @@
     let signInUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
     let sessionTimerInterval = null;
     let sessionExpiresAt = null;
+    let signInInfoInterval = null;
+    let signInInfoSeconds = 120;
 
     // Parse preset and url from window.location.search
     const urlParams = new URLSearchParams(window.location.search);
@@ -574,9 +577,15 @@
       if (presetParam === "roblox") {
         if (signInBtn) signInBtn.style.display = "";
         if (doneSignInBtn) doneSignInBtn.style.display = "none";
+        // Move timer after signInBtn (default for roblox)
+        const controlsBar = document.getElementById("vm-controls-bar");
+        controlsBar.insertBefore(sessionTimer, signInBtn.nextSibling);
       } else {
         if (signInBtn) signInBtn.style.display = "none";
         if (doneSignInBtn) doneSignInBtn.style.display = "none";
+        // Move timer after deleteSessionBtn (default for non-roblox)
+        const controlsBar = document.getElementById("vm-controls-bar");
+        controlsBar.insertBefore(sessionTimer, deleteSessionBtn.nextSibling);
       }
     }
 
@@ -608,6 +617,54 @@
       sessionExpiresAt = null;
     }
 
+    // Show sign in info popup for roblox preset
+    function showSignInInfoPopup() {
+      signInInfoPopup.style.display = "block";
+      signInInfoSeconds = 120;
+      signInInfoTimer.textContent = signInInfoSeconds;
+      clearInterval(signInInfoInterval);
+      signInInfoInterval = setInterval(() => {
+        signInInfoSeconds--;
+        signInInfoTimer.textContent = signInInfoSeconds;
+        if (signInInfoSeconds <= 0) {
+          clearInterval(signInInfoInterval);
+          signInInfoPopup.style.display = "none";
+          // Optionally, redirect or hide popup
+        }
+      }, 1000);
+    }
+
+    function hideSignInInfoPopup() {
+      signInInfoPopup.style.display = "none";
+      clearInterval(signInInfoInterval);
+    }
+
+    async function endSession() {
+      if (!currentSessionId) return;
+      status.innerHTML = 'Ending session...';
+      status.style.display = "block";
+      if (hyperbeamInstance) {
+        try {
+          await hyperbeamInstance.destroy();
+          hyperbeamInstance = null;
+        } catch (error) {
+          console.error("Error destroying Hyperbeam instance:", error);
+        }
+      }
+      try {
+        await fetch(`https://vmapi.vercel.app/api/api?delete=1&sessionid=${currentSessionId}`);
+        status.innerHTML = 'Session ended';
+        setTimeout(() => { status.style.display = "none"; }, 2000);
+      } catch (error) {
+        status.innerHTML = 'Session ended (cleanup may be delayed)';
+        setTimeout(() => { status.style.display = "none"; }, 2000);
+      }
+      stopSessionTimer();
+      resetSessionUI();
+    }
+
+    deleteSessionBtn.addEventListener("click", endSession);
+
     createSessionBtn.addEventListener("click", async () => {
       createSessionBtn.disabled = true;
       status.style.display = "none";
@@ -628,12 +685,17 @@
           vmSessionContainer.style.display = "block";
           isJoined = false;
           // Only show sign in buttons if presetParam is "roblox"
+          const controlsBar = document.getElementById("vm-controls-bar");
           if (presetParam === "roblox") {
             if (signInBtn) signInBtn.style.display = "";
             if (doneSignInBtn) doneSignInBtn.style.display = "none";
+            // Move timer after signInBtn
+            controlsBar.insertBefore(sessionTimer, signInBtn.nextSibling);
           } else {
             if (signInBtn) signInBtn.style.display = "none";
             if (doneSignInBtn) doneSignInBtn.style.display = "none";
+            // Move timer after deleteSessionBtn
+            controlsBar.insertBefore(sessionTimer, deleteSessionBtn.nextSibling);
           }
           try {
             hyperbeamInstance = await Hyperbeam(hyperbeamContainer, data.embed_url, {
@@ -654,11 +716,12 @@
             resetSessionUI();
             setTimeout(() => { status.style.display = "none"; }, 5000);
           }
-          // Use expires_at from API response for timer
-          if (data.expires_at) {
-            startSessionTimer(data.expires_at);
+          // ADDED: Start timer if expiresAt is present
+          if (data.expiresAt) {
+            startSessionTimer(data.expiresAt);
           } else {
-            stopSessionTimer();
+            const defaultExpiresAt = Date.now() + 30 * 60 * 1000;
+            startSessionTimer(defaultExpiresAt);
           }
         } else {
           status.innerHTML = (data.error || "Unknown error");
@@ -703,25 +766,20 @@
         hyperbeamContainer.innerHTML = '';
         vmSessionContainer.style.display = "block";
         isJoined = true;
-        // ADDED: Fetch session info to get expires_at for timer
+        // ADDED: Fetch session info to get expiresAt for timer
         try {
           const resp = await fetch("https://vmapi.vercel.app/api/api?listall");
           const data = await resp.json();
-          // Find session by embedUrl
-          let foundSession = null;
-          for (const sessionId in data.sessions) {
-            if (data.sessions[sessionId].embed_url === embedUrl) {
-              foundSession = data.sessions[sessionId];
-              break;
-            }
-          }
-          if (foundSession && foundSession.expires_at) {
-            startSessionTimer(foundSession.expires_at);
+          const sessionInfo = data.sessions && data.sessions[currentSessionId];
+          if (sessionInfo && sessionInfo.expiresAt) {
+            startSessionTimer(sessionInfo.expiresAt);
           } else {
-            stopSessionTimer();
+            const defaultExpiresAt = Date.now() + 30 * 60 * 1000;
+            startSessionTimer(defaultExpiresAt);
           }
         } catch {
-          stopSessionTimer();
+          const defaultExpiresAt = Date.now() + 30 * 60 * 1000;
+          startSessionTimer(defaultExpiresAt);
         }
         try {
           hyperbeamInstance = await Hyperbeam(hyperbeamContainer, embedUrl, {
@@ -764,8 +822,10 @@
           let sessionIndex = 1;
           for (const sessionId in sessions) {
             const session = sessions[sessionId];
-            // ADDED: Time left and status
-            const msLeft = session.timeLeft ?? (session.expiresAt - Date.now());
+            // Always calculate expiresAt
+            const expiresAt = session.expiresAt || (Date.now() + 30 * 60 * 1000);
+            let msLeft = expiresAt - Date.now();
+            if (msLeft < 0) msLeft = 0;
             const min = Math.floor(msLeft / 60000);
             const sec = Math.floor((msLeft % 60000) / 1000);
             const timeStr = `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
@@ -780,50 +840,7 @@
             `;
             sessionsList.appendChild(sessionElement);
             sessionElement.dataset.sessionId = sessionId;
-            sessionElement.dataset.expiresAt = session.expiresAt;
-            sessionIndex++;
-          }
-        } else {
-          sessionsList.innerHTML = "<p>No active sessions found.</p>";
-        }
-      } catch (error) {
-        console.error("Failed to fetch sessions:", error);
-        sessionsList.innerHTML = "<p>Failed to load active sessions.</p>";
-      }
-    }
-
-    // ADDED: Update session timers every second
-    setInterval(() => {
-      const now = Date.now();
-      document.querySelectorAll(".sessionTimeLeft").forEach(el => {
-        const parent = el.closest("div[data-session-id]");
-        if (parent && parent.dataset.expiresAt) {
-          const expiresAt = Number(parent.dataset.expiresAt);
-          let msLeft = expiresAt - now;
-          if (msLeft < 0) msLeft = 0;
-          const min = Math.floor(msLeft / 60000);
-          const sec = Math.floor((msLeft % 60000) / 1000);
-          el.textContent = `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
-        }
-      });
-    }, 1000);
-
-    // Call the function to fetch and display sessions on page load
-    fetchAndDisplaySessions();
-
-    // Reset UI on page load
-    resetSessionUI();
-  </script>
-</body>
-</html>
-            sessionElement.innerHTML = `
-              <span style="font-weight:600;">Session ${sessionIndex}: ${session.sessionName}</span>
-              <span style="margin-left:18px;">${statusStr}</span>
-              <span style="margin-left:18px;">Time left: <span class="sessionTimeLeft">${timeStr}</span></span>
-            `;
-            sessionsList.appendChild(sessionElement);
-            sessionElement.dataset.sessionId = sessionId;
-            sessionElement.dataset.expiresAt = session.expiresAt;
+            sessionElement.dataset.expiresAt = expiresAt;
             sessionIndex++;
           }
         } else {
