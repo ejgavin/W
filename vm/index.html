@@ -421,6 +421,11 @@
     const customUrlParam = urlParams.get("url");
     const nameParam = urlParams.get("name");
     const screenLock = urlParams.get("screenlock") === "true";
+    const websiteLock = urlParams.get("websitelock") === "true"; // NEW: Website lock parameter
+    
+    // NEW: Extract allowed domain from URL
+    let allowedDomain = null;
+    
     // Update screenLock logic to use customUrlParam (decoded) if present
     if (screenLock) {
       if (customUrlParam) {
@@ -432,6 +437,26 @@
         }
       } else if (presetParam === "roblox") {
         originalUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
+      }
+    }
+
+    // NEW: Setup website lock domain
+    if (websiteLock) {
+      if (customUrlParam) {
+        try {
+          const decodedUrl = atob(customUrlParam);
+          originalUrl = decodedUrl;
+          // Extract domain from the URL
+          const urlObj = new URL(decodedUrl);
+          allowedDomain = urlObj.hostname;
+        } catch (e) {
+          console.error("Failed to decode custom URL for websiteLock", e);
+          originalUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
+          allowedDomain = "www.easyfun.gg";
+        }
+      } else if (presetParam === "roblox") {
+        originalUrl = "https://www.easyfun.gg/cloud-games/roblox.html";
+        allowedDomain = "www.easyfun.gg";
       }
     }
 
@@ -548,19 +573,6 @@
       }
     });
 
-    // signInBtn.addEventListener("click", () => {
-    //   // Show info popup for roblox preset
-    //   if (presetParam === "roblox") {
-    //     showSignInInfoPopup();
-    //   }
-    //   // Navigate to sign in page
-    //   if (hyperbeamInstance && hyperbeamInstance.tabs) {
-    //     hyperbeamInstance.tabs.update({ url: signInUrl });
-    //     showSignInPopup();
-    //     doneSignInBtn.style.display = "inline-block";
-    //   }
-    // });
-
     doneSignInBtn.addEventListener("click", () => {
       hideSignInInfoPopup();
       // Navigate back to original site
@@ -598,6 +610,38 @@
           }
         });
         hyperbeamInstance._screenLockAdded = true;
+      }
+    }
+
+    // NEW: Website Lock monitor (allow all URLs under the allowed domain, including subpaths and subdomains)
+    function monitorWebsiteLock() {
+      if (!websiteLock || !allowedDomain || !hyperbeamInstance || !hyperbeamInstance.tabs || typeof hyperbeamInstance.tabs.onUpdated?.addListener !== 'function') return;
+
+      if (!hyperbeamInstance._websiteLockAdded) {
+        hyperbeamInstance.tabs.onUpdated.addListener((tabId, changeInfo) => {
+          if (changeInfo.url) {
+            try {
+              const currentUrlObj = new URL(changeInfo.url);
+              const currentDomain = currentUrlObj.hostname;
+              // Allow any subdomain or subpath of allowedDomain
+              // e.g., allowedDomain = "tiktok.com" allows "www.tiktok.com", "abc.tiktok.com", "tiktok.com"
+              // Do not allow "not-tiktok.com"
+              // Check if currentDomain is exactly allowedDomain or ends with ".allowedDomain"
+              const domainAllowed =
+                currentDomain === allowedDomain ||
+                currentDomain.endsWith("." + allowedDomain);
+              if (!domainAllowed) {
+                console.log(`Website lock: Redirecting from ${currentDomain} to ${allowedDomain}`);
+                hyperbeamInstance.tabs.update({ url: originalUrl });
+              }
+            } catch (e) {
+              console.error("Error parsing URL for website lock:", e);
+              // If URL parsing fails, redirect to original URL as safety measure
+              hyperbeamInstance.tabs.update({ url: originalUrl });
+            }
+          }
+        });
+        hyperbeamInstance._websiteLockAdded = true;
       }
     }
 
@@ -752,6 +796,7 @@
             });
             monitorSignInUrl();
             monitorScreenLock();
+            monitorWebsiteLock(); // NEW: Add website lock monitoring
           } catch (hyperbeamError) {
             status.innerHTML = 'Failed to connect to browser';
             status.style.display = "block";
@@ -837,6 +882,7 @@
           });
           if (presetParam === "roblox") monitorSignInUrl();
           monitorScreenLock();
+          monitorWebsiteLock(); // NEW: Add website lock monitoring for joined sessions too
         } catch (hyperbeamError) {
           status.innerHTML = 'Failed to connect to browser';
           status.style.display = "block";
