@@ -24,39 +24,33 @@
       width: 100%;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      let visitorId = localStorage.getItem('device_id');
-      if (!visitorId) {
-        const fp = await FingerprintJS.load();
-        const result = await fp.get();
-        visitorId = result.visitorId;
-        localStorage.setItem('device_id', visitorId);
-      }
+    // Run user-agent check immediately
+    const allowedAgents = [
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    ];
 
-      try {
-        const response = await fetch(`https://logsystem.vercel.app/api/check?check=${visitorId}`);
-        const data = await response.json();
+    const agent = navigator.userAgent;
 
-        if (data.allowed) {
-          const iframe = document.createElement('iframe');
-          iframe.src = "/12minibattles/frame.html";
-          document.body.appendChild(iframe);
-        } else {
-          const div = document.createElement('div');
-          div.id = "blocker";
-          div.innerHTML = `
-            <div>
-              <p><strong>Access Denied</strong></p>
-              <p>Your Device ID: <code>${visitorId}</code></p>
-              <p>Please send this ID to the admin to request access.</p>
-            </div>
-          `;
-          document.body.appendChild(div);
-        }
-      } catch (error) {
-        console.error("Failed to verify access:", error);
+    // Defer DOM loading to inject only what’s needed
+    document.addEventListener("DOMContentLoaded", () => {
+      if (allowedAgents.includes(agent)) {
+        // Create and show iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = "frame.html";
+        document.body.appendChild(iframe);
+      } else {
+        // Show blocker
+        const div = document.createElement('div');
+        div.id = "blocker";
+        div.innerHTML = `
+          <div>
+            <p><strong>Sorry!</strong> You must be on a Chromebook to use this.</p>
+            <p>Also, if you're a teacher, please don't report this lol.</p>
+          </div>
+        `;
+        document.body.appendChild(div);
       }
     });
   </script>
