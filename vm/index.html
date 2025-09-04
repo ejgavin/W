@@ -957,75 +957,127 @@
 
     deleteSessionBtn.addEventListener("click", endSession);
 
+    // --- WebSocket connection for VM creation ---
+    const WS_URL = 'wss://ejgwss.koyeb.app/vm';
+    let vmSocket = null;
+
+    function connectVMWebSocket() {
+      if (vmSocket && vmSocket.readyState === WebSocket.OPEN) {
+        vmSocket.close();
+      }
+
+      vmSocket = new WebSocket(WS_URL);
+
+      vmSocket.onopen = () => {
+        console.log('Connected to VM WSS server');
+      };
+
+      vmSocket.onmessage = async (event) => {
+        const data = event.data;
+
+        if (typeof data === 'string' && data.startsWith('VM Created:')) {
+          console.log('VM Response:', data);
+          // Attempt to extract embed URL and session ID from the message
+          // Example message: "VM Created: {\"embed_url\":\"URL\",\"session_id\":\"ID\",\"expiresAt\":...}"
+          let parsed;
+          try {
+            const match = data.match(/VM Created:\s*(\{.+\})/);
+            if (match) {
+              parsed = JSON.parse(match[1]);
+            }
+          } catch (err) {
+            console.error('Failed to parse VM Created message:', err);
+          }
+          if (parsed && parsed.embed_url && parsed.session_id) {
+            currentSessionId = parsed.session_id;
+            currentEmbedUrl = parsed.embed_url;
+            hyperbeamContainer.innerHTML = '';
+            vmSessionContainer.style.display = "block";
+            isJoined = false;
+            try {
+              hyperbeamInstance = await Hyperbeam(hyperbeamContainer, parsed.embed_url, {
+                volume: 0.8,
+                videoPaused: false,
+                delegateKeyboard: true,
+                onConnectionStateChange: ({ state }) => {},
+                onDisconnect: ({ type }) => {
+                  status.innerHTML = 'Connection lost';
+                  status.style.display = "block";
+                  setTimeout(() => { endSession(); }, 2000);
+                }
+              });
+              loadingSpinner.style.display = "none";
+              monitorSignInUrl();
+              monitorScreenLock();
+              monitorWebsiteLock();
+            } catch (hyperbeamError) {
+              loadingSpinner.style.display = "none";
+              status.innerHTML = 'Failed to connect to browser';
+              status.style.display = "block";
+              resetSessionUI();
+              setTimeout(() => { status.style.display = "none"; }, 5000);
+            }
+            if (parsed.expiresAt) {
+              startSessionTimer(parsed.expiresAt);
+            } else {
+              const defaultExpiresAt = Date.now() + 30 * 60 * 1000;
+              startSessionTimer(defaultExpiresAt);
+            }
+          } else {
+            loadingSpinner.style.display = "none";
+            status.innerHTML = (parsed && parsed.error) ? parsed.error : "Unknown error";
+            status.style.display = "block";
+            resetSessionUI();
+            setTimeout(() => { status.style.display = "none"; }, 5000);
+          }
+        } else {
+          try {
+            const parsed = JSON.parse(data);
+            console.log('Received JSON message:', parsed);
+          } catch (e) {
+            console.error('Unknown message format:', data);
+          }
+        }
+      };
+
+      vmSocket.onerror = (err) => {
+        console.error('WebSocket error:', err);
+      };
+
+      vmSocket.onclose = (e) => {
+        console.log('VM WebSocket closed', e.code, e.reason);
+      };
+    }
+
+    function createVMPreset(presetName) {
+      if (!vmSocket || vmSocket.readyState !== WebSocket.OPEN) {
+        connectVMWebSocket();
+        vmSocket.addEventListener('open', () => {
+          vmSocket.send(`Preset: ${presetName}`);
+        }, { once: true });
+      } else {
+        vmSocket.send(`Preset: ${presetName}`);
+      }
+    }
+
+    function createVMFromURL(url) {
+      if (!vmSocket || vmSocket.readyState !== WebSocket.OPEN) {
+        connectVMWebSocket();
+        vmSocket.addEventListener('open', () => {
+          vmSocket.send(`URL: ${url}`);
+        }, { once: true });
+      } else {
+        vmSocket.send(`URL: ${url}`);
+      }
+    }
+
     createSessionBtn.addEventListener("click", async () => {
       createSessionBtn.disabled = true;
       status.style.display = "none";
       introContainer.style.display = "none";
       loadingSpinner.style.display = "flex";
-      
-      try {
-        let fetchUrl = "https://vmapi.vercel.app/api/api?add";
-        if (presetParam === "roblox") {
-          fetchUrl += "&preset=roblox";
-        } else if (customUrlParam) {
-          fetchUrl += "&url=" + encodeURIComponent(customUrlParam);
-        }
-        if (nameParam) {
-          fetchUrl += "&name=" + encodeURIComponent(nameParam);
-        }
-        const resp = await fetch(fetchUrl);
-        const data = await resp.json();
-        if (data.embed_url && data.session_id) {
-          currentSessionId = data.session_id;
-          currentEmbedUrl = data.embed_url;
-          hyperbeamContainer.innerHTML = '';
-          vmSessionContainer.style.display = "block";
-          isJoined = false;
-          
-          try {
-            hyperbeamInstance = await Hyperbeam(hyperbeamContainer, data.embed_url, {
-              volume: 0.8,
-              videoPaused: false,
-              delegateKeyboard: true,
-              onConnectionStateChange: ({ state }) => {},
-              onDisconnect: ({ type }) => {
-                status.innerHTML = 'Connection lost';
-                status.style.display = "block";
-                setTimeout(() => { endSession(); }, 2000);
-              }
-            });
-            loadingSpinner.style.display = "none";
-            monitorSignInUrl();
-            monitorScreenLock();
-            monitorWebsiteLock();
-          } catch (hyperbeamError) {
-            loadingSpinner.style.display = "none";
-            status.innerHTML = 'Failed to connect to browser';
-            status.style.display = "block";
-            resetSessionUI();
-            setTimeout(() => { status.style.display = "none"; }, 5000);
-          }
-          
-          if (data.expiresAt) {
-            startSessionTimer(data.expiresAt);
-          } else {
-            const defaultExpiresAt = Date.now() + 30 * 60 * 1000;
-            startSessionTimer(defaultExpiresAt);
-          }
-        } else {
-          loadingSpinner.style.display = "none";
-          status.innerHTML = (data.error || "Unknown error");
-          status.style.display = "block";
-          resetSessionUI();
-          setTimeout(() => { status.style.display = "none"; }, 5000);
-        }
-      } catch (error) {
-        loadingSpinner.style.display = "none";
-        status.innerHTML = 'No sessions available';
-        status.style.display = "block";
-        resetSessionUI();
-        setTimeout(() => { status.style.display = "none"; }, 5000);
-      }
+      // Use WebSocket to request VM creation for Roblox preset
+      createVMPreset('Roblox');
     });
 
     joinSessionBtn.addEventListener("click", () => {
