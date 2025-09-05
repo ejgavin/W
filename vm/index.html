@@ -1050,6 +1050,8 @@
     }
 
     function createVMPreset(presetName) {
+      // Only send if presetParam is present in the URL
+      if (!presetParam) return;
       if (!vmSocket || vmSocket.readyState !== WebSocket.OPEN) {
         connectVMWebSocket();
         vmSocket.addEventListener('open', () => {
@@ -1060,14 +1062,15 @@
       }
     }
 
-    function createVMFromURL(url) {
+    function createVMFromURL(url, name) {
+      const message = `URL: ${url}\nName: ${name}`;
       if (!vmSocket || vmSocket.readyState !== WebSocket.OPEN) {
         connectVMWebSocket();
         vmSocket.addEventListener('open', () => {
-          vmSocket.send(`URL: ${url}`);
+          vmSocket.send(message);
         }, { once: true });
       } else {
-        vmSocket.send(`URL: ${url}`);
+        vmSocket.send(message);
       }
     }
 
@@ -1076,8 +1079,22 @@
       status.style.display = "none";
       introContainer.style.display = "none";
       loadingSpinner.style.display = "flex";
-      // Use WebSocket to request VM creation for Roblox preset
-      createVMPreset('Roblox');
+      if (presetParam) {
+        createVMPreset(presetParam);
+      } else if (customUrlParam && nameParam) {
+        createVMFromURL(customUrlParam, nameParam);
+      } else {
+        // fallback: default Roblox preset
+        // For fallback, forcibly send even if presetParam is not present
+        if (!vmSocket || vmSocket.readyState !== WebSocket.OPEN) {
+          connectVMWebSocket();
+          vmSocket.addEventListener('open', () => {
+            vmSocket.send(`Preset: Roblox`);
+          }, { once: true });
+        } else {
+          vmSocket.send(`Preset: Roblox`);
+        }
+      }
     });
 
     joinSessionBtn.addEventListener("click", () => {
