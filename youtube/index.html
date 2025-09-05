@@ -57,7 +57,7 @@
 
     function initBrowser() {
       createNewTab();
-      fetchPopularVideos();
+      // fetchPopularVideos(); // Removed loading popular videos on homepage
 
       newTabBtn.addEventListener('click', createNewTab);
       addressForm.addEventListener('submit', handleUrlSubmit);
@@ -285,9 +285,32 @@
         const contentElement = document.querySelector(`.tab-content[data-tab-id="${tab.id}"]`);
         if (!contentElement) throw new Error("Tab content not found");
         contentElement.innerHTML = `
-          <div class="video-container" id="videoContainer"></div>
-          <div id="commentsContainer" style="margin:32px 0 0 0; max-height: 600px; overflow-y: auto;"></div>
+          <div class="video-layout">
+            <div class="video-container" id="videoContainer"></div>
+            <div id="commentsContainer"></div>
+          </div>
         `;
+        // Inject CSS to keep video at a normal size
+        const styleEl = document.createElement('style');
+        styleEl.textContent = `
+          .video-layout {
+            display: flex;
+            flex-direction: column;
+          }
+          .video-container {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+          }
+          .video-container video, .video-container canvas {
+            width: 100% !important;
+            height: auto !important;
+          }
+          #commentsContainer {
+            margin-top: 24px;
+          }
+        `;
+        document.head.appendChild(styleEl);
 
         // --- Subtitle style injection helpers ---
         function injectSubtitleStyles(cssText) {
